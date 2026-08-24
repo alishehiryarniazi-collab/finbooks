@@ -22,10 +22,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Turn backend error payloads into a plain Error with a readable message.
+// Turn backend error payloads into a readable STRING message.
+// Guards against non-string payloads (e.g. a zod `details` object) so the UI
+// never renders "[object Object]".
 export function apiError(err: unknown): string {
   if (axios.isAxiosError(err)) {
-    return err.response?.data?.error ?? err.message ?? "Something went wrong.";
+    const data = err.response?.data as { error?: unknown; message?: unknown } | undefined;
+    const candidate = data?.error ?? data?.message ?? err.message;
+    if (typeof candidate === "string") return candidate;
+    if (candidate != null) return JSON.stringify(candidate);
+    return "Something went wrong.";
   }
+  if (err instanceof Error) return err.message;
   return "Something went wrong.";
 }

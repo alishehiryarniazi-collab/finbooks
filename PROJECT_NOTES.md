@@ -56,7 +56,7 @@ accounting-system/
    npm install
    npx prisma migrate dev --name init   # creates the "finbooks" schema + tables
    npm run db:seed                       # loads the demo company
-   npm run dev                           # http://localhost:4000
+   npm run dev                           # http://localhost:4001
    ```
 3. Frontend:
    ```
