@@ -1,24 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { api, apiError, clearToken, getToken, setToken } from "../lib/api";
 import type { Role, User } from "../lib/types";
+import { AuthContext, type RegisterPayload } from "./auth-context";
 
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
-  logout: () => void;
-  hasRole: (...roles: Role[]) => boolean;
-}
-
-interface RegisterPayload {
-  organizationName: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
-const AuthContext = createContext<AuthState | null>(null);
+// Re-exported so existing `import { useAuth } from "../context/AuthContext"` keeps working.
+export { useAuth } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -75,11 +61,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
 }
