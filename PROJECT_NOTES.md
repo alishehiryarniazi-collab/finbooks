@@ -66,16 +66,20 @@ accounting-system/
    ```
 4. Log in: **demo@finbooks.app / demo1234** (admin). Also accountant@ / viewer@ (same password).
 
-## Status
+## Status — RUNNING & VERIFIED (2026-08-25)
 - [x] Backend: full schema, auth, accounts, journal + posting engine, AR, AP, payments, reports.
 - [x] Frontend: auth, dashboard, all modules and reports, Aurora UI, role-aware actions.
 - [x] Both backend and frontend typecheck clean.
-- [ ] **Run + verify end-to-end** — BLOCKED: no MySQL server found on the machine yet.
-      (No `mysqld.exe` present; port 3306 closed. Need MySQL installed/started first.)
+- [x] MySQL 8 (Community) installed locally; `prisma migrate dev` + seed applied.
+- [x] **Verified end-to-end:** trial balance balances (59,470 = 59,470); balance sheet balances
+      (assets 56,870 = liabilities 1,230 + equity 55,640); an unbalanced entry is rejected (400);
+      VIEWER role is blocked from writes (403). Dashboard loads live data in the browser.
+
+Local ports: **backend :4001**, **frontend :5173/5174** (Vite auto-picks a free one; another
+local app already uses 4000, hence 4001).
 
 ## TODO / next
-- Get MySQL running, then: `prisma migrate dev` → `db:seed` → run both apps → verify the
-  balance sheet balances and an unbalanced entry is rejected (400).
 - Add ESLint + Prettier configs.
-- Add a few screenshots to the README once it runs.
-- Later: CSV export of reports, invoice PDF, closing entries for fiscal year.
+- Add a few screenshots / short GIF to the README now that it runs.
+- Later: CSV export of reports, invoice PDF, closing entries for fiscal year, edit/delete on
+  customers & vendors from the UI.
