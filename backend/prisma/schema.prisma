@@ -1,0 +1,376 @@
+// FinBooks — double-entry accounting schema (MySQL).
+//
+// Design principle: the General Ledger (JournalEntry + JournalLine) is the single source
+// of truth. Invoices, Bills and Payments are subsidiary documents that POST balanced
+// journal entries into the ledger. All financial statements are computed from JournalLine.
+//
+// Money is stored as DECIMAL(18,2) — exact, never a float.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums (MySQL supports native enums)
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN // full access, manage users & settings
+  ACCOUNTANT // create/post transactions, invoices, bills
+  VIEWER // read-only (reports & lists)
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
+}
+
+// The side on which an account normally increases. Assets/Expenses are DEBIT-normal;
+// Liabilities/Equity/Income are CREDIT-normal. Drives how balances roll up into reports.
+enum NormalBalance {
+  DEBIT
+  CREDIT
+}
+
+enum JournalStatus {
+  DRAFT // not yet in the ledger
+  POSTED // immutable; affects balances
+  VOID // reversed / cancelled
+}
+
+// Where a journal entry came from, so we can trace it back to its document.
+enum JournalSource {
+  MANUAL
+  INVOICE
+  BILL
+  PAYMENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  PAID
+  VOID
+}
+
+enum BillStatus {
+  DRAFT
+  OPEN
+  PARTIAL
+  PAID
+  VOID
+}
+
+enum PaymentType {
+  RECEIVED // money in (from a customer)
+  MADE // money out (to a vendor)
+}
+
+enum PartyType {
+  CUSTOMER
+  VENDOR
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy & users
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id                   String   @id @default(cuid())
+  name                 String
+  baseCurrency         String   @default("USD") // reserved for future multi-currency
+  fiscalYearStartMonth Int      @default(1) // 1 = January
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users        User[]
+  accounts     Account[]
+  journals     JournalEntry[]
+  customers    Customer[]
+  vendors      Vendor[]
+  invoices     Invoice[]
+  bills        Bill[]
+  payments     Payment[]
+  taxRates     TaxRate[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(VIEWER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  journalEntries JournalEntry[]
+
+  @@index([orgId])
+}
+
+// ---------------------------------------------------------------------------
+// Chart of Accounts
+// ---------------------------------------------------------------------------
+
+model Account {
+  id            String        @id @default(cuid())
+  orgId         String
+  organization  Organization  @relation(fields: [orgId], references: [id])
+  code          String // e.g. "1000", "4000"
+  name          String
+  type          AccountType
+  subtype       String? // e.g. "Cash", "Accounts Receivable", "Sales"
+  normalBalance NormalBalance
+  parentId      String?
+  parent        Account?      @relation("AccountTree", fields: [parentId], references: [id])
+  children      Account[]     @relation("AccountTree")
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  journalLines JournalLine[]
+  invoiceLines InvoiceLine[]
+  billLines    BillLine[]
+  taxRates     TaxRate[]
+  paymentsBank Payment[]      @relation("PaymentBankAccount")
+
+  @@unique([orgId, code])
+  @@index([orgId])
+}
+
+// ---------------------------------------------------------------------------
+// General Ledger
+// ---------------------------------------------------------------------------
+
+model JournalEntry {
+  id          String        @id @default(cuid())
+  orgId       String
+  organization Organization @relation(fields: [orgId], references: [id])
+  date        DateTime
+  memo        String?
+  reference   String?
+  status      JournalStatus @default(POSTED)
+  source      JournalSource @default(MANUAL)
+  sourceId    String? // id of the Invoice/Bill/Payment that generated this entry
+  createdById String
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  lines JournalLine[]
+
+  @@index([orgId, date])
+  @@index([source, sourceId])
+}
+
+model JournalLine {
+  id          String       @id @default(cuid())
+  entryId     String
+  entry       JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     Account      @relation(fields: [accountId], references: [id])
+  debit       Decimal      @default(0) @db.Decimal(18, 2)
+  credit      Decimal      @default(0) @db.Decimal(18, 2)
+  description String?
+
+  @@index([entryId])
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// Accounts Receivable (customers + invoices)
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id           String   @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  invoices Invoice[]
+
+  @@index([orgId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  orgId          String
+  organization   Organization  @relation(fields: [orgId], references: [id])
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  number         String
+  issueDate      DateTime
+  dueDate        DateTime
+  status         InvoiceStatus @default(DRAFT)
+  subtotal       Decimal       @default(0) @db.Decimal(18, 2)
+  taxTotal       Decimal       @default(0) @db.Decimal(18, 2)
+  total          Decimal       @default(0) @db.Decimal(18, 2)
+  amountPaid     Decimal       @default(0) @db.Decimal(18, 2)
+  notes          String?
+  journalEntryId String? // set once posted to the GL
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  lines       InvoiceLine[]
+  allocations PaymentAllocation[]
+
+  @@unique([orgId, number])
+  @@index([orgId, status])
+  @@index([customerId])
+}
+
+model InvoiceLine {
+  id              String  @id @default(cuid())
+  invoiceId       String
+  invoice         Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description     String
+  quantity        Decimal @default(1) @db.Decimal(18, 2)
+  unitPrice       Decimal @default(0) @db.Decimal(18, 2)
+  taxRatePercent  Decimal @default(0) @db.Decimal(9, 4)
+  lineTotal       Decimal @default(0) @db.Decimal(18, 2)
+  incomeAccountId String
+  incomeAccount   Account @relation(fields: [incomeAccountId], references: [id])
+
+  @@index([invoiceId])
+}
+
+// ---------------------------------------------------------------------------
+// Accounts Payable (vendors + bills)
+// ---------------------------------------------------------------------------
+
+model Vendor {
+  id           String   @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bills Bill[]
+
+  @@index([orgId])
+}
+
+model Bill {
+  id             String     @id @default(cuid())
+  orgId          String
+  organization   Organization @relation(fields: [orgId], references: [id])
+  vendorId       String
+  vendor         Vendor     @relation(fields: [vendorId], references: [id])
+  number         String
+  billDate       DateTime
+  dueDate        DateTime
+  status         BillStatus @default(DRAFT)
+  subtotal       Decimal    @default(0) @db.Decimal(18, 2)
+  taxTotal       Decimal    @default(0) @db.Decimal(18, 2)
+  total          Decimal    @default(0) @db.Decimal(18, 2)
+  amountPaid     Decimal    @default(0) @db.Decimal(18, 2)
+  notes          String?
+  journalEntryId String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  lines       BillLine[]
+  allocations PaymentAllocation[]
+
+  @@unique([orgId, number])
+  @@index([orgId, status])
+  @@index([vendorId])
+}
+
+model BillLine {
+  id               String  @id @default(cuid())
+  billId           String
+  bill             Bill    @relation(fields: [billId], references: [id], onDelete: Cascade)
+  description      String
+  quantity         Decimal @default(1) @db.Decimal(18, 2)
+  unitPrice        Decimal @default(0) @db.Decimal(18, 2)
+  taxRatePercent   Decimal @default(0) @db.Decimal(9, 4)
+  lineTotal        Decimal @default(0) @db.Decimal(18, 2)
+  expenseAccountId String
+  expenseAccount   Account @relation(fields: [expenseAccountId], references: [id])
+
+  @@index([billId])
+}
+
+// ---------------------------------------------------------------------------
+// Payments (shared across AR and AP)
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id             String      @id @default(cuid())
+  orgId          String
+  organization   Organization @relation(fields: [orgId], references: [id])
+  type           PaymentType
+  date           DateTime
+  amount         Decimal     @db.Decimal(18, 2)
+  method         String? // e.g. "Cash", "Bank Transfer"
+  bankAccountId  String // the Asset account the money moved in/out of
+  bankAccount    Account     @relation("PaymentBankAccount", fields: [bankAccountId], references: [id])
+  partyType      PartyType
+  partyId        String // Customer.id or Vendor.id depending on type
+  reference      String?
+  journalEntryId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  allocations PaymentAllocation[]
+
+  @@index([orgId, type])
+}
+
+// Splits one payment across one or more invoices/bills.
+model PaymentAllocation {
+  id        String  @id @default(cuid())
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+  billId    String?
+  bill      Bill?    @relation(fields: [billId], references: [id])
+  amount    Decimal  @db.Decimal(18, 2)
+
+  @@index([paymentId])
+  @@index([invoiceId])
+  @@index([billId])
+}
+
+// ---------------------------------------------------------------------------
+// Tax rates (optional, powers invoice/bill tax lines)
+// ---------------------------------------------------------------------------
+
+model TaxRate {
+  id           String   @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  name         String // e.g. "GST 17%"
+  ratePercent  Decimal  @db.Decimal(9, 4)
+  accountId    String // liability account where collected tax accrues
+  account      Account  @relation(fields: [accountId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([orgId])
+}

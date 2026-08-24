@@ -1,0 +1,103 @@
+// Shared types mirroring the backend API shapes.
+
+export type Role = "ADMIN" | "ACCOUNTANT" | "VIEWER";
+export type AccountType = "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  orgId: string;
+  organization: { id: string; name: string; baseCurrency: string } | null;
+}
+
+export interface Account {
+  id: string;
+  code: string;
+  name: string;
+  type: AccountType;
+  subtype: string | null;
+  normalBalance: "DEBIT" | "CREDIT";
+  isActive: boolean;
+  debit: string;
+  credit: string;
+  balance: string;
+}
+
+export interface JournalLine {
+  id: string;
+  accountId: string;
+  debit: string;
+  credit: string;
+  description: string | null;
+  account?: { code: string; name: string };
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  memo: string | null;
+  reference: string | null;
+  status: "DRAFT" | "POSTED" | "VOID";
+  source: string;
+  lines: JournalLine[];
+  createdBy?: { name: string };
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  notes: string | null;
+}
+
+export type Vendor = Customer;
+
+export type InvoiceStatus = "DRAFT" | "SENT" | "PARTIAL" | "PAID" | "VOID";
+export type BillStatus = "DRAFT" | "OPEN" | "PARTIAL" | "PAID" | "VOID";
+
+export interface Invoice {
+  id: string;
+  number: string;
+  issueDate: string;
+  dueDate: string;
+  status: InvoiceStatus;
+  subtotal: string;
+  taxTotal: string;
+  total: string;
+  amountPaid: string;
+  notes: string | null;
+  customer?: { name: string };
+  customerId: string;
+  lines?: DocumentLine[];
+}
+
+export interface Bill {
+  id: string;
+  number: string;
+  billDate: string;
+  dueDate: string;
+  status: BillStatus;
+  subtotal: string;
+  taxTotal: string;
+  total: string;
+  amountPaid: string;
+  notes: string | null;
+  vendor?: { name: string };
+  vendorId: string;
+  lines?: DocumentLine[];
+}
+
+export interface DocumentLine {
+  id: string;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  taxRatePercent: string;
+  lineTotal: string;
+  incomeAccount?: { code: string; name: string };
+  expenseAccount?: { code: string; name: string };
+}

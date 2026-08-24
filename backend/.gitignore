@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment / secrets — never commit these
+.env
+.env.local
+
+# Prisma local artifacts
+prisma/*.db
+
+# Logs & OS junk
+*.log
+.DS_Store
+Thumbs.db

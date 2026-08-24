@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-aurora-bg text-slate-200 font-sans antialiased;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card — translucent, blurred, subtle light border. */
+  .glass {
+    @apply rounded-xl2 border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-xl;
+  }
+
+  /* Gradient text for big headings (mint -> violet). */
+  .gradient-text {
+    @apply bg-gradient-to-r from-aurora-mint to-aurora-violet bg-clip-text text-transparent;
+  }
+
+  /* Primary neon-mint action button. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-aurora-mint px-4 py-2 font-medium text-aurora-bg
+      transition hover:shadow-glow hover:brightness-110 disabled:opacity-50 disabled:hover:shadow-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-2 font-medium
+      text-slate-200 transition hover:border-aurora-mint/60 hover:text-white disabled:opacity-50;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-slate-100 outline-none
+      transition placeholder:text-slate-500 focus:border-aurora-mint/60 focus:bg-white/[0.05];
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-400;
+  }
+}
+
+/* Animated aurora blobs in the app background. */
+.aurora-bg-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aurora-bg-blobs span {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: float 18s ease-in-out infinite;
+}
+.aurora-bg-blobs span:nth-child(1) {
+  width: 40vw;
+  height: 40vw;
+  background: #12b39a;
+  top: -10%;
+  left: -5%;
+}
+.aurora-bg-blobs span:nth-child(2) {
+  width: 35vw;
+  height: 35vw;
+  background: #7b5cff;
+  bottom: -10%;
+  right: -5%;
+  animation-delay: -6s;
+}
+.aurora-bg-blobs span:nth-child(3) {
+  width: 30vw;
+  height: 30vw;
+  background: #0891ff;
+  top: 30%;
+  right: 20%;
+  animation-delay: -12s;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, 6%) scale(1.12);
+  }
+}
+
+/* Thin custom scrollbar to match the dark theme. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
