@@ -106,8 +106,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                   {lines.map((line, i) => (
                     <tr key={i}>
                       <td className="px-2 py-1.5">
-                        <select
-                          className="input [&>option]:bg-aurora-bg2"
+                        <SelectField
                           value={line.accountId}
                           onChange={(e) => setLine(i, { accountId: e.target.value })}
                         >
@@ -117,7 +116,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                             .map((a) => (
                               <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
                             ))}
-                        </select>
+                        </SelectField>
                       </td>
                       <td className="px-2 py-1.5">
                         <input className="input" value={line.description} onChange={(e) => setLine(i, { description: e.target.value })} placeholder="Optional" />

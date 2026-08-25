@@ -8,7 +8,7 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
 import { Button } from "../../components/ui/Button";
-import { TextField } from "../../components/ui/Field";
+import { TextField, SelectField } from "../../components/ui/Field";
 import { ErrorNote } from "../Dashboard";
 
 interface LineRow {
@@ -88,8 +88,7 @@ export function JournalEntryForm() {
                 {lines.map((line, i) => (
                   <tr key={i}>
                     <td className="px-2 py-1.5">
-                      <select
-                        className="input [&>option]:bg-aurora-bg2"
+                      <SelectField
                         value={line.accountId}
                         onChange={(e) => setLine(i, { accountId: e.target.value })}
                       >
@@ -97,7 +96,7 @@ export function JournalEntryForm() {
                         {accounts.map((a) => (
                           <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
                         ))}
-                      </select>
+                      </SelectField>
                     </td>
                     <td className="px-2 py-1.5">
                       <input
