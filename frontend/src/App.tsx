@@ -14,9 +14,11 @@ import { Vendors } from "./pages/vendors/Vendors";
 import { InvoiceList } from "./pages/invoices/InvoiceList";
 import { InvoiceForm } from "./pages/invoices/InvoiceForm";
 import { InvoiceView } from "./pages/invoices/InvoiceView";
+import { InvoicePrint } from "./pages/invoices/InvoicePrint";
 import { BillList } from "./pages/bills/BillList";
 import { BillForm } from "./pages/bills/BillForm";
 import { BillView } from "./pages/bills/BillView";
+import { BillPrint } from "./pages/bills/BillPrint";
 import { Payments } from "./pages/payments/Payments";
 import { TrialBalance } from "./pages/reports/TrialBalance";
 import { ProfitLoss } from "./pages/reports/ProfitLoss";
@@ -62,6 +64,10 @@ export default function App() {
         <Route path="reports/ap-aging" element={<ApAging />} />
         <Route path="team" element={<Team />} />
       </Route>
+
+      {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}
+      <Route path="/invoices/:id/print" element={<ProtectedRoute><InvoicePrint /></ProtectedRoute>} />
+      <Route path="/bills/:id/print" element={<ProtectedRoute><BillPrint /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

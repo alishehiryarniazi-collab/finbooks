@@ -90,6 +90,28 @@
   }
 }
 
+/* Print: hide app chrome, print the document sheet on white paper. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .aurora-bg-blobs {
+    display: none !important;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
 /* Thin custom scrollbar to match the dark theme. */
 ::-webkit-scrollbar {
   width: 10px;

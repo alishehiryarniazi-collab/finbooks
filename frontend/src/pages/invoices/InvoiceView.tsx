@@ -53,6 +53,7 @@ export function InvoiceView() {
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => navigate("/invoices")}>← Back</Button>
+            <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/print`)}>🖨 Print / PDF</Button>
             {canEdit && inv.status === "DRAFT" && <Button onClick={() => action("post")} disabled={busy}>Post to ledger</Button>}
             {canEdit && (inv.status === "SENT" || inv.status === "PARTIAL") && outstanding > 0 && (
               <Button onClick={() => setPayOpen(true)}>Record payment</Button>

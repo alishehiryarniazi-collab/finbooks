@@ -53,6 +53,7 @@ export function BillView() {
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => navigate("/bills")}>← Back</Button>
+            <Button variant="ghost" onClick={() => navigate(`/bills/${id}/print`)}>🖨 Print / PDF</Button>
             {canEdit && bill.status === "DRAFT" && <Button onClick={() => action("post")} disabled={busy}>Post to ledger</Button>}
             {canEdit && (bill.status === "OPEN" || bill.status === "PARTIAL") && outstanding > 0 && (
               <Button onClick={() => setPayOpen(true)}>Pay bill</Button>
