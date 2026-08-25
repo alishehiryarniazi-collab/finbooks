@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { requireAuth, requireRole } from "../middleware/auth";
-import { createBill, postBill, recordBillPayment, voidBill } from "../services/bills";
+import { createBill, updateBill, deleteBill, postBill, recordBillPayment, voidBill } from "../services/bills";
 
 export const billsRouter = Router();
 billsRouter.use(requireAuth);
@@ -47,6 +47,19 @@ billsRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const data = createSchema.parse(req.body);
   const bill = await createBill(req.auth!.orgId, data);
   res.status(201).json({ bill });
+});
+
+// Edit a DRAFT bill.
+billsRouter.patch("/:id", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  const data = createSchema.parse(req.body);
+  const bill = await updateBill(req.auth!.orgId, req.params.id, data);
+  res.json({ bill });
+});
+
+// Delete a DRAFT bill.
+billsRouter.delete("/:id", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  await deleteBill(req.auth!.orgId, req.params.id);
+  res.json({ ok: true });
 });
 
 billsRouter.post("/:id/post", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {

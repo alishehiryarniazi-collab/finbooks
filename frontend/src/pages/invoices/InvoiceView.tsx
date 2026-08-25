@@ -45,6 +45,19 @@ export function InvoiceView() {
     }
   }
 
+  async function del() {
+    if (!window.confirm("Delete this draft invoice? This can't be undone.")) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.delete(`/invoices/${id}`);
+      navigate("/invoices");
+    } catch (err) {
+      setActionError(apiError(err));
+      setBusy(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -54,6 +67,8 @@ export function InvoiceView() {
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => navigate("/invoices")}>← Back</Button>
             <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/print`)}>🖨 Print / PDF</Button>
+            {canEdit && inv.status === "DRAFT" && <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/edit`)}>Edit</Button>}
+            {canEdit && inv.status === "DRAFT" && <Button variant="ghost" onClick={del} disabled={busy}>Delete</Button>}
             {canEdit && inv.status === "DRAFT" && <Button onClick={() => action("post")} disabled={busy}>Post to ledger</Button>}
             {canEdit && (inv.status === "SENT" || inv.status === "PARTIAL") && outstanding > 0 && (
               <Button onClick={() => setPayOpen(true)}>Record payment</Button>

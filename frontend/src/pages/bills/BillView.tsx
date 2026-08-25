@@ -45,6 +45,19 @@ export function BillView() {
     }
   }
 
+  async function del() {
+    if (!window.confirm("Delete this draft bill? This can't be undone.")) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.delete(`/bills/${id}`);
+      navigate("/bills");
+    } catch (err) {
+      setActionError(apiError(err));
+      setBusy(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -54,6 +67,8 @@ export function BillView() {
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => navigate("/bills")}>← Back</Button>
             <Button variant="ghost" onClick={() => navigate(`/bills/${id}/print`)}>🖨 Print / PDF</Button>
+            {canEdit && bill.status === "DRAFT" && <Button variant="ghost" onClick={() => navigate(`/bills/${id}/edit`)}>Edit</Button>}
+            {canEdit && bill.status === "DRAFT" && <Button variant="ghost" onClick={del} disabled={busy}>Delete</Button>}
             {canEdit && bill.status === "DRAFT" && <Button onClick={() => action("post")} disabled={busy}>Post to ledger</Button>}
             {canEdit && (bill.status === "OPEN" || bill.status === "PARTIAL") && outstanding > 0 && (
               <Button onClick={() => setPayOpen(true)}>Pay bill</Button>

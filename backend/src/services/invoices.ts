@@ -85,6 +85,61 @@ export async function createInvoice(orgId: string, input: CreateInvoiceInput) {
   });
 }
 
+// Updates a DRAFT invoice (fields + lines). Posted invoices are immutable.
+export async function updateInvoice(orgId: string, id: string, input: CreateInvoiceInput) {
+  if (input.lines.length === 0) throw new HttpError(400, "An invoice needs at least one line.");
+  const { computed, subtotal, taxTotal, total } = computeTotals(input.lines);
+
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.invoice.findFirst({ where: { id, orgId } });
+    if (!existing) throw new HttpError(404, "Invoice not found.");
+    if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft invoices can be edited.");
+
+    const customer = await tx.customer.findFirst({ where: { id: input.customerId, orgId } });
+    if (!customer) throw new HttpError(400, "Customer not found.");
+
+    const number = input.number?.trim() || existing.number;
+    if (number !== existing.number) {
+      const dupe = await tx.invoice.findFirst({ where: { orgId, number, NOT: { id } } });
+      if (dupe) throw new HttpError(409, `Invoice number ${number} already exists.`);
+    }
+
+    await tx.invoiceLine.deleteMany({ where: { invoiceId: id } });
+    return tx.invoice.update({
+      where: { id },
+      data: {
+        customerId: input.customerId,
+        number,
+        issueDate: input.issueDate,
+        dueDate: input.dueDate,
+        notes: input.notes,
+        subtotal,
+        taxTotal,
+        total,
+        lines: {
+          create: computed.map((c) => ({
+            description: c.description,
+            quantity: D(c.quantity),
+            unitPrice: D(c.unitPrice),
+            taxRatePercent: D(c.taxRatePercent ?? 0),
+            lineTotal: c.lineTotal,
+            incomeAccountId: c.incomeAccountId,
+          })),
+        },
+      },
+      include: { lines: true, customer: true },
+    });
+  });
+}
+
+// Deletes a DRAFT invoice. Posted invoices must be voided (reversed), never deleted.
+export async function deleteInvoice(orgId: string, id: string) {
+  const existing = await prisma.invoice.findFirst({ where: { id, orgId } });
+  if (!existing) throw new HttpError(404, "Invoice not found.");
+  if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft invoices can be deleted. Void a posted invoice instead.");
+  await prisma.invoice.delete({ where: { id } });
+}
+
 // Posts a DRAFT invoice to the ledger: Dr A/R (total), Cr each income account,
 // Cr Sales Tax Payable (if any). Flips status to SENT. Atomic.
 export async function postInvoice(orgId: string, userId: string, invoiceId: string) {

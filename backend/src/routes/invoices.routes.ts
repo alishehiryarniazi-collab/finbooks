@@ -5,6 +5,8 @@ import { HttpError } from "../middleware/error";
 import { requireAuth, requireRole } from "../middleware/auth";
 import {
   createInvoice,
+  updateInvoice,
+  deleteInvoice,
   postInvoice,
   recordInvoicePayment,
   voidInvoice,
@@ -52,6 +54,19 @@ invoicesRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) =>
   const data = createSchema.parse(req.body);
   const invoice = await createInvoice(req.auth!.orgId, data);
   res.status(201).json({ invoice });
+});
+
+// Edit a DRAFT invoice.
+invoicesRouter.patch("/:id", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  const data = createSchema.parse(req.body);
+  const invoice = await updateInvoice(req.auth!.orgId, req.params.id, data);
+  res.json({ invoice });
+});
+
+// Delete a DRAFT invoice.
+invoicesRouter.delete("/:id", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  await deleteInvoice(req.auth!.orgId, req.params.id);
+  res.json({ ok: true });
 });
 
 invoicesRouter.post("/:id/post", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {

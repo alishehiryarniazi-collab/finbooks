@@ -84,6 +84,61 @@ export async function createBill(orgId: string, input: CreateBillInput) {
   });
 }
 
+// Updates a DRAFT bill (fields + lines). Posted bills are immutable.
+export async function updateBill(orgId: string, id: string, input: CreateBillInput) {
+  if (input.lines.length === 0) throw new HttpError(400, "A bill needs at least one line.");
+  const { computed, subtotal, taxTotal, total } = computeTotals(input.lines);
+
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.bill.findFirst({ where: { id, orgId } });
+    if (!existing) throw new HttpError(404, "Bill not found.");
+    if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft bills can be edited.");
+
+    const vendor = await tx.vendor.findFirst({ where: { id: input.vendorId, orgId } });
+    if (!vendor) throw new HttpError(400, "Vendor not found.");
+
+    const number = input.number?.trim() || existing.number;
+    if (number !== existing.number) {
+      const dupe = await tx.bill.findFirst({ where: { orgId, number, NOT: { id } } });
+      if (dupe) throw new HttpError(409, `Bill number ${number} already exists.`);
+    }
+
+    await tx.billLine.deleteMany({ where: { billId: id } });
+    return tx.bill.update({
+      where: { id },
+      data: {
+        vendorId: input.vendorId,
+        number,
+        billDate: input.billDate,
+        dueDate: input.dueDate,
+        notes: input.notes,
+        subtotal,
+        taxTotal,
+        total,
+        lines: {
+          create: computed.map((c) => ({
+            description: c.description,
+            quantity: D(c.quantity),
+            unitPrice: D(c.unitPrice),
+            taxRatePercent: D(c.taxRatePercent ?? 0),
+            lineTotal: c.lineTotal,
+            expenseAccountId: c.expenseAccountId,
+          })),
+        },
+      },
+      include: { lines: true, vendor: true },
+    });
+  });
+}
+
+// Deletes a DRAFT bill. Posted bills must be voided (reversed), never deleted.
+export async function deleteBill(orgId: string, id: string) {
+  const existing = await prisma.bill.findFirst({ where: { id, orgId } });
+  if (!existing) throw new HttpError(404, "Bill not found.");
+  if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft bills can be deleted. Void a posted bill instead.");
+  await prisma.bill.delete({ where: { id } });
+}
+
 // Posts a DRAFT bill: Dr each expense account, Dr input tax (recoverable), Cr A/P.
 // Flips status to OPEN. Atomic.
 export async function postBill(orgId: string, userId: string, billId: string) {

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
@@ -23,6 +23,8 @@ const emptyLine = (): Line => ({ description: "", quantity: "1", unitPrice: "", 
 
 export function InvoiceForm() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = !!id;
   const customersReq = useFetch<{ customers: Customer[] }>("/customers");
   const accountsReq = useFetch<{ accounts: Account[] }>("/accounts");
 
@@ -33,8 +35,50 @@ export function InvoiceForm() {
   const [lines, setLines] = useState<Line[]>([emptyLine()]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loadingDoc, setLoadingDoc] = useState(isEdit);
 
-  if (customersReq.loading || accountsReq.loading) return <Spinner label="Loading…" />;
+  // In edit mode, load the draft invoice and prefill the form.
+  useEffect(() => {
+    if (!isEdit) return;
+    let ignore = false;
+    (async () => {
+      try {
+        const { data } = await api.get<{
+          invoice: {
+            customerId: string;
+            number: string;
+            issueDate: string;
+            dueDate: string;
+            lines: { description: string; quantity: string; unitPrice: string; taxRatePercent: string; incomeAccountId: string }[];
+          };
+        }>(`/invoices/${id}`);
+        if (ignore) return;
+        const inv = data.invoice;
+        setCustomerId(inv.customerId);
+        setNumber(inv.number);
+        setIssueDate(inputDate(inv.issueDate));
+        setDueDate(inputDate(inv.dueDate));
+        setLines(
+          inv.lines.map((l) => ({
+            description: l.description,
+            quantity: String(Number(l.quantity)),
+            unitPrice: String(Number(l.unitPrice)),
+            taxRatePercent: String(Number(l.taxRatePercent)),
+            incomeAccountId: l.incomeAccountId,
+          })),
+        );
+      } catch (err) {
+        if (!ignore) setError(apiError(err));
+      } finally {
+        if (!ignore) setLoadingDoc(false);
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [id, isEdit]);
+
+  if (customersReq.loading || accountsReq.loading || loadingDoc) return <Spinner label="Loading…" />;
   const customers = customersReq.data?.customers ?? [];
   const incomeAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "INCOME" && a.isPostable);
 
@@ -73,7 +117,9 @@ export function InvoiceForm() {
             incomeAccountId: l.incomeAccountId,
           })),
       };
-      const { data } = await api.post<{ invoice: { id: string } }>("/invoices", payload);
+      const { data } = isEdit
+        ? await api.patch<{ invoice: { id: string } }>(`/invoices/${id}`, payload)
+        : await api.post<{ invoice: { id: string } }>("/invoices", payload);
       navigate(`/invoices/${data.invoice.id}`);
     } catch (err) {
       setError(apiError(err));
@@ -84,7 +130,7 @@ export function InvoiceForm() {
 
   return (
     <div>
-      <PageHeader title="New Invoice" subtitle="Saved as a draft — post it to hit the ledger" />
+      <PageHeader title={isEdit ? "Edit Invoice" : "New Invoice"} subtitle="Saved as a draft — post it to hit the ledger" />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -115,10 +161,10 @@ export function InvoiceForm() {
                   <tr key={i}>
                     <td className="px-2 py-1.5"><input className="input" value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} /></td>
                     <td className="px-2 py-1.5">
-                      <select className="input [&>option]:bg-aurora-bg2" value={l.incomeAccountId} onChange={(e) => setLine(i, { incomeAccountId: e.target.value })}>
+                      <SelectField value={l.incomeAccountId} onChange={(e) => setLine(i, { incomeAccountId: e.target.value })}>
                         <option value="">Select…</option>
                         {incomeAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
-                      </select>
+                      </SelectField>
                     </td>
                     <td className="px-2 py-1.5"><input className="input w-20 text-right" type="number" min="0" step="0.01" value={l.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} /></td>
                     <td className="px-2 py-1.5"><input className="input w-28 text-right" type="number" min="0" step="0.01" value={l.unitPrice} onChange={(e) => setLine(i, { unitPrice: e.target.value })} /></td>
@@ -143,7 +189,7 @@ export function InvoiceForm() {
           {error && <ErrorNote message={error} />}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => navigate("/invoices")}>Cancel</Button>
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save draft"}</Button>
+            <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}</Button>
           </div>
         </form>
       </Card>
