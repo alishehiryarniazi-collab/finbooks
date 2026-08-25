@@ -36,6 +36,10 @@ export function InvoicePrint() {
     <PrintableDocument
       kind="INVOICE"
       orgName={user?.organization?.name ?? "Your Company"}
+      orgAddress={user?.organization?.address}
+      orgPhone={user?.organization?.phone}
+      orgEmail={user?.organization?.email}
+      logoDataUrl={user?.organization?.logoDataUrl}
       number={inv.number}
       status={inv.status}
       issueLabel="Issue date"

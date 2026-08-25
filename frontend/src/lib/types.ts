@@ -3,13 +3,24 @@
 export type Role = "ADMIN" | "ACCOUNTANT" | "VIEWER";
 export type AccountType = "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
 
+export interface Organization {
+  id: string;
+  name: string;
+  baseCurrency: string;
+  fiscalYearStartMonth?: number;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  logoDataUrl: string | null;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: Role;
   orgId: string;
-  organization: { id: string; name: string; baseCurrency: string } | null;
+  organization: Organization | null;
 }
 
 export interface Account {

@@ -19,6 +19,7 @@ export interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   hasRole: (...roles: Role[]) => boolean;
 }
 

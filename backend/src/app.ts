@@ -13,6 +13,7 @@ import { invoicesRouter } from "./routes/invoices.routes";
 import { billsRouter } from "./routes/bills.routes";
 import { paymentsRouter } from "./routes/payments.routes";
 import { reportsRouter } from "./routes/reports.routes";
+import { organizationRouter } from "./routes/organization.routes";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 
 export function createApp() {
@@ -34,6 +35,7 @@ export function createApp() {
   app.use("/api/bills", billsRouter);
   app.use("/api/payments", paymentsRouter);
   app.use("/api/reports", reportsRouter);
+  app.use("/api/organization", organizationRouter);
 
   app.use(notFoundHandler);
 

@@ -52,7 +52,10 @@ const NAV = [
   },
   {
     section: "Settings",
-    items: [{ to: "/team", label: "Team", icon: "👥" }],
+    items: [
+      { to: "/team", label: "Team", icon: "👥" },
+      { to: "/settings", label: "Company Settings", icon: "⚙️" },
+    ],
   },
 ];
 

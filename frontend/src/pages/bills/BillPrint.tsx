@@ -36,6 +36,10 @@ export function BillPrint() {
     <PrintableDocument
       kind="BILL"
       orgName={user?.organization?.name ?? "Your Company"}
+      orgAddress={user?.organization?.address}
+      orgPhone={user?.organization?.phone}
+      orgEmail={user?.organization?.email}
+      logoDataUrl={user?.organization?.logoDataUrl}
       number={bill.number}
       status={bill.status}
       issueLabel="Bill date"

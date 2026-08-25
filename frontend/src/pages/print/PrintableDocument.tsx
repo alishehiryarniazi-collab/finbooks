@@ -11,6 +11,10 @@ export interface PrintLine {
 export interface PrintDocProps {
   kind: "INVOICE" | "BILL";
   orgName: string;
+  orgAddress?: string | null;
+  orgPhone?: string | null;
+  orgEmail?: string | null;
+  logoDataUrl?: string | null;
   number: string;
   status: string;
   issueLabel: string;
@@ -54,9 +58,19 @@ export function PrintableDocument(props: PrintDocProps) {
       <div className="print-sheet mx-auto max-w-3xl rounded-xl bg-white p-10 shadow-lg">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-200 pb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{props.orgName}</h1>
-            <p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Accounting by FinBooks</p>
+          <div className="flex items-start gap-3">
+            {props.logoDataUrl && (
+              <img src={props.logoDataUrl} alt="" className="h-14 w-14 shrink-0 object-contain" />
+            )}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">{props.orgName}</h1>
+              {props.orgAddress && <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{props.orgAddress}</p>}
+              {(props.orgEmail || props.orgPhone) && (
+                <p className="text-sm text-slate-600">
+                  {[props.orgEmail, props.orgPhone].filter(Boolean).join(" · ")}
+                </p>
+              )}
+            </div>
           </div>
           <div className="text-right">
             <h2 className="text-3xl font-bold uppercase tracking-tight text-slate-800">{props.kind}</h2>

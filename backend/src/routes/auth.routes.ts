@@ -85,7 +85,15 @@ function publicUser(user: {
   email: string;
   role: string;
   orgId: string;
-  organization?: { id: string; name: string; baseCurrency: string } | null;
+  organization?: {
+    id: string;
+    name: string;
+    baseCurrency: string;
+    address?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    logoDataUrl?: string | null;
+  } | null;
 }) {
   return {
     id: user.id,
@@ -98,6 +106,10 @@ function publicUser(user: {
           id: user.organization.id,
           name: user.organization.name,
           baseCurrency: user.organization.baseCurrency,
+          address: user.organization.address ?? null,
+          phone: user.organization.phone ?? null,
+          email: user.organization.email ?? null,
+          logoDataUrl: user.organization.logoDataUrl ?? null,
         }
       : null,
   };

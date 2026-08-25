@@ -97,8 +97,13 @@ enum PartyType {
 model Organization {
   id                   String   @id @default(cuid())
   name                 String
-  baseCurrency         String   @default("USD") // reserved for future multi-currency
+  baseCurrency         String   @default("USD") // ISO code, drives money formatting
   fiscalYearStartMonth Int      @default(1) // 1 = January
+  // Company profile (shown on invoices/bills and the app header).
+  address              String?  @db.Text
+  phone                String?
+  email                String?
+  logoDataUrl          String?  @db.Text // small logo stored inline as a data URL
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 

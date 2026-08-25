@@ -26,6 +26,7 @@ import { BalanceSheet } from "./pages/reports/BalanceSheet";
 import { ArAging } from "./pages/reports/ArAging";
 import { ApAging } from "./pages/reports/ApAging";
 import { Team } from "./pages/Team";
+import { Settings } from "./pages/Settings";
 
 export default function App() {
   return (
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="reports/ar-aging" element={<ArAging />} />
         <Route path="reports/ap-aging" element={<ApAging />} />
         <Route path="team" element={<Team />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}
