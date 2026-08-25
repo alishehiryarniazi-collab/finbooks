@@ -65,7 +65,14 @@ export function ChartOfAccounts() {
       <PageHeader
         title="Chart of Accounts"
         subtitle="Three levels — only detail (level 3) accounts can be posted to"
-        action={hasRole("ADMIN", "ACCOUNTANT") && <Button onClick={() => setOpen(true)}>+ New account</Button>}
+        action={
+          hasRole("ADMIN", "ACCOUNTANT") && (
+            <div className="flex flex-wrap gap-2">
+              <Link to="/accounts/opening-balances"><Button variant="ghost">Opening balances</Button></Link>
+              <Button onClick={() => setOpen(true)}>+ New account</Button>
+            </div>
+          )
+        }
       />
 
       <div className="glass overflow-hidden rounded-2xl">

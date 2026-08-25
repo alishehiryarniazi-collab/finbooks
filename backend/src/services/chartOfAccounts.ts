@@ -11,6 +11,7 @@ export const SYSTEM_CODES = {
   ACCOUNTS_PAYABLE: "2000",
   SALES_TAX_PAYABLE: "2100",
   SALES_REVENUE: "4000",
+  OPENING_BALANCE_EQUITY: "3200",
 } as const;
 
 // Debit-normal for assets & expenses; credit-normal for the rest.
@@ -85,6 +86,7 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
             children: [
               { code: "3000", name: "Owner's Capital" },
               { code: "3100", name: "Retained Earnings" },
+              { code: "3200", name: "Opening Balance Equity" },
             ],
           },
         ],

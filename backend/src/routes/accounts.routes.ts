@@ -4,6 +4,9 @@ import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { accountBalances } from "../services/reports";
+import { postEntry, type PostingLine } from "../services/posting";
+import { SYSTEM_CODES } from "../services/chartOfAccounts";
+import { D, round2 } from "../utils/money";
 
 export const accountsRouter = Router();
 
@@ -92,6 +95,99 @@ accountsRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) =>
     },
   });
   res.status(201).json({ account });
+});
+
+// Finds (or creates) the Opening Balance Equity account used to offset opening balances.
+async function ensureOpeningBalanceEquity(orgId: string) {
+  const existing = await prisma.account.findFirst({
+    where: { orgId, code: SYSTEM_CODES.OPENING_BALANCE_EQUITY },
+  });
+  if (existing) return existing;
+
+  // Prefer nesting under an equity sub-group; fall back to any equity group.
+  const parent =
+    (await prisma.account.findFirst({ where: { orgId, type: "EQUITY", isPostable: false, parentId: { not: null } } })) ??
+    (await prisma.account.findFirst({ where: { orgId, type: "EQUITY", isPostable: false } }));
+
+  return prisma.account.create({
+    data: {
+      orgId,
+      code: SYSTEM_CODES.OPENING_BALANCE_EQUITY,
+      name: "Opening Balance Equity",
+      type: "EQUITY",
+      normalBalance: "CREDIT",
+      parentId: parent?.id ?? null,
+      isPostable: true,
+    },
+  });
+}
+
+const openingSchema = z.object({
+  date: z.coerce.date(),
+  lines: z.array(z.object({ accountId: z.string().min(1), amount: z.coerce.number() })).min(1),
+});
+
+// Posts an opening-balance journal entry. Each amount is the account's starting balance
+// in its NORMAL direction; the difference is offset to Opening Balance Equity so the
+// entry balances. Standard bookkeeping technique for going-live / migration.
+accountsRouter.post("/opening-balances", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  const data = openingSchema.parse(req.body);
+  const orgId = req.auth!.orgId;
+
+  const nonZero = data.lines.filter((l) => Math.abs(l.amount) > 0.005);
+  if (nonZero.length === 0) throw new HttpError(400, "Enter at least one opening balance.");
+
+  const ids = [...new Set(nonZero.map((l) => l.accountId))];
+  const accounts = await prisma.account.findMany({ where: { id: { in: ids }, orgId } });
+  const byId = new Map(accounts.map((a) => [a.id, a]));
+  for (const l of nonZero) {
+    const a = byId.get(l.accountId);
+    if (!a) throw new HttpError(400, "One or more accounts do not exist.");
+    if (!a.isPostable) throw new HttpError(400, `Account ${a.code} ${a.name} is a group; pick a detail account.`);
+    if (a.code === SYSTEM_CODES.OPENING_BALANCE_EQUITY) {
+      throw new HttpError(400, "Opening Balance Equity is filled automatically.");
+    }
+  }
+
+  const obe = await ensureOpeningBalanceEquity(orgId);
+
+  const lines: PostingLine[] = [];
+  let totalDebit = D(0);
+  let totalCredit = D(0);
+  for (const l of nonZero) {
+    const a = byId.get(l.accountId)!;
+    // Convert the normal-direction amount into a debit-positive figure.
+    const signedDebit = a.normalBalance === "DEBIT" ? l.amount : -l.amount;
+    const v = round2(Math.abs(signedDebit));
+    if (v.lte(0)) continue;
+    if (signedDebit > 0) {
+      lines.push({ accountId: a.id, debit: v, description: "Opening balance" });
+      totalDebit = totalDebit.plus(v);
+    } else {
+      lines.push({ accountId: a.id, credit: v, description: "Opening balance" });
+      totalCredit = totalCredit.plus(v);
+    }
+  }
+
+  // Offset the net to Opening Balance Equity so debits === credits.
+  const diff = totalDebit.minus(totalCredit);
+  if (!diff.isZero()) {
+    if (diff.gt(0)) lines.push({ accountId: obe.id, credit: diff.abs(), description: "Opening balance offset" });
+    else lines.push({ accountId: obe.id, debit: diff.abs(), description: "Opening balance offset" });
+  }
+  if (lines.length < 2) throw new HttpError(400, "Opening balances must affect at least two accounts.");
+
+  const entry = await postEntry({
+    orgId,
+    createdById: req.auth!.userId,
+    date: data.date,
+    memo: "Opening balances",
+    reference: "OPENING",
+    source: "MANUAL",
+    voucherType: "JOURNAL",
+    lines,
+  });
+  res.status(201).json({ entry });
 });
 
 const updateSchema = z.object({
