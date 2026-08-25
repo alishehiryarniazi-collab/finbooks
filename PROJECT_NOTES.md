@@ -8,6 +8,10 @@ Real bookkeeping: chart of accounts, balanced journal entries, a general ledger 
 single source of truth, invoicing (AR), bills (AP), payments, and financial reports.
 
 ## Feature set (as of Aug 2026)
+Smart Vouchers (period lock, negative-cash/duplicate-ref confirmable guards, auto-balance) ·
+Cost Accounting (cost centers + projects, profit-by-cost-center & project P&L) ·
+Financial Analyst (ratios, trends, health score, auto-insights) · Tax rates + Tax Report ·
+Localization EN/UR/AR with RTL (shell/dashboard/auth done; rest pending) ·
 Multi-company (one login → many companies via Membership + topbar switcher) ·
 Auth + roles (Admin/Accountant/Viewer) · 3-level Chart of Accounts (leaf-only posting) ·
 Opening balances · Journal / Debit / Credit vouchers · General Ledger (statement w/ opening
