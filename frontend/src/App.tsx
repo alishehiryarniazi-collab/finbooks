@@ -33,6 +33,7 @@ import { TaxReport } from "./pages/reports/TaxReport";
 import { CostCenters } from "./pages/CostCenters";
 import { Projects } from "./pages/Projects";
 import { CostCenterReport, ProjectReport } from "./pages/reports/DimensionReport";
+import { FinancialAnalysis } from "./pages/reports/FinancialAnalysis";
 
 export default function App() {
   return (
@@ -80,6 +81,7 @@ export default function App() {
         <Route path="projects" element={<Projects />} />
         <Route path="reports/cost-centers" element={<CostCenterReport />} />
         <Route path="reports/projects" element={<ProjectReport />} />
+        <Route path="reports/analysis" element={<FinancialAnalysis />} />
       </Route>
 
       {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}

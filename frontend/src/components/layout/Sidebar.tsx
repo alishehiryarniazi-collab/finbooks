@@ -51,6 +51,7 @@ const NAV = [
   {
     sectionKey: "reports",
     items: [
+      { to: "/reports/analysis", labelKey: "financialAnalysis", icon: "🔎" },
       { to: "/reports/trial-balance", labelKey: "trialBalance", icon: "⚖️" },
       { to: "/reports/profit-loss", labelKey: "profitLoss", icon: "📈" },
       { to: "/reports/balance-sheet", labelKey: "balanceSheet", icon: "🏦" },
