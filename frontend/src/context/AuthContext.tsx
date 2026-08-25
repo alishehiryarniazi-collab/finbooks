@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setUser(data.user);
     } catch (err) {
-      throw new Error(apiError(err));
+      throw new Error(apiError(err), { cause: err });
     }
   }
 
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setUser(data.user);
     } catch (err) {
-      throw new Error(apiError(err));
+      throw new Error(apiError(err), { cause: err });
     }
   }
 

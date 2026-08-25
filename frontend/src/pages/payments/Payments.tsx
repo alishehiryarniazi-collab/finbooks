@@ -25,7 +25,10 @@ export function Payments() {
   const payments = data?.payments ?? [];
 
   const docFor = (p: Payment) =>
-    p.allocations.map((a) => a.invoice?.number ?? a.bill?.number).filter(Boolean).join(", ") || "—";
+    p.allocations
+      .map((a) => a.invoice?.number ?? a.bill?.number)
+      .filter(Boolean)
+      .join(", ") || "—";
 
   return (
     <div>
@@ -37,7 +40,10 @@ export function Payments() {
           empty="No payments yet."
           columns={[
             { header: "Date", cell: (r) => shortDate(r.date) },
-            { header: "Type", cell: (r) => <StatusBadge status={r.type === "RECEIVED" ? "PAID" : "PARTIAL"} /> },
+            {
+              header: "Type",
+              cell: (r) => <StatusBadge status={r.type === "RECEIVED" ? "PAID" : "PARTIAL"} />,
+            },
             { header: "Document", cell: (r) => docFor(r) },
             { header: "Account", cell: (r) => `${r.bankAccount.code} · ${r.bankAccount.name}` },
             { header: "Amount", align: "right", cell: (r) => money(r.amount) },

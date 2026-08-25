@@ -8,8 +8,14 @@ export async function nextDocumentNumber(orgId: string, kind: "INVOICE" | "BILL"
 
   const rows =
     kind === "INVOICE"
-      ? await prisma.invoice.findMany({ where: { orgId, number: { startsWith: prefix } }, select: { number: true } })
-      : await prisma.bill.findMany({ where: { orgId, number: { startsWith: prefix } }, select: { number: true } });
+      ? await prisma.invoice.findMany({
+          where: { orgId, number: { startsWith: prefix } },
+          select: { number: true },
+        })
+      : await prisma.bill.findMany({
+          where: { orgId, number: { startsWith: prefix } },
+          select: { number: true },
+        });
 
   let max = 0;
   for (const r of rows) {

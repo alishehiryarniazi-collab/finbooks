@@ -14,9 +14,7 @@ journalRouter.use(requireAuth);
 journalRouter.get("/", async (req, res) => {
   const type = req.query.type;
   const voucherFilter =
-    type === "JOURNAL" || type === "DEBIT" || type === "CREDIT"
-      ? { voucherType: type as VoucherType }
-      : {};
+    type === "JOURNAL" || type === "DEBIT" || type === "CREDIT" ? { voucherType: type as VoucherType } : {};
   const entries = await prisma.journalEntry.findMany({
     where: { orgId: req.auth!.orgId, ...voucherFilter },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
@@ -134,12 +132,7 @@ const reverseSchema = z.object({ date: z.coerce.date().optional() });
 // Reverse (void) a posted entry by creating a mirror entry. Posted entries are immutable.
 journalRouter.post("/:id/reverse", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const { date } = reverseSchema.parse(req.body ?? {});
-  const reversed = await reverseEntry(
-    req.auth!.orgId,
-    req.params.id,
-    req.auth!.userId,
-    date ?? new Date(),
-  );
+  const reversed = await reverseEntry(req.auth!.orgId, req.params.id, req.auth!.userId, date ?? new Date());
   res.status(201).json({ entry: reversed });
 });
 

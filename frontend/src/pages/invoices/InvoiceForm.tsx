@@ -19,7 +19,13 @@ interface Line {
   incomeAccountId: string;
 }
 
-const emptyLine = (): Line => ({ description: "", quantity: "1", unitPrice: "", taxRatePercent: "0", incomeAccountId: "" });
+const emptyLine = (): Line => ({
+  description: "",
+  quantity: "1",
+  unitPrice: "",
+  taxRatePercent: "0",
+  incomeAccountId: "",
+});
 
 export function InvoiceForm() {
   const navigate = useNavigate();
@@ -31,7 +37,7 @@ export function InvoiceForm() {
   const [customerId, setCustomerId] = useState("");
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState(inputDate());
-  const [dueDate, setDueDate] = useState(inputDate(new Date(Date.now() + 30 * 864e5)));
+  const [dueDate, setDueDate] = useState(() => inputDate(new Date(Date.now() + 30 * 864e5)));
   const [lines, setLines] = useState<Line[]>([emptyLine()]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -49,7 +55,13 @@ export function InvoiceForm() {
             number: string;
             issueDate: string;
             dueDate: string;
-            lines: { description: string; quantity: string; unitPrice: string; taxRatePercent: string; incomeAccountId: string }[];
+            lines: {
+              description: string;
+              quantity: string;
+              unitPrice: string;
+              taxRatePercent: string;
+              incomeAccountId: string;
+            }[];
           };
         }>(`/invoices/${id}`);
         if (ignore) return;
@@ -80,7 +92,9 @@ export function InvoiceForm() {
 
   if (customersReq.loading || accountsReq.loading || loadingDoc) return <Spinner label="Loading…" />;
   const customers = customersReq.data?.customers ?? [];
-  const incomeAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "INCOME" && a.isPostable);
+  const incomeAccounts = (accountsReq.data?.accounts ?? []).filter(
+    (a) => a.type === "INCOME" && a.isPostable,
+  );
 
   function setLine(i: number, patch: Partial<Line>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
@@ -130,17 +144,46 @@ export function InvoiceForm() {
 
   return (
     <div>
-      <PageHeader title={isEdit ? "Edit Invoice" : "New Invoice"} subtitle="Saved as a draft — post it to hit the ledger" />
+      <PageHeader
+        title={isEdit ? "Edit Invoice" : "New Invoice"}
+        subtitle="Saved as a draft — post it to hit the ledger"
+      />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <SelectField label="Customer" value={customerId} onChange={(e) => setCustomerId(e.target.value)} required>
+            <SelectField
+              label="Customer"
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
+              required
+            >
               <option value="">Select…</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </SelectField>
-            <TextField label="Invoice # (optional)" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Auto (INV-0001)" />
-            <TextField label="Issue date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} required />
-            <TextField label="Due date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+            <TextField
+              label="Invoice # (optional)"
+              value={number}
+              onChange={(e) => setNumber(e.target.value)}
+              placeholder="Auto (INV-0001)"
+            />
+            <TextField
+              label="Issue date"
+              type="date"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+              required
+            />
+            <TextField
+              label="Due date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              required
+            />
           </div>
 
           <div className="overflow-x-auto">
@@ -159,18 +202,70 @@ export function InvoiceForm() {
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i}>
-                    <td className="px-2 py-1.5"><input className="input" value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} /></td>
                     <td className="px-2 py-1.5">
-                      <SelectField value={l.incomeAccountId} onChange={(e) => setLine(i, { incomeAccountId: e.target.value })}>
+                      <input
+                        className="input"
+                        value={l.description}
+                        onChange={(e) => setLine(i, { description: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <SelectField
+                        value={l.incomeAccountId}
+                        onChange={(e) => setLine(i, { incomeAccountId: e.target.value })}
+                      >
                         <option value="">Select…</option>
-                        {incomeAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
+                        {incomeAccounts.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.code} · {a.name}
+                          </option>
+                        ))}
                       </SelectField>
                     </td>
-                    <td className="px-2 py-1.5"><input className="input w-20 text-right" type="number" min="0" step="0.01" value={l.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} /></td>
-                    <td className="px-2 py-1.5"><input className="input w-28 text-right" type="number" min="0" step="0.01" value={l.unitPrice} onChange={(e) => setLine(i, { unitPrice: e.target.value })} /></td>
-                    <td className="px-2 py-1.5"><input className="input w-20 text-right" type="number" min="0" step="0.01" value={l.taxRatePercent} onChange={(e) => setLine(i, { taxRatePercent: e.target.value })} /></td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">{money((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0))}</td>
-                    <td className="px-2 py-1.5 text-center">{lines.length > 1 && <button type="button" onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-slate-500 hover:text-rose-400">✕</button>}</td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-20 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.quantity}
+                        onChange={(e) => setLine(i, { quantity: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-28 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.unitPrice}
+                        onChange={(e) => setLine(i, { unitPrice: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-20 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.taxRatePercent}
+                        onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">
+                      {money((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0))}
+                    </td>
+                    <td className="px-2 py-1.5 text-center">
+                      {lines.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setLines(lines.filter((_, idx) => idx !== i))}
+                          className="text-slate-500 hover:text-rose-400"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -178,18 +273,30 @@ export function InvoiceForm() {
           </div>
 
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <button type="button" onClick={() => setLines([...lines, emptyLine()])} className="btn-ghost text-sm">+ Add line</button>
+            <button
+              type="button"
+              onClick={() => setLines([...lines, emptyLine()])}
+              className="btn-ghost text-sm"
+            >
+              + Add line
+            </button>
             <div className="w-full max-w-xs space-y-1 text-sm">
               <Row label="Subtotal" value={money(totals.subtotal)} />
               <Row label="Tax" value={money(totals.tax)} />
-              <div className="border-t border-white/10 pt-1"><Row label="Total" value={money(totals.subtotal + totals.tax)} strong /></div>
+              <div className="border-t border-white/10 pt-1">
+                <Row label="Total" value={money(totals.subtotal + totals.tax)} strong />
+              </div>
             </div>
           </div>
 
           {error && <ErrorNote message={error} />}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => navigate("/invoices")}>Cancel</Button>
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}</Button>
+            <Button type="button" variant="ghost" onClick={() => navigate("/invoices")}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}
+            </Button>
           </div>
         </form>
       </Card>

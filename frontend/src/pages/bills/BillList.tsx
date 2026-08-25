@@ -29,7 +29,9 @@ export function BillList() {
   const bills = all.filter(
     (b) =>
       (status === "ALL" || b.status === status) &&
-      (needle === "" || b.number.toLowerCase().includes(needle) || (b.vendor?.name ?? "").toLowerCase().includes(needle)),
+      (needle === "" ||
+        b.number.toLowerCase().includes(needle) ||
+        (b.vendor?.name ?? "").toLowerCase().includes(needle)),
   );
 
   return (
@@ -37,7 +39,13 @@ export function BillList() {
       <PageHeader
         title="Bills"
         subtitle="Money you owe your vendors"
-        action={hasRole("ADMIN", "ACCOUNTANT") && <Link to="/bills/new"><Button>+ New bill</Button></Link>}
+        action={
+          hasRole("ADMIN", "ACCOUNTANT") && (
+            <Link to="/bills/new">
+              <Button>+ New bill</Button>
+            </Link>
+          )
+        }
       />
       <ListControls
         query={q}

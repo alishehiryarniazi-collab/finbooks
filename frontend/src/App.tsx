@@ -72,8 +72,22 @@ export default function App() {
       </Route>
 
       {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}
-      <Route path="/invoices/:id/print" element={<ProtectedRoute><InvoicePrint /></ProtectedRoute>} />
-      <Route path="/bills/:id/print" element={<ProtectedRoute><BillPrint /></ProtectedRoute>} />
+      <Route
+        path="/invoices/:id/print"
+        element={
+          <ProtectedRoute>
+            <InvoicePrint />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bills/:id/print"
+        element={
+          <ProtectedRoute>
+            <BillPrint />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -48,10 +48,14 @@ export function BalanceSheet() {
         subtitle="What you own vs what you owe"
         action={
           <div className="flex items-center gap-2">
-            <span className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}>
+            <span
+              className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}
+            >
               {data.balanced ? "✓ Assets = Liabilities + Equity" : "✗ Out of balance"}
             </span>
-            <Button variant="ghost" onClick={exportCsv}>Export CSV</Button>
+            <Button variant="ghost" onClick={exportCsv}>
+              Export CSV
+            </Button>
           </div>
         }
       />
@@ -70,14 +74,25 @@ export function BalanceSheet() {
   );
 }
 
-function Section({ title, rows, total }: { title: string; rows: { code: string; name: string; amount: string }[]; total: string }) {
+function Section({
+  title,
+  rows,
+  total,
+}: {
+  title: string;
+  rows: { code: string; name: string; amount: string }[];
+  total: string;
+}) {
   return (
     <Card>
       <h3 className="mb-3 text-lg font-semibold text-white">{title}</h3>
       <div className="flex flex-col divide-y divide-white/5">
         {rows.map((r, i) => (
           <div key={r.code || i} className="flex justify-between py-2 text-sm">
-            <span className="text-slate-300">{r.code && <span className="text-xs text-slate-500">{r.code} </span>}{r.name}</span>
+            <span className="text-slate-300">
+              {r.code && <span className="text-xs text-slate-500">{r.code} </span>}
+              {r.name}
+            </span>
             <span className="tabular-nums text-slate-300">{money(r.amount)}</span>
           </div>
         ))}

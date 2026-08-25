@@ -116,7 +116,13 @@ export function GeneralLedger() {
           <TextField label="To" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
         {(from || to) && (
-          <button onClick={() => { setFrom(""); setTo(""); }} className="btn-ghost mt-3 text-xs">
+          <button
+            onClick={() => {
+              setFrom("");
+              setTo("");
+            }}
+            className="btn-ghost mt-3 text-xs"
+          >
             Clear dates
           </button>
         )}
@@ -147,7 +153,15 @@ export function GeneralLedger() {
                     ["Date", "Type", "Ref", "Details", "Debit", "Credit", "Balance"],
                     [
                       ["", "", "", "Opening balance", "", "", ledger.opening],
-                      ...ledger.rows.map((r) => [shortDate(r.date), r.voucherType, r.reference ?? "", r.description ?? r.memo ?? "", r.debit, r.credit, r.balance]),
+                      ...ledger.rows.map((r) => [
+                        shortDate(r.date),
+                        r.voucherType,
+                        r.reference ?? "",
+                        r.description ?? r.memo ?? "",
+                        r.debit,
+                        r.credit,
+                        r.balance,
+                      ]),
                       ["", "", "", "Closing balance", "", "", ledger.closing],
                     ],
                   );
@@ -175,7 +189,9 @@ export function GeneralLedger() {
               <tbody>
                 {/* Opening balance row */}
                 <tr className="border-b border-white/5 text-slate-400">
-                  <td className="px-3 py-2" colSpan={4}>Opening balance</td>
+                  <td className="px-3 py-2" colSpan={4}>
+                    Opening balance
+                  </td>
                   <td className="px-3 py-2" />
                   <td className="px-3 py-2" />
                   <td className="px-3 py-2 text-right tabular-nums">{money(ledger.opening)}</td>
@@ -187,8 +203,12 @@ export function GeneralLedger() {
                     <td className="px-3 py-2 text-slate-500">{VT_SHORT[r.voucherType]}</td>
                     <td className="px-3 py-2 text-slate-500">{r.reference ?? ""}</td>
                     <td className="px-3 py-2 text-slate-300">{r.description ?? r.memo ?? ""}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-300">{Number(r.debit) ? money(r.debit) : ""}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-300">{Number(r.credit) ? money(r.credit) : ""}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-300">
+                      {Number(r.debit) ? money(r.debit) : ""}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-300">
+                      {Number(r.credit) ? money(r.credit) : ""}
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums text-white">{money(r.balance)}</td>
                   </tr>
                 ))}
@@ -203,7 +223,9 @@ export function GeneralLedger() {
               </tbody>
               <tfoot>
                 <tr className="border-t border-white/10 font-semibold text-white">
-                  <td className="px-3 py-2" colSpan={6}>Closing balance</td>
+                  <td className="px-3 py-2" colSpan={6}>
+                    Closing balance
+                  </td>
                   <td className="px-3 py-2 text-right tabular-nums">{money(ledger.closing)}</td>
                 </tr>
               </tfoot>

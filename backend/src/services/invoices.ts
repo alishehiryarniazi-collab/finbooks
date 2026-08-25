@@ -136,7 +136,8 @@ export async function updateInvoice(orgId: string, id: string, input: CreateInvo
 export async function deleteInvoice(orgId: string, id: string) {
   const existing = await prisma.invoice.findFirst({ where: { id, orgId } });
   if (!existing) throw new HttpError(404, "Invoice not found.");
-  if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft invoices can be deleted. Void a posted invoice instead.");
+  if (existing.status !== "DRAFT")
+    throw new HttpError(400, "Only draft invoices can be deleted. Void a posted invoice instead.");
   await prisma.invoice.delete({ where: { id } });
 }
 
@@ -162,7 +163,9 @@ export async function postInvoice(orgId: string, userId: string, invoiceId: stri
       );
     }
 
-    const lines: PostingLine[] = [{ accountId: arId, debit: invoice.total, description: `Invoice ${invoice.number}` }];
+    const lines: PostingLine[] = [
+      { accountId: arId, debit: invoice.total, description: `Invoice ${invoice.number}` },
+    ];
     for (const [accountId, amount] of incomeByAccount) lines.push({ accountId, credit: amount });
     if (invoice.taxTotal.gt(0)) {
       const taxId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.SALES_TAX_PAYABLE);
@@ -218,7 +221,10 @@ export async function recordInvoicePayment(
 
     const outstanding = invoice.total.minus(invoice.amountPaid);
     if (amount.gt(outstanding)) {
-      throw new HttpError(400, `Payment ${amount.toFixed(2)} exceeds the outstanding ${outstanding.toFixed(2)}.`);
+      throw new HttpError(
+        400,
+        `Payment ${amount.toFixed(2)} exceeds the outstanding ${outstanding.toFixed(2)}.`,
+      );
     }
 
     const bank = await tx.account.findFirst({ where: { id: input.bankAccountId, orgId, type: "ASSET" } });

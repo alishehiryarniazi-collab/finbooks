@@ -35,10 +35,12 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
     type: "ASSET",
     groups: [
       {
-        code: "1", name: "Assets",
+        code: "1",
+        name: "Assets",
         children: [
           {
-            code: "10", name: "Current Assets",
+            code: "10",
+            name: "Current Assets",
             children: [
               { code: "1000", name: "Cash", subtype: "Cash" },
               { code: "1010", name: "Bank Account", subtype: "Bank" },
@@ -47,7 +49,8 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
             ],
           },
           {
-            code: "15", name: "Fixed Assets",
+            code: "15",
+            name: "Fixed Assets",
             children: [{ code: "1500", name: "Equipment", subtype: "Fixed Asset" }],
           },
         ],
@@ -58,17 +61,20 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
     type: "LIABILITY",
     groups: [
       {
-        code: "2", name: "Liabilities",
+        code: "2",
+        name: "Liabilities",
         children: [
           {
-            code: "20", name: "Current Liabilities",
+            code: "20",
+            name: "Current Liabilities",
             children: [
               { code: "2000", name: "Accounts Payable", subtype: "Accounts Payable" },
               { code: "2100", name: "Sales Tax Payable", subtype: "Tax" },
             ],
           },
           {
-            code: "22", name: "Long-term Liabilities",
+            code: "22",
+            name: "Long-term Liabilities",
             children: [{ code: "2200", name: "Loans Payable", subtype: "Loan" }],
           },
         ],
@@ -79,10 +85,12 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
     type: "EQUITY",
     groups: [
       {
-        code: "3", name: "Equity",
+        code: "3",
+        name: "Equity",
         children: [
           {
-            code: "30", name: "Owner's Equity",
+            code: "30",
+            name: "Owner's Equity",
             children: [
               { code: "3000", name: "Owner's Capital" },
               { code: "3100", name: "Retained Earnings" },
@@ -97,17 +105,20 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
     type: "INCOME",
     groups: [
       {
-        code: "4", name: "Income",
+        code: "4",
+        name: "Income",
         children: [
           {
-            code: "40", name: "Operating Revenue",
+            code: "40",
+            name: "Operating Revenue",
             children: [
               { code: "4000", name: "Sales Revenue" },
               { code: "4100", name: "Service Revenue" },
             ],
           },
           {
-            code: "42", name: "Other Income",
+            code: "42",
+            name: "Other Income",
             children: [{ code: "4200", name: "Other Income" }],
           },
         ],
@@ -118,14 +129,17 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
     type: "EXPENSE",
     groups: [
       {
-        code: "5", name: "Expenses",
+        code: "5",
+        name: "Expenses",
         children: [
           {
-            code: "50", name: "Cost of Sales",
+            code: "50",
+            name: "Cost of Sales",
             children: [{ code: "5000", name: "Cost of Goods Sold", subtype: "COGS" }],
           },
           {
-            code: "60", name: "Operating Expenses",
+            code: "60",
+            name: "Operating Expenses",
             children: [
               { code: "6000", name: "Rent Expense" },
               { code: "6100", name: "Salaries & Wages" },
@@ -142,13 +156,7 @@ export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
 ];
 
 // Recursively creates a node and its descendants. A node is postable only if it's a leaf.
-async function createNode(
-  db: Db,
-  orgId: string,
-  type: AccountType,
-  node: SeedNode,
-  parentId: string | null,
-) {
+async function createNode(db: Db, orgId: string, type: AccountType, node: SeedNode, parentId: string | null) {
   const created = await db.account.create({
     data: {
       orgId,

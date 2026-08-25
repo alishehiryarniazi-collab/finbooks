@@ -32,10 +32,21 @@ export function Register() {
   return (
     <AuthShell title="Create your workspace" subtitle="Set up your organization and admin account">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <TextField label="Organization name" value={form.organizationName} onChange={set("organizationName")} required />
+        <TextField
+          label="Organization name"
+          value={form.organizationName}
+          onChange={set("organizationName")}
+          required
+        />
         <TextField label="Your name" value={form.name} onChange={set("name")} required />
         <TextField label="Email" type="email" value={form.email} onChange={set("email")} required />
-        <TextField label="Password" type="password" value={form.password} onChange={set("password")} required />
+        <TextField
+          label="Password"
+          type="password"
+          value={form.password}
+          onChange={set("password")}
+          required
+        />
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <Button type="submit" disabled={busy}>
           {busy ? "Creating…" : "Create workspace"}

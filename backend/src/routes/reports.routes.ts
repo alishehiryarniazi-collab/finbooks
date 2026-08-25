@@ -1,14 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth";
-import {
-  trialBalance,
-  profitAndLoss,
-  balanceSheet,
-  arAging,
-  apAging,
-  dashboard,
-} from "../services/reports";
+import { trialBalance, profitAndLoss, balanceSheet, arAging, apAging, dashboard } from "../services/reports";
 
 export const reportsRouter = Router();
 reportsRouter.use(requireAuth);

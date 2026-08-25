@@ -8,7 +8,20 @@ import { TextField, SelectField } from "../components/ui/Field";
 import { ErrorNote } from "./Dashboard";
 
 const CURRENCIES = ["USD", "PKR", "EUR", "GBP", "INR", "AED", "SAR", "CAD", "AUD"];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 const MAX_LOGO_BYTES = 300_000; // keep the inline logo small
 
 export function Settings() {
@@ -67,23 +80,65 @@ export function Settings() {
 
   return (
     <div>
-      <PageHeader title="Company Settings" subtitle="Profile, currency and branding used across the app and on documents" />
+      <PageHeader
+        title="Company Settings"
+        subtitle="Profile, currency and branding used across the app and on documents"
+      />
 
       <form onSubmit={save} className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">Company profile</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+            Company profile
+          </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <TextField label="Company name" value={form.name} onChange={(e) => set("name", e.target.value)} disabled={!canEdit} required />
+              <TextField
+                label="Company name"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                disabled={!canEdit}
+                required
+              />
             </div>
-            <SelectField label="Base currency" value={form.baseCurrency} onChange={(e) => set("baseCurrency", e.target.value)} disabled={!canEdit}>
-              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            <SelectField
+              label="Base currency"
+              value={form.baseCurrency}
+              onChange={(e) => set("baseCurrency", e.target.value)}
+              disabled={!canEdit}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </SelectField>
-            <SelectField label="Fiscal year starts" value={form.fiscalYearStartMonth} onChange={(e) => set("fiscalYearStartMonth", e.target.value)} disabled={!canEdit}>
-              {MONTHS.map((m, i) => <option key={m} value={String(i + 1)}>{m}</option>)}
+            <SelectField
+              label="Fiscal year starts"
+              value={form.fiscalYearStartMonth}
+              onChange={(e) => set("fiscalYearStartMonth", e.target.value)}
+              disabled={!canEdit}
+            >
+              {MONTHS.map((m, i) => (
+                <option key={m} value={String(i + 1)}>
+                  {m}
+                </option>
+              ))}
             </SelectField>
-            <TextField label="Email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} disabled={!canEdit} placeholder="billing@company.com" />
-            <TextField label="Phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} disabled={!canEdit} placeholder="+92 300 1234567" />
+            <TextField
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              disabled={!canEdit}
+              placeholder="billing@company.com"
+            />
+            <TextField
+              label="Phone"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              disabled={!canEdit}
+              placeholder="+92 300 1234567"
+            />
             <div className="sm:col-span-2">
               <label className="block">
                 <span className="label">Address</span>
@@ -116,7 +171,11 @@ export function Settings() {
                   <input type="file" accept="image/*" className="hidden" onChange={onLogo} />
                 </label>
                 {form.logoDataUrl && (
-                  <button type="button" onClick={() => set("logoDataUrl", "")} className="text-xs text-slate-500 hover:text-rose-400">
+                  <button
+                    type="button"
+                    onClick={() => set("logoDataUrl", "")}
+                    className="text-xs text-slate-500 hover:text-rose-400"
+                  >
                     Remove
                   </button>
                 )}
@@ -127,10 +186,16 @@ export function Settings() {
         </Card>
 
         <div className="lg:col-span-3">
-          {error && <div className="mb-3"><ErrorNote message={error} /></div>}
+          {error && (
+            <div className="mb-3">
+              <ErrorNote message={error} />
+            </div>
+          )}
           {ok && <p className="mb-3 text-sm text-emerald-300">✓ Settings saved.</p>}
           {canEdit ? (
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save settings"}</Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Saving…" : "Save settings"}
+            </Button>
           ) : (
             <p className="text-sm text-slate-500">Only an admin can change company settings.</p>
           )}

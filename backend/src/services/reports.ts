@@ -57,8 +57,7 @@ async function balancesByAccount(orgId: string, range?: DateRange): Promise<Acco
 
   return accounts.map((acc) => {
     const t = totals.get(acc.id) ?? { debit: D(0), credit: D(0) };
-    const balance =
-      acc.normalBalance === "DEBIT" ? t.debit.minus(t.credit) : t.credit.minus(t.debit);
+    const balance = acc.normalBalance === "DEBIT" ? t.debit.minus(t.credit) : t.credit.minus(t.debit);
     return { ...acc, debit: t.debit, credit: t.credit, balance };
   });
 }
@@ -193,12 +192,16 @@ export async function arAging(orgId: string, today = new Date()) {
     include: { customer: { select: { name: true } } },
   });
 
-  const byCustomer = new Map<string, { name: string; buckets: ReturnType<typeof EMPTY_BUCKETS>; total: Prisma.Decimal }>();
+  const byCustomer = new Map<
+    string,
+    { name: string; buckets: ReturnType<typeof EMPTY_BUCKETS>; total: Prisma.Decimal }
+  >();
   for (const inv of invoices) {
     const outstanding = inv.total.minus(inv.amountPaid);
     if (outstanding.lte(0)) continue;
     const key = inv.customerId;
-    if (!byCustomer.has(key)) byCustomer.set(key, { name: inv.customer.name, buckets: EMPTY_BUCKETS(), total: D(0) });
+    if (!byCustomer.has(key))
+      byCustomer.set(key, { name: inv.customer.name, buckets: EMPTY_BUCKETS(), total: D(0) });
     const row = byCustomer.get(key)!;
     const bucket = bucketFor(inv.dueDate, today);
     row.buckets[bucket] = row.buckets[bucket].plus(outstanding);
@@ -215,12 +218,16 @@ export async function apAging(orgId: string, today = new Date()) {
     include: { vendor: { select: { name: true } } },
   });
 
-  const byVendor = new Map<string, { name: string; buckets: ReturnType<typeof EMPTY_BUCKETS>; total: Prisma.Decimal }>();
+  const byVendor = new Map<
+    string,
+    { name: string; buckets: ReturnType<typeof EMPTY_BUCKETS>; total: Prisma.Decimal }
+  >();
   for (const bill of bills) {
     const outstanding = bill.total.minus(bill.amountPaid);
     if (outstanding.lte(0)) continue;
     const key = bill.vendorId;
-    if (!byVendor.has(key)) byVendor.set(key, { name: bill.vendor.name, buckets: EMPTY_BUCKETS(), total: D(0) });
+    if (!byVendor.has(key))
+      byVendor.set(key, { name: bill.vendor.name, buckets: EMPTY_BUCKETS(), total: D(0) });
     const row = byVendor.get(key)!;
     const bucket = bucketFor(bill.dueDate, today);
     row.buckets[bucket] = row.buckets[bucket].plus(outstanding);
@@ -280,7 +287,10 @@ export async function dashboard(orgId: string, today = new Date()) {
   // 6-month trend
   const start = new Date(today.getFullYear(), today.getMonth() - 5, 1);
   const lines = await prisma.journalLine.findMany({
-    where: { entry: { orgId, status: "POSTED", date: { gte: start } }, account: { type: { in: ["INCOME", "EXPENSE"] } } },
+    where: {
+      entry: { orgId, status: "POSTED", date: { gte: start } },
+      account: { type: { in: ["INCOME", "EXPENSE"] } },
+    },
     include: { entry: { select: { date: true } }, account: { select: { type: true } } },
   });
 

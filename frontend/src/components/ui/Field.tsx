@@ -84,7 +84,15 @@ function flatOptions(items: Item[]): Opt[] {
   return items.flatMap((it) => ("group" in it ? it.options : [it]));
 }
 
-export function SelectField({ label, children, className = "", value, onChange, disabled, required }: SelectProps) {
+export function SelectField({
+  label,
+  children,
+  className = "",
+  value,
+  onChange,
+  disabled,
+  required,
+}: SelectProps) {
   const items = parseItems(children);
   const options = flatOptions(items);
   const current = value !== undefined ? String(value) : "";
@@ -163,12 +171,23 @@ export function SelectField({ label, children, className = "", value, onChange, 
         <span className={`truncate ${selected && selected.value ? "text-slate-100" : "text-slate-500"}`}>
           {selected ? selected.label : "Select…"}
         </span>
-        <svg className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="none">
-          <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <svg
+          className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`}
+          viewBox="0 0 20 20"
+          fill="none"
+        >
+          <path
+            d="M6 8l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
 
-      {open && rect &&
+      {open &&
+        rect &&
         createPortal(
           <div
             ref={panelRef}
@@ -178,7 +197,9 @@ export function SelectField({ label, children, className = "", value, onChange, 
             {items.map((it, i) =>
               "group" in it ? (
                 <div key={`g-${i}`}>
-                  <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">{it.group}</p>
+                  <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    {it.group}
+                  </p>
                   {it.options.map(renderOption)}
                 </div>
               ) : (

@@ -29,9 +29,7 @@ organizationRouter.patch("/", requireRole("ADMIN"), async (req, res) => {
   const data = updateSchema.parse(req.body);
 
   // Normalise empty strings to null so cleared fields don't linger.
-  const normalized = Object.fromEntries(
-    Object.entries(data).map(([k, v]) => [k, v === "" ? null : v]),
-  );
+  const normalized = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v === "" ? null : v]));
 
   const org = await prisma.organization.update({
     where: { id: req.auth!.orgId },

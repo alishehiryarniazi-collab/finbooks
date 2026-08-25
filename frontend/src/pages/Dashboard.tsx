@@ -61,7 +61,11 @@ export function Dashboard() {
                 <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
                 <YAxis stroke="#94a3b8" fontSize={12} />
                 <Tooltip
-                  contentStyle={{ background: "#0b0e17", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
+                  contentStyle={{
+                    background: "#0b0e17",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 12,
+                  }}
                   formatter={(v: number) => money(v)}
                 />
                 <Legend />
@@ -93,9 +97,5 @@ export function Dashboard() {
 }
 
 export function ErrorNote({ message }: { message: string }) {
-  return (
-    <div className="glass border-rose-500/30 p-4 text-sm text-rose-300">
-      {message}
-    </div>
-  );
+  return <div className="glass border-rose-500/30 p-4 text-sm text-rose-300">{message}</div>;
 }

@@ -113,7 +113,8 @@ function PartyModal({
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm({ ...form, [k]: e.target.value });
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -144,7 +145,11 @@ function PartyModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}>
+    <Modal
+      open
+      onClose={onClose}
+      title={isEdit ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}
+    >
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField label="Name" value={form.name} onChange={set("name")} required />
         <div className="grid grid-cols-2 gap-4">
@@ -155,15 +160,24 @@ function PartyModal({
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex items-center justify-between gap-2">
           {isEdit && canDelete ? (
-            <button type="button" onClick={del} disabled={busy} className="text-sm text-rose-400 hover:text-rose-300">
+            <button
+              type="button"
+              onClick={del}
+              disabled={busy}
+              className="text-sm text-rose-400 hover:text-rose-300"
+            >
               Delete
             </button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save" : "Create"}</Button>
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Saving…" : isEdit ? "Save" : "Create"}
+            </Button>
           </div>
         </div>
       </form>

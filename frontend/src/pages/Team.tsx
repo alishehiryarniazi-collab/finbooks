@@ -56,7 +56,15 @@ export function Team() {
           rows={members}
           keyOf={(r) => r.id}
           columns={[
-            { header: "Name", cell: (r) => <span className="text-white">{r.name}{r.id === user?.id && <span className="ml-2 text-xs text-slate-500">(you)</span>}</span> },
+            {
+              header: "Name",
+              cell: (r) => (
+                <span className="text-white">
+                  {r.name}
+                  {r.id === user?.id && <span className="ml-2 text-xs text-slate-500">(you)</span>}
+                </span>
+              ),
+            },
             { header: "Email", cell: (r) => r.email },
             {
               header: "Role",
@@ -67,7 +75,11 @@ export function Team() {
                     value={r.role}
                     onChange={(e) => changeRole(r.id, e.target.value as Role)}
                   >
-                    {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                    {ROLES.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   r.role
@@ -79,7 +91,15 @@ export function Team() {
         />
       </Card>
 
-      {open && <InviteModal onClose={() => setOpen(false)} onSaved={() => { setOpen(false); refetch(); }} />}
+      {open && (
+        <InviteModal
+          onClose={() => setOpen(false)}
+          onSaved={() => {
+            setOpen(false);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -106,18 +126,47 @@ function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   return (
     <Modal open onClose={onClose} title="Invite user">
       <form onSubmit={save} className="flex flex-col gap-4">
-        <TextField label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <TextField label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+        <TextField
+          label="Name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          required
+        />
+        <TextField
+          label="Email"
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          required
+        />
         <div className="grid grid-cols-2 gap-4">
-          <TextField label="Temp password" type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-          <SelectField label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
-            {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+          <TextField
+            label="Temp password"
+            type="text"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
+          <SelectField
+            label="Role"
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
+          >
+            {ROLES.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
           </SelectField>
         </div>
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Add user"}</Button>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={busy}>
+            {busy ? "Saving…" : "Add user"}
+          </Button>
         </div>
       </form>
     </Modal>

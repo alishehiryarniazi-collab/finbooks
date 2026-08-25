@@ -64,7 +64,9 @@ export function PrintableDocument(props: PrintDocProps) {
             )}
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">{props.orgName}</h1>
-              {props.orgAddress && <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{props.orgAddress}</p>}
+              {props.orgAddress && (
+                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{props.orgAddress}</p>
+              )}
               {(props.orgEmail || props.orgPhone) && (
                 <p className="text-sm text-slate-600">
                   {[props.orgEmail, props.orgPhone].filter(Boolean).join(" · ")}
@@ -84,9 +86,13 @@ export function PrintableDocument(props: PrintDocProps) {
         {/* Party + dates */}
         <div className="mt-6 flex justify-between gap-6">
           <div className="max-w-xs">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{props.partyHeading}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              {props.partyHeading}
+            </p>
             <p className="mt-1 font-semibold text-slate-900">{props.party.name}</p>
-            {props.party.address && <p className="whitespace-pre-line text-sm text-slate-600">{props.party.address}</p>}
+            {props.party.address && (
+              <p className="whitespace-pre-line text-sm text-slate-600">{props.party.address}</p>
+            )}
             {props.party.email && <p className="text-sm text-slate-600">{props.party.email}</p>}
             {props.party.phone && <p className="text-sm text-slate-600">{props.party.phone}</p>}
           </div>
@@ -157,9 +163,21 @@ export function PrintableDocument(props: PrintDocProps) {
   );
 }
 
-function Row({ label, value, strong, invert }: { label: string; value: string; strong?: boolean; invert?: boolean }) {
+function Row({
+  label,
+  value,
+  strong,
+  invert,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  invert?: boolean;
+}) {
   return (
-    <div className={`flex justify-between ${strong ? "font-semibold" : ""} ${invert ? "text-white" : strong ? "text-slate-900" : "text-slate-500"}`}>
+    <div
+      className={`flex justify-between ${strong ? "font-semibold" : ""} ${invert ? "text-white" : strong ? "text-slate-900" : "text-slate-500"}`}
+    >
       <span>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>

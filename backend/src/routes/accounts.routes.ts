@@ -74,7 +74,10 @@ accountsRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) =>
     if (!parent) throw new HttpError(400, "Parent account not found.");
     const parentLevel = await accountLevel(orgId, parent.id);
     if (parentLevel >= 3) {
-      throw new HttpError(400, "Accounts can be at most 3 levels deep. Pick a level-1 or level-2 group as the parent.");
+      throw new HttpError(
+        400,
+        "Accounts can be at most 3 levels deep. Pick a level-1 or level-2 group as the parent.",
+      );
     }
     level = parentLevel + 1;
     type = parent.type; // children inherit their parent's category
@@ -106,8 +109,9 @@ async function ensureOpeningBalanceEquity(orgId: string) {
 
   // Prefer nesting under an equity sub-group; fall back to any equity group.
   const parent =
-    (await prisma.account.findFirst({ where: { orgId, type: "EQUITY", isPostable: false, parentId: { not: null } } })) ??
-    (await prisma.account.findFirst({ where: { orgId, type: "EQUITY", isPostable: false } }));
+    (await prisma.account.findFirst({
+      where: { orgId, type: "EQUITY", isPostable: false, parentId: { not: null } },
+    })) ?? (await prisma.account.findFirst({ where: { orgId, type: "EQUITY", isPostable: false } }));
 
   return prisma.account.create({
     data: {
@@ -143,7 +147,8 @@ accountsRouter.post("/opening-balances", requireRole("ADMIN", "ACCOUNTANT"), asy
   for (const l of nonZero) {
     const a = byId.get(l.accountId);
     if (!a) throw new HttpError(400, "One or more accounts do not exist.");
-    if (!a.isPostable) throw new HttpError(400, `Account ${a.code} ${a.name} is a group; pick a detail account.`);
+    if (!a.isPostable)
+      throw new HttpError(400, `Account ${a.code} ${a.name} is a group; pick a detail account.`);
     if (a.code === SYSTEM_CODES.OPENING_BALANCE_EQUITY) {
       throw new HttpError(400, "Opening Balance Equity is filled automatically.");
     }
@@ -172,7 +177,8 @@ accountsRouter.post("/opening-balances", requireRole("ADMIN", "ACCOUNTANT"), asy
   // Offset the net to Opening Balance Equity so debits === credits.
   const diff = totalDebit.minus(totalCredit);
   if (!diff.isZero()) {
-    if (diff.gt(0)) lines.push({ accountId: obe.id, credit: diff.abs(), description: "Opening balance offset" });
+    if (diff.gt(0))
+      lines.push({ accountId: obe.id, credit: diff.abs(), description: "Opening balance offset" });
     else lines.push({ accountId: obe.id, debit: diff.abs(), description: "Opening balance offset" });
   }
   if (lines.length < 2) throw new HttpError(400, "Opening balances must affect at least two accounts.");
@@ -222,10 +228,7 @@ accountsRouter.delete("/:id", requireRole("ADMIN"), async (req, res) => {
 
   const usage = await prisma.journalLine.count({ where: { accountId: existing.id } });
   if (usage > 0) {
-    throw new HttpError(
-      409,
-      "This account has transactions and cannot be deleted. Deactivate it instead.",
-    );
+    throw new HttpError(409, "This account has transactions and cannot be deleted. Deactivate it instead.");
   }
 
   await prisma.account.delete({ where: { id: existing.id } });

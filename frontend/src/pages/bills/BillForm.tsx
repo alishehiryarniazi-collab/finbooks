@@ -19,7 +19,13 @@ interface Line {
   expenseAccountId: string;
 }
 
-const emptyLine = (): Line => ({ description: "", quantity: "1", unitPrice: "", taxRatePercent: "0", expenseAccountId: "" });
+const emptyLine = (): Line => ({
+  description: "",
+  quantity: "1",
+  unitPrice: "",
+  taxRatePercent: "0",
+  expenseAccountId: "",
+});
 
 export function BillForm() {
   const navigate = useNavigate();
@@ -31,7 +37,7 @@ export function BillForm() {
   const [vendorId, setVendorId] = useState("");
   const [number, setNumber] = useState("");
   const [billDate, setBillDate] = useState(inputDate());
-  const [dueDate, setDueDate] = useState(inputDate(new Date(Date.now() + 30 * 864e5)));
+  const [dueDate, setDueDate] = useState(() => inputDate(new Date(Date.now() + 30 * 864e5)));
   const [lines, setLines] = useState<Line[]>([emptyLine()]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -49,7 +55,13 @@ export function BillForm() {
             number: string;
             billDate: string;
             dueDate: string;
-            lines: { description: string; quantity: string; unitPrice: string; taxRatePercent: string; expenseAccountId: string }[];
+            lines: {
+              description: string;
+              quantity: string;
+              unitPrice: string;
+              taxRatePercent: string;
+              expenseAccountId: string;
+            }[];
           };
         }>(`/bills/${id}`);
         if (ignore) return;
@@ -80,7 +92,9 @@ export function BillForm() {
 
   if (vendorsReq.loading || accountsReq.loading || loadingDoc) return <Spinner label="Loading…" />;
   const vendors = vendorsReq.data?.vendors ?? [];
-  const expenseAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "EXPENSE" && a.isPostable);
+  const expenseAccounts = (accountsReq.data?.accounts ?? []).filter(
+    (a) => a.type === "EXPENSE" && a.isPostable,
+  );
 
   function setLine(i: number, patch: Partial<Line>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
@@ -129,17 +143,46 @@ export function BillForm() {
 
   return (
     <div>
-      <PageHeader title={isEdit ? "Edit Bill" : "New Bill"} subtitle="Saved as a draft — post it to hit the ledger" />
+      <PageHeader
+        title={isEdit ? "Edit Bill" : "New Bill"}
+        subtitle="Saved as a draft — post it to hit the ledger"
+      />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <SelectField label="Vendor" value={vendorId} onChange={(e) => setVendorId(e.target.value)} required>
+            <SelectField
+              label="Vendor"
+              value={vendorId}
+              onChange={(e) => setVendorId(e.target.value)}
+              required
+            >
               <option value="">Select…</option>
-              {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              {vendors.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
             </SelectField>
-            <TextField label="Bill # (optional)" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Auto (BILL-0001)" />
-            <TextField label="Bill date" type="date" value={billDate} onChange={(e) => setBillDate(e.target.value)} required />
-            <TextField label="Due date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+            <TextField
+              label="Bill # (optional)"
+              value={number}
+              onChange={(e) => setNumber(e.target.value)}
+              placeholder="Auto (BILL-0001)"
+            />
+            <TextField
+              label="Bill date"
+              type="date"
+              value={billDate}
+              onChange={(e) => setBillDate(e.target.value)}
+              required
+            />
+            <TextField
+              label="Due date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              required
+            />
           </div>
 
           <div className="overflow-x-auto">
@@ -158,18 +201,70 @@ export function BillForm() {
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i}>
-                    <td className="px-2 py-1.5"><input className="input" value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} /></td>
                     <td className="px-2 py-1.5">
-                      <SelectField value={l.expenseAccountId} onChange={(e) => setLine(i, { expenseAccountId: e.target.value })}>
+                      <input
+                        className="input"
+                        value={l.description}
+                        onChange={(e) => setLine(i, { description: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <SelectField
+                        value={l.expenseAccountId}
+                        onChange={(e) => setLine(i, { expenseAccountId: e.target.value })}
+                      >
                         <option value="">Select…</option>
-                        {expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
+                        {expenseAccounts.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.code} · {a.name}
+                          </option>
+                        ))}
                       </SelectField>
                     </td>
-                    <td className="px-2 py-1.5"><input className="input w-20 text-right" type="number" min="0" step="0.01" value={l.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} /></td>
-                    <td className="px-2 py-1.5"><input className="input w-28 text-right" type="number" min="0" step="0.01" value={l.unitPrice} onChange={(e) => setLine(i, { unitPrice: e.target.value })} /></td>
-                    <td className="px-2 py-1.5"><input className="input w-20 text-right" type="number" min="0" step="0.01" value={l.taxRatePercent} onChange={(e) => setLine(i, { taxRatePercent: e.target.value })} /></td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">{money((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0))}</td>
-                    <td className="px-2 py-1.5 text-center">{lines.length > 1 && <button type="button" onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-slate-500 hover:text-rose-400">✕</button>}</td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-20 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.quantity}
+                        onChange={(e) => setLine(i, { quantity: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-28 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.unitPrice}
+                        onChange={(e) => setLine(i, { unitPrice: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <input
+                        className="input w-20 text-right"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.taxRatePercent}
+                        onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">
+                      {money((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0))}
+                    </td>
+                    <td className="px-2 py-1.5 text-center">
+                      {lines.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setLines(lines.filter((_, idx) => idx !== i))}
+                          className="text-slate-500 hover:text-rose-400"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -177,18 +272,37 @@ export function BillForm() {
           </div>
 
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <button type="button" onClick={() => setLines([...lines, emptyLine()])} className="btn-ghost text-sm">+ Add line</button>
+            <button
+              type="button"
+              onClick={() => setLines([...lines, emptyLine()])}
+              className="btn-ghost text-sm"
+            >
+              + Add line
+            </button>
             <div className="w-full max-w-xs space-y-1 text-sm">
-              <div className="flex justify-between text-slate-400"><span>Subtotal</span><span className="tabular-nums">{money(totals.subtotal)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>Tax</span><span className="tabular-nums">{money(totals.tax)}</span></div>
-              <div className="flex justify-between border-t border-white/10 pt-1 font-semibold text-white"><span>Total</span><span className="tabular-nums">{money(totals.subtotal + totals.tax)}</span></div>
+              <div className="flex justify-between text-slate-400">
+                <span>Subtotal</span>
+                <span className="tabular-nums">{money(totals.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Tax</span>
+                <span className="tabular-nums">{money(totals.tax)}</span>
+              </div>
+              <div className="flex justify-between border-t border-white/10 pt-1 font-semibold text-white">
+                <span>Total</span>
+                <span className="tabular-nums">{money(totals.subtotal + totals.tax)}</span>
+              </div>
             </div>
           </div>
 
           {error && <ErrorNote message={error} />}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => navigate("/bills")}>Cancel</Button>
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}</Button>
+            <Button type="button" variant="ghost" onClick={() => navigate("/bills")}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}
+            </Button>
           </div>
         </form>
       </Card>

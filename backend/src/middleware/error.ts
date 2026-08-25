@@ -3,7 +3,10 @@ import type { NextFunction, Request, Response } from "express";
 // A thrown HttpError carries an HTTP status so route handlers can signal
 // "this is a client/known error, respond with this code" instead of a generic 500.
 export class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
   }
 }

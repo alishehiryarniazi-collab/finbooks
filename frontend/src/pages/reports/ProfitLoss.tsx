@@ -45,7 +45,11 @@ export function ProfitLoss() {
       <PageHeader
         title="Profit & Loss"
         subtitle="Income minus expenses (all time)"
-        action={<Button variant="ghost" onClick={exportCsv}>Export CSV</Button>}
+        action={
+          <Button variant="ghost" onClick={exportCsv}>
+            Export CSV
+          </Button>
+        }
       />
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Income" rows={data.income} total={data.totalIncome} />
@@ -54,7 +58,9 @@ export function ProfitLoss() {
       <Card className="mt-6">
         <div className="flex items-center justify-between">
           <span className="text-lg font-semibold text-white">Net {profit ? "Profit" : "Loss"}</span>
-          <span className={`text-2xl font-semibold tabular-nums ${profit ? "text-emerald-300" : "text-rose-300"}`}>
+          <span
+            className={`text-2xl font-semibold tabular-nums ${profit ? "text-emerald-300" : "text-rose-300"}`}
+          >
             {money(data.netProfit)}
           </span>
         </div>
@@ -63,7 +69,15 @@ export function ProfitLoss() {
   );
 }
 
-function Section({ title, rows, total }: { title: string; rows: { code: string; name: string; amount: string }[]; total: string }) {
+function Section({
+  title,
+  rows,
+  total,
+}: {
+  title: string;
+  rows: { code: string; name: string; amount: string }[];
+  total: string;
+}) {
   return (
     <Card>
       <h3 className="mb-3 text-lg font-semibold text-white">{title}</h3>
@@ -71,7 +85,9 @@ function Section({ title, rows, total }: { title: string; rows: { code: string; 
         {rows.length === 0 && <p className="py-4 text-sm text-slate-500">Nothing recorded yet.</p>}
         {rows.map((r) => (
           <div key={r.code} className="flex justify-between py-2 text-sm">
-            <span className="text-slate-300"><span className="text-xs text-slate-500">{r.code}</span> {r.name}</span>
+            <span className="text-slate-300">
+              <span className="text-xs text-slate-500">{r.code}</span> {r.name}
+            </span>
             <span className="tabular-nums text-slate-300">{money(r.amount)}</span>
           </div>
         ))}

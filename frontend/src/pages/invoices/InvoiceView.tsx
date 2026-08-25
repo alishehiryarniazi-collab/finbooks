@@ -65,22 +65,44 @@ export function InvoiceView() {
         subtitle={inv.customer?.name}
         action={
           <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" onClick={() => navigate("/invoices")}>← Back</Button>
-            <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/print`)}>🖨 Print / PDF</Button>
-            {canEdit && inv.status === "DRAFT" && <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/edit`)}>Edit</Button>}
-            {canEdit && inv.status === "DRAFT" && <Button variant="ghost" onClick={del} disabled={busy}>Delete</Button>}
-            {canEdit && inv.status === "DRAFT" && <Button onClick={() => action("post")} disabled={busy}>Post to ledger</Button>}
+            <Button variant="ghost" onClick={() => navigate("/invoices")}>
+              ← Back
+            </Button>
+            <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/print`)}>
+              🖨 Print / PDF
+            </Button>
+            {canEdit && inv.status === "DRAFT" && (
+              <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/edit`)}>
+                Edit
+              </Button>
+            )}
+            {canEdit && inv.status === "DRAFT" && (
+              <Button variant="ghost" onClick={del} disabled={busy}>
+                Delete
+              </Button>
+            )}
+            {canEdit && inv.status === "DRAFT" && (
+              <Button onClick={() => action("post")} disabled={busy}>
+                Post to ledger
+              </Button>
+            )}
             {canEdit && (inv.status === "SENT" || inv.status === "PARTIAL") && outstanding > 0 && (
               <Button onClick={() => setPayOpen(true)}>Record payment</Button>
             )}
             {canEdit && inv.status !== "VOID" && inv.status !== "PAID" && Number(inv.amountPaid) === 0 && (
-              <Button variant="ghost" onClick={() => action("void")} disabled={busy}>Void</Button>
+              <Button variant="ghost" onClick={() => action("void")} disabled={busy}>
+                Void
+              </Button>
             )}
           </div>
         }
       />
 
-      {actionError && <div className="mb-4"><ErrorNote message={actionError} /></div>}
+      {actionError && (
+        <div className="mb-4">
+          <ErrorNote message={actionError} />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -103,7 +125,9 @@ export function InvoiceView() {
                   <tr key={l.id} className="border-b border-white/5">
                     <td className="px-2 py-2">
                       <p className="text-white">{l.description}</p>
-                      <p className="text-xs text-slate-500">{l.incomeAccount?.code} · {l.incomeAccount?.name}</p>
+                      <p className="text-xs text-slate-500">
+                        {l.incomeAccount?.code} · {l.incomeAccount?.name}
+                      </p>
                     </td>
                     <td className="px-2 py-2 text-right tabular-nums">{Number(l.quantity)}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{money(l.unitPrice)}</td>
@@ -120,7 +144,9 @@ export function InvoiceView() {
           <div className="space-y-2 text-sm">
             <SummaryRow label="Subtotal" value={money(inv.subtotal)} />
             <SummaryRow label="Tax" value={money(inv.taxTotal)} />
-            <div className="border-t border-white/10 pt-2"><SummaryRow label="Total" value={money(inv.total)} strong /></div>
+            <div className="border-t border-white/10 pt-2">
+              <SummaryRow label="Total" value={money(inv.total)} strong />
+            </div>
             <SummaryRow label="Paid" value={money(inv.amountPaid)} />
             <SummaryRow label="Outstanding" value={money(outstanding)} strong />
           </div>
@@ -133,7 +159,10 @@ export function InvoiceView() {
           outstanding={outstanding}
           bankAccounts={(accountsReq.data?.accounts ?? []).filter((a) => a.type === "ASSET" && a.isPostable)}
           onClose={() => setPayOpen(false)}
-          onSaved={() => { setPayOpen(false); refetch(); }}
+          onSaved={() => {
+            setPayOpen(false);
+            refetch();
+          }}
         />
       )}
     </div>
@@ -185,17 +214,44 @@ function PaymentModal({
   return (
     <Modal open onClose={onClose} title="Record payment">
       <form onSubmit={save} className="flex flex-col gap-4">
-        <SelectField label="Deposit to" value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)} required>
-          {bankAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
+        <SelectField
+          label="Deposit to"
+          value={bankAccountId}
+          onChange={(e) => setBankAccountId(e.target.value)}
+          required
+        >
+          {bankAccounts.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.code} · {a.name}
+            </option>
+          ))}
         </SelectField>
         <div className="grid grid-cols-2 gap-4">
-          <TextField label="Amount" type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-          <TextField label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+          <TextField
+            label="Amount"
+            type="number"
+            min="0"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+          <TextField
+            label="Date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
         </div>
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save payment"}</Button>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={busy}>
+            {busy ? "Saving…" : "Save payment"}
+          </Button>
         </div>
       </form>
     </Modal>

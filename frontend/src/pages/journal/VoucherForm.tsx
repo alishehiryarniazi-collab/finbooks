@@ -39,8 +39,20 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
 
   const isPayment = kind === "DEBIT";
   const copy = isPayment
-    ? { title: "New Debit Voucher", sub: "Payment — cash/bank goes out", bank: "Paid from (Cash / Bank)", lines: "Accounts debited (expense / party)", cta: "Post payment" }
-    : { title: "New Credit Voucher", sub: "Receipt — cash/bank comes in", bank: "Received in (Cash / Bank)", lines: "Accounts credited (income / party)", cta: "Post receipt" };
+    ? {
+        title: "New Debit Voucher",
+        sub: "Payment — cash/bank goes out",
+        bank: "Paid from (Cash / Bank)",
+        lines: "Accounts debited (expense / party)",
+        cta: "Post payment",
+      }
+    : {
+        title: "New Credit Voucher",
+        sub: "Receipt — cash/bank comes in",
+        bank: "Received in (Cash / Bank)",
+        lines: "Accounts credited (income / party)",
+        cta: "Post receipt",
+      };
 
   const total = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
   const ready = !!bankAccountId && total > 0 && lines.some((l) => l.accountId && Number(l.amount) > 0);
@@ -61,7 +73,11 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
         bankAccountId,
         lines: lines
           .filter((l) => l.accountId && Number(l.amount) > 0)
-          .map((l) => ({ accountId: l.accountId, amount: Number(l.amount), description: l.description || undefined })),
+          .map((l) => ({
+            accountId: l.accountId,
+            amount: Number(l.amount),
+            description: l.description || undefined,
+          })),
       };
       await api.post(isPayment ? "/journal/debit-voucher" : "/journal/credit-voucher", payload);
       navigate("/journal");
@@ -78,15 +94,38 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">
-            <TextField label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-            <TextField label="Reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder={isPayment ? "PV-001" : "RV-001"} />
-            <TextField label="Memo" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="Description" />
+            <TextField
+              label="Date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+            <TextField
+              label="Reference"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder={isPayment ? "PV-001" : "RV-001"}
+            />
+            <TextField
+              label="Memo"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="Description"
+            />
           </div>
 
-          <SelectField label={copy.bank} value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)} required>
+          <SelectField
+            label={copy.bank}
+            value={bankAccountId}
+            onChange={(e) => setBankAccountId(e.target.value)}
+            required
+          >
             <option value="">Select account…</option>
             {bankAccounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
+              <option key={a.id} value={a.id}>
+                {a.code} · {a.name}
+              </option>
             ))}
           </SelectField>
 
@@ -114,19 +153,39 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                           {accounts
                             .filter((a) => a.id !== bankAccountId)
                             .map((a) => (
-                              <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
+                              <option key={a.id} value={a.id}>
+                                {a.code} · {a.name}
+                              </option>
                             ))}
                         </SelectField>
                       </td>
                       <td className="px-2 py-1.5">
-                        <input className="input" value={line.description} onChange={(e) => setLine(i, { description: e.target.value })} placeholder="Optional" />
+                        <input
+                          className="input"
+                          value={line.description}
+                          onChange={(e) => setLine(i, { description: e.target.value })}
+                          placeholder="Optional"
+                        />
                       </td>
                       <td className="px-2 py-1.5">
-                        <input className="input text-right" type="number" min="0" step="0.01" value={line.amount} onChange={(e) => setLine(i, { amount: e.target.value })} />
+                        <input
+                          className="input text-right"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={line.amount}
+                          onChange={(e) => setLine(i, { amount: e.target.value })}
+                        />
                       </td>
                       <td className="px-2 py-1.5 text-center">
                         {lines.length > 1 && (
-                          <button type="button" onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-slate-500 hover:text-rose-400">✕</button>
+                          <button
+                            type="button"
+                            onClick={() => setLines(lines.filter((_, idx) => idx !== i))}
+                            className="text-slate-500 hover:text-rose-400"
+                          >
+                            ✕
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -134,7 +193,9 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                 </tbody>
                 <tfoot>
                   <tr className="border-t border-white/10 font-medium text-white">
-                    <td className="px-2 py-2" colSpan={2}>Total {isPayment ? "paid" : "received"}</td>
+                    <td className="px-2 py-2" colSpan={2}>
+                      Total {isPayment ? "paid" : "received"}
+                    </td>
                     <td className="px-2 py-2 text-right tabular-nums">{money(total)}</td>
                     <td />
                   </tr>
@@ -144,7 +205,13 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
           </div>
 
           <div className="flex items-center justify-between">
-            <button type="button" onClick={() => setLines([...lines, emptyLine()])} className="btn-ghost text-sm">+ Add line</button>
+            <button
+              type="button"
+              onClick={() => setLines([...lines, emptyLine()])}
+              className="btn-ghost text-sm"
+            >
+              + Add line
+            </button>
             <span className="text-xs text-slate-500">
               {isPayment ? "Cash/Bank will be credited" : "Cash/Bank will be debited"} for {money(total)}
             </span>
@@ -153,8 +220,12 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
           {error && <ErrorNote message={error} />}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>Cancel</Button>
-            <Button type="submit" disabled={busy || !ready}>{busy ? "Posting…" : copy.cta}</Button>
+            <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy || !ready}>
+              {busy ? "Posting…" : copy.cta}
+            </Button>
           </div>
         </form>
       </Card>

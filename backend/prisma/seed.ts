@@ -41,13 +41,31 @@ async function main() {
   // --- Users (one per role) ---
   const hash = (pw: string) => bcrypt.hash(pw, 10);
   const admin = await prisma.user.create({
-    data: { orgId: org.id, name: "Demo Admin", email: DEMO_ADMIN_EMAIL, passwordHash: await hash("demo1234"), role: "ADMIN" },
+    data: {
+      orgId: org.id,
+      name: "Demo Admin",
+      email: DEMO_ADMIN_EMAIL,
+      passwordHash: await hash("demo1234"),
+      role: "ADMIN",
+    },
   });
   await prisma.user.create({
-    data: { orgId: org.id, name: "Aisha Accountant", email: "accountant@finbooks.app", passwordHash: await hash("demo1234"), role: "ACCOUNTANT" },
+    data: {
+      orgId: org.id,
+      name: "Aisha Accountant",
+      email: "accountant@finbooks.app",
+      passwordHash: await hash("demo1234"),
+      role: "ACCOUNTANT",
+    },
   });
   await prisma.user.create({
-    data: { orgId: org.id, name: "Vince Viewer", email: "viewer@finbooks.app", passwordHash: await hash("demo1234"), role: "VIEWER" },
+    data: {
+      orgId: org.id,
+      name: "Vince Viewer",
+      email: "viewer@finbooks.app",
+      passwordHash: await hash("demo1234"),
+      role: "VIEWER",
+    },
   });
   console.log("• Created users (admin / accountant / viewer)");
 
@@ -94,24 +112,55 @@ async function main() {
   const bank = acc(SYSTEM_CODES.BANK);
 
   const inv1 = await createInvoice(org.id, {
-    customerId: customers[0].id, number: "INV-1001", issueDate: daysAgo(80), dueDate: daysAgo(50),
-    lines: [{ description: "Wholesale goods", quantity: 100, unitPrice: 45, taxRatePercent: 10, incomeAccountId: salesAcc }],
+    customerId: customers[0].id,
+    number: "INV-1001",
+    issueDate: daysAgo(80),
+    dueDate: daysAgo(50),
+    lines: [
+      {
+        description: "Wholesale goods",
+        quantity: 100,
+        unitPrice: 45,
+        taxRatePercent: 10,
+        incomeAccountId: salesAcc,
+      },
+    ],
   });
   await postInvoice(org.id, admin.id, inv1.id);
-  await recordInvoicePayment(org.id, admin.id, inv1.id, { date: daysAgo(40), amount: 4950, bankAccountId: bank });
+  await recordInvoicePayment(org.id, admin.id, inv1.id, {
+    date: daysAgo(40),
+    amount: 4950,
+    bankAccountId: bank,
+  });
 
   const inv2 = await createInvoice(org.id, {
-    customerId: customers[1].id, number: "INV-1002", issueDate: daysAgo(55), dueDate: daysAgo(25),
+    customerId: customers[1].id,
+    number: "INV-1002",
+    issueDate: daysAgo(55),
+    dueDate: daysAgo(25),
     lines: [
-      { description: "Retail stock", quantity: 60, unitPrice: 30, taxRatePercent: 10, incomeAccountId: salesAcc },
+      {
+        description: "Retail stock",
+        quantity: 60,
+        unitPrice: 30,
+        taxRatePercent: 10,
+        incomeAccountId: salesAcc,
+      },
       { description: "Setup service", quantity: 1, unitPrice: 500, incomeAccountId: serviceAcc },
     ],
   });
   await postInvoice(org.id, admin.id, inv2.id);
-  await recordInvoicePayment(org.id, admin.id, inv2.id, { date: daysAgo(20), amount: 1000, bankAccountId: bank });
+  await recordInvoicePayment(org.id, admin.id, inv2.id, {
+    date: daysAgo(20),
+    amount: 1000,
+    bankAccountId: bank,
+  });
 
   const inv3 = await createInvoice(org.id, {
-    customerId: customers[2].id, number: "INV-1003", issueDate: daysAgo(20), dueDate: daysAgo(-10),
+    customerId: customers[2].id,
+    number: "INV-1003",
+    issueDate: daysAgo(20),
+    dueDate: daysAgo(-10),
     lines: [{ description: "Consulting", quantity: 12, unitPrice: 120, incomeAccountId: serviceAcc }],
   });
   await postInvoice(org.id, admin.id, inv3.id);
@@ -123,21 +172,44 @@ async function main() {
   const suppliesAcc = acc("6300");
 
   const bill1 = await createBill(org.id, {
-    vendorId: vendors[2].id, number: "BILL-2001", billDate: daysAgo(75), dueDate: daysAgo(45),
+    vendorId: vendors[2].id,
+    number: "BILL-2001",
+    billDate: daysAgo(75),
+    dueDate: daysAgo(45),
     lines: [{ description: "Office rent - month", quantity: 1, unitPrice: 2000, expenseAccountId: rentAcc }],
   });
   await postBill(org.id, admin.id, bill1.id);
-  await recordBillPayment(org.id, admin.id, bill1.id, { date: daysAgo(44), amount: 2000, bankAccountId: bank });
+  await recordBillPayment(org.id, admin.id, bill1.id, {
+    date: daysAgo(44),
+    amount: 2000,
+    bankAccountId: bank,
+  });
 
   const bill2 = await createBill(org.id, {
-    vendorId: vendors[0].id, number: "BILL-2002", billDate: daysAgo(30), dueDate: daysAgo(0),
-    lines: [{ description: "Electricity", quantity: 1, unitPrice: 340, taxRatePercent: 10, expenseAccountId: utilAcc }],
+    vendorId: vendors[0].id,
+    number: "BILL-2002",
+    billDate: daysAgo(30),
+    dueDate: daysAgo(0),
+    lines: [
+      {
+        description: "Electricity",
+        quantity: 1,
+        unitPrice: 340,
+        taxRatePercent: 10,
+        expenseAccountId: utilAcc,
+      },
+    ],
   });
   await postBill(org.id, admin.id, bill2.id);
 
   const bill3 = await createBill(org.id, {
-    vendorId: vendors[1].id, number: "BILL-2003", billDate: daysAgo(15), dueDate: daysAgo(-15),
-    lines: [{ description: "Stationery & supplies", quantity: 1, unitPrice: 260, expenseAccountId: suppliesAcc }],
+    vendorId: vendors[1].id,
+    number: "BILL-2003",
+    billDate: daysAgo(15),
+    dueDate: daysAgo(-15),
+    lines: [
+      { description: "Stationery & supplies", quantity: 1, unitPrice: 260, expenseAccountId: suppliesAcc },
+    ],
   });
   await postBill(org.id, admin.id, bill3.id);
   console.log("• Created + posted bills (with payments)");

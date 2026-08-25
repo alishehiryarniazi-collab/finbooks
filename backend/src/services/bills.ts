@@ -135,7 +135,8 @@ export async function updateBill(orgId: string, id: string, input: CreateBillInp
 export async function deleteBill(orgId: string, id: string) {
   const existing = await prisma.bill.findFirst({ where: { id, orgId } });
   if (!existing) throw new HttpError(404, "Bill not found.");
-  if (existing.status !== "DRAFT") throw new HttpError(400, "Only draft bills can be deleted. Void a posted bill instead.");
+  if (existing.status !== "DRAFT")
+    throw new HttpError(400, "Only draft bills can be deleted. Void a posted bill instead.");
   await prisma.bill.delete({ where: { id } });
 }
 
@@ -214,7 +215,10 @@ export async function recordBillPayment(
 
     const outstanding = bill.total.minus(bill.amountPaid);
     if (amount.gt(outstanding)) {
-      throw new HttpError(400, `Payment ${amount.toFixed(2)} exceeds the outstanding ${outstanding.toFixed(2)}.`);
+      throw new HttpError(
+        400,
+        `Payment ${amount.toFixed(2)} exceeds the outstanding ${outstanding.toFixed(2)}.`,
+      );
     }
 
     const bank = await tx.account.findFirst({ where: { id: input.bankAccountId, orgId, type: "ASSET" } });

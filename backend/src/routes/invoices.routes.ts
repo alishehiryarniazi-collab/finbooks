@@ -27,7 +27,10 @@ invoicesRouter.get("/", async (req, res) => {
 invoicesRouter.get("/:id", async (req, res) => {
   const invoice = await prisma.invoice.findFirst({
     where: { id: req.params.id, orgId: req.auth!.orgId },
-    include: { customer: true, lines: { include: { incomeAccount: { select: { code: true, name: true } } } } },
+    include: {
+      customer: true,
+      lines: { include: { incomeAccount: { select: { code: true, name: true } } } },
+    },
   });
   if (!invoice) throw new HttpError(404, "Invoice not found.");
   res.json({ invoice });

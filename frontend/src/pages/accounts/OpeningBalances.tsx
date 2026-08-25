@@ -74,12 +74,23 @@ export function OpeningBalances() {
       <PageHeader
         title="Opening Balances"
         subtitle="Enter each account's starting balance; the difference is offset to Opening Balance Equity"
-        action={<Button variant="ghost" onClick={() => navigate("/accounts")}>← Back</Button>}
+        action={
+          <Button variant="ghost" onClick={() => navigate("/accounts")}>
+            ← Back
+          </Button>
+        }
       />
 
       <Card className="mb-4">
         <div className="flex flex-wrap items-end gap-4">
-          <div className="w-48"><TextField label="As of date" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+          <div className="w-48">
+            <TextField
+              label="As of date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
           <div className="ml-auto text-right">
             <p className="text-xs text-slate-500">Opening Balance Equity (auto)</p>
             <p className="tabular-nums text-sm font-semibold text-white">
@@ -97,7 +108,9 @@ export function OpeningBalances() {
         <div className="flex flex-col divide-y divide-white/5">
           {grouped.map((g) => (
             <div key={g.type}>
-              <p className="bg-white/[0.02] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{g.type}</p>
+              <p className="bg-white/[0.02] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                {g.type}
+              </p>
               {g.rows.map((a) => (
                 <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-2">
                   <div className="min-w-0">
@@ -119,11 +132,19 @@ export function OpeningBalances() {
         </div>
       </div>
 
-      {error && <div className="mt-4"><ErrorNote message={error} /></div>}
+      {error && (
+        <div className="mt-4">
+          <ErrorNote message={error} />
+        </div>
+      )}
 
       <div className="mt-4 flex items-center gap-3">
-        <Button onClick={post} disabled={busy}>{busy ? "Posting…" : "Post opening balances"}</Button>
-        <p className="text-xs text-slate-500">Amounts are each account's normal-side balance (e.g. cash on hand, money owed to you).</p>
+        <Button onClick={post} disabled={busy}>
+          {busy ? "Posting…" : "Post opening balances"}
+        </Button>
+        <p className="text-xs text-slate-500">
+          Amounts are each account's normal-side balance (e.g. cash on hand, money owed to you).
+        </p>
       </div>
     </div>
   );

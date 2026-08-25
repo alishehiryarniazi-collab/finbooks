@@ -68,7 +68,9 @@ export function ChartOfAccounts() {
         action={
           hasRole("ADMIN", "ACCOUNTANT") && (
             <div className="flex flex-wrap gap-2">
-              <Link to="/accounts/opening-balances"><Button variant="ghost">Opening balances</Button></Link>
+              <Link to="/accounts/opening-balances">
+                <Button variant="ghost">Opening balances</Button>
+              </Link>
               <Button onClick={() => setOpen(true)}>+ New account</Button>
             </div>
           )
@@ -92,7 +94,9 @@ export function ChartOfAccounts() {
                   <span className={`text-xs tabular-nums ${isGroup ? "text-slate-500" : "text-slate-600"}`}>
                     {account.code}
                   </span>
-                  <span className={`truncate ${isGroup ? "text-sm font-semibold text-white" : "text-sm text-slate-300"}`}>
+                  <span
+                    className={`truncate ${isGroup ? "text-sm font-semibold text-white" : "text-sm text-slate-300"}`}
+                  >
                     {account.name}
                   </span>
                   {level === 0 && (
@@ -104,7 +108,9 @@ export function ChartOfAccounts() {
                     <span className="text-[10px] uppercase tracking-wide text-amber-400">inactive</span>
                   )}
                 </div>
-                <span className={`tabular-nums text-sm ${isGroup ? "font-semibold text-white" : "text-slate-300"}`}>
+                <span
+                  className={`tabular-nums text-sm ${isGroup ? "font-semibold text-white" : "text-slate-300"}`}
+                >
                   {money(rolled)}
                 </span>
               </>
@@ -203,7 +209,11 @@ function NewAccountModal({
             placeholder="6500"
           />
           {isTopLevel ? (
-            <SelectField label="Type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as AccountType })}>
+            <SelectField
+              label="Type"
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value as AccountType })}
+            >
               {TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}

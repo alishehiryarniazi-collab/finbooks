@@ -29,7 +29,9 @@ export function InvoiceList() {
   const invoices = all.filter(
     (i) =>
       (status === "ALL" || i.status === status) &&
-      (needle === "" || i.number.toLowerCase().includes(needle) || (i.customer?.name ?? "").toLowerCase().includes(needle)),
+      (needle === "" ||
+        i.number.toLowerCase().includes(needle) ||
+        (i.customer?.name ?? "").toLowerCase().includes(needle)),
   );
 
   return (
@@ -37,7 +39,13 @@ export function InvoiceList() {
       <PageHeader
         title="Invoices"
         subtitle="Money your customers owe you"
-        action={hasRole("ADMIN", "ACCOUNTANT") && <Link to="/invoices/new"><Button>+ New invoice</Button></Link>}
+        action={
+          hasRole("ADMIN", "ACCOUNTANT") && (
+            <Link to="/invoices/new">
+              <Button>+ New invoice</Button>
+            </Link>
+          )
+        }
       />
       <ListControls
         query={q}

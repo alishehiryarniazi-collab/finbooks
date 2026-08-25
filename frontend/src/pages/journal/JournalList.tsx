@@ -46,9 +46,15 @@ export function JournalList() {
         action={
           canWrite && (
             <div className="flex flex-wrap gap-2">
-              <Link to="/vouchers/credit/new"><Button variant="ghost">+ Credit Voucher</Button></Link>
-              <Link to="/vouchers/debit/new"><Button variant="ghost">+ Debit Voucher</Button></Link>
-              <Link to="/journal/new"><Button>+ Journal Voucher</Button></Link>
+              <Link to="/vouchers/credit/new">
+                <Button variant="ghost">+ Credit Voucher</Button>
+              </Link>
+              <Link to="/vouchers/debit/new">
+                <Button variant="ghost">+ Debit Voucher</Button>
+              </Link>
+              <Link to="/journal/new">
+                <Button>+ Journal Voucher</Button>
+              </Link>
             </div>
           )
         }
@@ -70,7 +76,9 @@ export function JournalList() {
       </div>
 
       {entries.length === 0 ? (
-        <Card><p className="py-8 text-center text-sm text-slate-500">No vouchers here yet.</p></Card>
+        <Card>
+          <p className="py-8 text-center text-sm text-slate-500">No vouchers here yet.</p>
+        </Card>
       ) : (
         <div className="flex flex-col gap-3">
           {entries.map((entry) => {
@@ -81,11 +89,17 @@ export function JournalList() {
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="text-sm font-medium text-white">{entry.memo ?? VOUCHER_LABEL[vt]}</span>
-                    {entry.reference && <span className="ml-2 text-xs text-slate-500">#{entry.reference}</span>}
-                    <p className="text-xs text-slate-500">{shortDate(entry.date)} · {entry.source}</p>
+                    {entry.reference && (
+                      <span className="ml-2 text-xs text-slate-500">#{entry.reference}</span>
+                    )}
+                    <p className="text-xs text-slate-500">
+                      {shortDate(entry.date)} · {entry.source}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] ${VOUCHER_STYLE[vt]}`}>{VOUCHER_LABEL[vt]}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] ${VOUCHER_STYLE[vt]}`}>
+                      {VOUCHER_LABEL[vt]}
+                    </span>
                     <span className="tabular-nums text-sm text-slate-300">{money(total)}</span>
                     <StatusBadge status={entry.status} />
                   </div>
@@ -103,7 +117,8 @@ export function JournalList() {
                       {entry.lines.map((l) => (
                         <tr key={l.id} className="border-t border-white/5">
                           <td className="py-1.5 text-slate-300">
-                            <span className="text-xs text-slate-500">{l.account?.code}</span> {l.account?.name}
+                            <span className="text-xs text-slate-500">{l.account?.code}</span>{" "}
+                            {l.account?.name}
                           </td>
                           <td className="py-1.5 text-right tabular-nums text-slate-400">
                             {Number(l.debit) > 0 ? money(l.debit) : ""}

@@ -52,7 +52,11 @@ export function JournalEntryForm() {
         reference: reference || undefined,
         lines: lines
           .filter((l) => l.accountId && (Number(l.debit) || Number(l.credit)))
-          .map((l) => ({ accountId: l.accountId, debit: Number(l.debit) || 0, credit: Number(l.credit) || 0 })),
+          .map((l) => ({
+            accountId: l.accountId,
+            debit: Number(l.debit) || 0,
+            credit: Number(l.credit) || 0,
+          })),
       };
       await api.post("/journal", payload);
       navigate("/journal");
@@ -65,13 +69,32 @@ export function JournalEntryForm() {
 
   return (
     <div>
-      <PageHeader title="New Journal Voucher" subtitle="Non-cash adjusting entry — debits must equal credits" />
+      <PageHeader
+        title="New Journal Voucher"
+        subtitle="Non-cash adjusting entry — debits must equal credits"
+      />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">
-            <TextField label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-            <TextField label="Reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="JE-001" />
-            <TextField label="Memo" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="Description" />
+            <TextField
+              label="Date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+            <TextField
+              label="Reference"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder="JE-001"
+            />
+            <TextField
+              label="Memo"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="Description"
+            />
           </div>
 
           <div className="overflow-x-auto">
@@ -94,14 +117,18 @@ export function JournalEntryForm() {
                       >
                         <option value="">Select account…</option>
                         {accounts.map((a) => (
-                          <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
+                          <option key={a.id} value={a.id}>
+                            {a.code} · {a.name}
+                          </option>
                         ))}
                       </SelectField>
                     </td>
                     <td className="px-2 py-1.5">
                       <input
                         className="input text-right"
-                        type="number" min="0" step="0.01"
+                        type="number"
+                        min="0"
+                        step="0.01"
                         value={line.debit}
                         onChange={(e) => setLine(i, { debit: e.target.value, credit: "" })}
                       />
@@ -109,14 +136,22 @@ export function JournalEntryForm() {
                     <td className="px-2 py-1.5">
                       <input
                         className="input text-right"
-                        type="number" min="0" step="0.01"
+                        type="number"
+                        min="0"
+                        step="0.01"
                         value={line.credit}
                         onChange={(e) => setLine(i, { credit: e.target.value, debit: "" })}
                       />
                     </td>
                     <td className="px-2 py-1.5 text-center">
                       {lines.length > 2 && (
-                        <button type="button" onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-slate-500 hover:text-rose-400">✕</button>
+                        <button
+                          type="button"
+                          onClick={() => setLines(lines.filter((_, idx) => idx !== i))}
+                          className="text-slate-500 hover:text-rose-400"
+                        >
+                          ✕
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -134,7 +169,11 @@ export function JournalEntryForm() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <button type="button" onClick={() => setLines([...lines, emptyLine()])} className="btn-ghost text-sm">
+            <button
+              type="button"
+              onClick={() => setLines([...lines, emptyLine()])}
+              className="btn-ghost text-sm"
+            >
               + Add line
             </button>
             <span className={`text-sm ${balanced ? "text-emerald-300" : "text-amber-300"}`}>
@@ -145,8 +184,12 @@ export function JournalEntryForm() {
           {error && <ErrorNote message={error} />}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>Cancel</Button>
-            <Button type="submit" disabled={busy || !balanced}>{busy ? "Posting…" : "Post entry"}</Button>
+            <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy || !balanced}>
+              {busy ? "Posting…" : "Post entry"}
+            </Button>
           </div>
         </form>
       </Card>

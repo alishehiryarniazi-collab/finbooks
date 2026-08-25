@@ -5,7 +5,15 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <div className={`glass p-5 ${className}`}>{children}</div>;
 }
 
-export function CardHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
+export function CardHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="mb-4 flex items-start justify-between gap-4">
       <div>

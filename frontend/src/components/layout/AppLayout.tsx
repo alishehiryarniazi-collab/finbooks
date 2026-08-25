@@ -36,9 +36,7 @@ export function AppLayout() {
           <button className="btn-ghost lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Menu">
             ☰
           </button>
-          <div className="hidden text-sm text-slate-400 sm:block">
-            {user?.organization?.name}
-          </div>
+          <div className="hidden text-sm text-slate-400 sm:block">{user?.organization?.name}</div>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-medium text-white">{user?.name}</p>

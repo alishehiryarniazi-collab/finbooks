@@ -29,7 +29,13 @@ export function Login() {
   return (
     <AuthShell title="Welcome back" subtitle="Sign in to your FinBooks workspace">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <TextField
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
         <TextField
           label="Password"
           type="password"
