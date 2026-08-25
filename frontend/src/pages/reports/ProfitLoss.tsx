@@ -1,8 +1,10 @@
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
+import { toCsv, downloadCsv } from "../../lib/csv";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "../../components/ui/Button";
 import { ErrorNote } from "../Dashboard";
 
 interface PL {
@@ -21,9 +23,30 @@ export function ProfitLoss() {
 
   const profit = Number(data.netProfit) >= 0;
 
+  function exportCsv() {
+    const d = data!;
+    const csv = toCsv(
+      ["Code", "Account", "Amount"],
+      [
+        ["", "INCOME", ""],
+        ...d.income.map((r) => [r.code, r.name, r.amount]),
+        ["", "Total Income", d.totalIncome],
+        ["", "EXPENSES", ""],
+        ...d.expenses.map((r) => [r.code, r.name, r.amount]),
+        ["", "Total Expenses", d.totalExpense],
+        ["", "Net Profit", d.netProfit],
+      ],
+    );
+    downloadCsv("profit-and-loss", csv);
+  }
+
   return (
     <div>
-      <PageHeader title="Profit & Loss" subtitle="Income minus expenses (all time)" />
+      <PageHeader
+        title="Profit & Loss"
+        subtitle="Income minus expenses (all time)"
+        action={<Button variant="ghost" onClick={exportCsv}>Export CSV</Button>}
+      />
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Income" rows={data.income} total={data.totalIncome} />
         <Section title="Expenses" rows={data.expenses} total={data.totalExpense} />

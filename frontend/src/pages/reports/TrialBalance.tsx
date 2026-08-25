@@ -1,8 +1,10 @@
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
+import { toCsv, downloadCsv } from "../../lib/csv";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "../../components/ui/Button";
 import { ErrorNote } from "../Dashboard";
 
 interface TB {
@@ -18,15 +20,30 @@ export function TrialBalance() {
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
+  function exportCsv() {
+    const d = data!;
+    const csv = toCsv(
+      ["Code", "Account", "Type", "Debit", "Credit"],
+      [
+        ...d.rows.map((r) => [r.code, r.name, r.type, r.debit, r.credit]),
+        ["", "Totals", "", d.totalDebit, d.totalCredit],
+      ],
+    );
+    downloadCsv("trial-balance", csv);
+  }
+
   return (
     <div>
       <PageHeader
         title="Trial Balance"
         subtitle="Every account's balance — debits must equal credits"
         action={
-          <span className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}>
-            {data.balanced ? "✓ Balanced" : "✗ Not balanced"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}>
+              {data.balanced ? "✓ Balanced" : "✗ Not balanced"}
+            </span>
+            <Button variant="ghost" onClick={exportCsv}>Export CSV</Button>
+          </div>
         }
       />
       <Card>

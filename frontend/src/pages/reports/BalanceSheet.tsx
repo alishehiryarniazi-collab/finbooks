@@ -1,8 +1,10 @@
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
+import { toCsv, downloadCsv } from "../../lib/csv";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "../../components/ui/Button";
 import { ErrorNote } from "../Dashboard";
 
 interface BS {
@@ -22,15 +24,35 @@ export function BalanceSheet() {
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
+  function exportCsv() {
+    const d = data!;
+    const csv = toCsv(
+      ["Section", "Code", "Account", "Amount"],
+      [
+        ...d.assets.map((r) => ["Assets", r.code, r.name, r.amount]),
+        ["", "", "Total Assets", d.totalAssets],
+        ...d.liabilities.map((r) => ["Liabilities", r.code, r.name, r.amount]),
+        ["", "", "Total Liabilities", d.totalLiabilities],
+        ...d.equity.map((r) => ["Equity", r.code, r.name, r.amount]),
+        ["Equity", "", "Current Year Earnings", d.currentEarnings],
+        ["", "", "Total Equity", d.totalEquity],
+      ],
+    );
+    downloadCsv("balance-sheet", csv);
+  }
+
   return (
     <div>
       <PageHeader
         title="Balance Sheet"
         subtitle="What you own vs what you owe"
         action={
-          <span className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}>
-            {data.balanced ? "✓ Assets = Liabilities + Equity" : "✗ Out of balance"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}>
+              {data.balanced ? "✓ Assets = Liabilities + Equity" : "✗ Out of balance"}
+            </span>
+            <Button variant="ghost" onClick={exportCsv}>Export CSV</Button>
+          </div>
         }
       />
       <div className="grid gap-6 lg:grid-cols-2">

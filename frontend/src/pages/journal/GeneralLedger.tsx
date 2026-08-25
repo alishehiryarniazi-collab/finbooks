@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { money, shortDate } from "../../lib/format";
+import { toCsv, downloadCsv } from "../../lib/csv";
 import type { Account, AccountType, VoucherType } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "../../components/ui/Button";
 import { SelectField, TextField } from "../../components/ui/Field";
 import { ErrorNote } from "../Dashboard";
 
@@ -133,9 +135,27 @@ export function GeneralLedger() {
                 {ledger.account.type}
               </span>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-500">Closing balance</p>
-              <p className="tabular-nums text-sm font-semibold text-white">{money(ledger.closing)}</p>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-xs text-slate-500">Closing balance</p>
+                <p className="tabular-nums text-sm font-semibold text-white">{money(ledger.closing)}</p>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  const csv = toCsv(
+                    ["Date", "Type", "Ref", "Details", "Debit", "Credit", "Balance"],
+                    [
+                      ["", "", "", "Opening balance", "", "", ledger.opening],
+                      ...ledger.rows.map((r) => [shortDate(r.date), r.voucherType, r.reference ?? "", r.description ?? r.memo ?? "", r.debit, r.credit, r.balance]),
+                      ["", "", "", "Closing balance", "", "", ledger.closing],
+                    ],
+                  );
+                  downloadCsv(`ledger-${ledger.account.code}`, csv);
+                }}
+              >
+                Export CSV
+              </Button>
             </div>
           </div>
 

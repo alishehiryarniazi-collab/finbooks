@@ -1,8 +1,10 @@
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
+import { toCsv, downloadCsv } from "../../lib/csv";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "../../components/ui/Button";
 import { ErrorNote } from "../Dashboard";
 
 interface AgingRow {
@@ -41,9 +43,25 @@ export function AgingReport({ endpoint, title, subtitle, partyKey, partyHeader }
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
+  function exportCsv() {
+    const d = data!;
+    const csv = toCsv(
+      [partyHeader, ...BUCKETS.map((b) => b.label), "Total"],
+      [
+        ...d.rows.map((r) => [r[partyKey], ...BUCKETS.map((b) => r[b.key]), r.total]),
+        ["Totals", ...BUCKETS.map((b) => d.totals[b.key]), d.totals.total],
+      ],
+    );
+    downloadCsv(title.toLowerCase().replace(/\s+/g, "-"), csv);
+  }
+
   return (
     <div>
-      <PageHeader title={title} subtitle={subtitle} />
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        action={data.rows.length > 0 && <Button variant="ghost" onClick={exportCsv}>Export CSV</Button>}
+      />
       <Card>
         {data.rows.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">Nothing outstanding. 🎉</p>
