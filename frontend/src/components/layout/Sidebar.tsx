@@ -8,7 +8,10 @@ const NAV = [
   },
   {
     section: "Bookkeeping",
-    items: [{ to: "/accounts", label: "Chart of Accounts", icon: "📚" }],
+    items: [
+      { to: "/accounts", label: "Chart of Accounts", icon: "📚" },
+      { to: "/ledger", label: "General Ledger", icon: "📓" },
+    ],
   },
   {
     section: "Vouchers",

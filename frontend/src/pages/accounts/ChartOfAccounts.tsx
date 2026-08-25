@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -77,12 +78,9 @@ export function ChartOfAccounts() {
         <div className="flex flex-col divide-y divide-white/5">
           {rows.map(({ account, level, rolled }) => {
             const isGroup = !account.isPostable;
-            return (
-              <div
-                key={account.id}
-                className="flex items-center justify-between gap-3 px-4 py-2"
-                style={{ paddingLeft: 16 + level * 22 }}
-              >
+            const rowClass = "flex items-center justify-between gap-3 px-4 py-2";
+            const inner = (
+              <>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`text-xs tabular-nums ${isGroup ? "text-slate-500" : "text-slate-600"}`}>
                     {account.code}
@@ -99,12 +97,28 @@ export function ChartOfAccounts() {
                     <span className="text-[10px] uppercase tracking-wide text-amber-400">inactive</span>
                   )}
                 </div>
-                <span
-                  className={`tabular-nums text-sm ${isGroup ? "font-semibold text-white" : "text-slate-300"}`}
-                >
+                <span className={`tabular-nums text-sm ${isGroup ? "font-semibold text-white" : "text-slate-300"}`}>
                   {money(rolled)}
                 </span>
+              </>
+            );
+
+            const style = { paddingLeft: 16 + level * 22 };
+            // Detail (postable) accounts link into their ledger; groups are static.
+            return isGroup ? (
+              <div key={account.id} className={rowClass} style={style}>
+                {inner}
               </div>
+            ) : (
+              <Link
+                key={account.id}
+                to={`/ledger/${account.id}`}
+                className={`${rowClass} transition hover:bg-white/5`}
+                style={style}
+                title="View ledger"
+              >
+                {inner}
+              </Link>
             );
           })}
         </div>

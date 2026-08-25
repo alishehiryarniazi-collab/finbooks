@@ -143,28 +143,57 @@ journalRouter.post("/:id/reverse", requireRole("ADMIN", "ACCOUNTANT"), async (re
   res.status(201).json({ entry: reversed });
 });
 
-// General ledger for a single account: every line, with a running balance.
+// General ledger (account statement) for a single account: every posting in the
+// selected date range, with a running balance carried forward from an opening balance.
+// Optional ?from=YYYY-MM-DD&to=YYYY-MM-DD.
+const ledgerRangeSchema = z.object({
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+});
+
 journalRouter.get("/ledger/:accountId", async (req, res) => {
   const orgId = req.auth!.orgId;
+  const { from, to } = ledgerRangeSchema.parse(req.query);
+
   const account = await prisma.account.findFirst({ where: { id: req.params.accountId, orgId } });
   if (!account) throw new HttpError(404, "Account not found.");
 
+  // Moves a balance in the account's normal direction.
+  type Dec = ReturnType<typeof D>;
+  const delta = (debit: Dec, credit: Dec) =>
+    account.normalBalance === "DEBIT" ? debit.minus(credit) : credit.minus(debit);
+
+  // Opening balance = net of everything BEFORE the "from" date (0 if no from).
+  let opening = D(0);
+  if (from) {
+    const prior = await prisma.journalLine.aggregate({
+      where: { accountId: account.id, entry: { orgId, status: "POSTED", date: { lt: from } } },
+      _sum: { debit: true, credit: true },
+    });
+    opening = delta(prior._sum.debit ?? D(0), prior._sum.credit ?? D(0));
+  }
+
+  const dateFilter: { gte?: Date; lte?: Date } = {};
+  if (from) dateFilter.gte = from;
+  if (to) dateFilter.lte = to;
+
   const lines = await prisma.journalLine.findMany({
-    where: { accountId: account.id, entry: { orgId, status: "POSTED" } },
-    include: { entry: { select: { date: true, memo: true, reference: true } } },
-    orderBy: [{ entry: { date: "asc" } }],
+    where: {
+      accountId: account.id,
+      entry: { orgId, status: "POSTED", ...(from || to ? { date: dateFilter } : {}) },
+    },
+    include: { entry: { select: { date: true, memo: true, reference: true, voucherType: true } } },
+    orderBy: [{ entry: { date: "asc" } }, { entry: { createdAt: "asc" } }],
   });
 
-  let running = D(0);
+  let running = opening;
   const rows = lines.map((l) => {
-    // Running balance moves in the account's normal direction.
-    const delta =
-      account.normalBalance === "DEBIT" ? l.debit.minus(l.credit) : l.credit.minus(l.debit);
-    running = running.plus(delta);
+    running = running.plus(delta(l.debit, l.credit));
     return {
       date: l.entry.date,
       memo: l.entry.memo,
       reference: l.entry.reference,
+      voucherType: l.entry.voucherType,
       description: l.description,
       debit: l.debit.toFixed(2),
       credit: l.credit.toFixed(2),
@@ -173,8 +202,15 @@ journalRouter.get("/ledger/:accountId", async (req, res) => {
   });
 
   res.json({
-    account: { id: account.id, code: account.code, name: account.name, type: account.type },
+    account: {
+      id: account.id,
+      code: account.code,
+      name: account.name,
+      type: account.type,
+      normalBalance: account.normalBalance,
+    },
+    opening: opening.toFixed(2),
     rows,
-    balance: running.toFixed(2),
+    closing: running.toFixed(2),
   });
 });
