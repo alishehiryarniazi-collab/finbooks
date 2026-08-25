@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../context/AuthContext";
@@ -9,16 +10,27 @@ import { Spinner } from "../../components/ui/Spinner";
 import { Button } from "../../components/ui/Button";
 import { StatusBadge } from "../../components/ui/Badge";
 import { DataTable } from "../../components/ui/DataTable";
+import { ListControls } from "../../components/ui/ListControls";
 import { ErrorNote } from "../Dashboard";
+
+const STATUSES = ["DRAFT", "OPEN", "PARTIAL", "PAID", "VOID"];
 
 export function BillList() {
   const { data, loading, error } = useFetch<{ bills: Bill[] }>("/bills");
   const { hasRole } = useAuth();
   const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("ALL");
 
   if (loading) return <Spinner label="Loading bills…" />;
   if (error) return <ErrorNote message={error} />;
-  const bills = data?.bills ?? [];
+  const all = data?.bills ?? [];
+  const needle = q.trim().toLowerCase();
+  const bills = all.filter(
+    (b) =>
+      (status === "ALL" || b.status === status) &&
+      (needle === "" || b.number.toLowerCase().includes(needle) || (b.vendor?.name ?? "").toLowerCase().includes(needle)),
+  );
 
   return (
     <div>
@@ -26,6 +38,14 @@ export function BillList() {
         title="Bills"
         subtitle="Money you owe your vendors"
         action={hasRole("ADMIN", "ACCOUNTANT") && <Link to="/bills/new"><Button>+ New bill</Button></Link>}
+      />
+      <ListControls
+        query={q}
+        onQuery={setQ}
+        placeholder="Search number or vendor…"
+        statuses={STATUSES}
+        status={status}
+        onStatus={setStatus}
       />
       <Card>
         <DataTable
