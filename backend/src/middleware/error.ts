@@ -3,9 +3,11 @@ import type { NextFunction, Request, Response } from "express";
 // A thrown HttpError carries an HTTP status so route handlers can signal
 // "this is a client/known error, respond with this code" instead of a generic 500.
 export class HttpError extends Error {
+  // `code` marks machine-readable outcomes (e.g. confirmable warnings the client can override).
   constructor(
     public status: number,
     message: string,
+    public code?: string,
   ) {
     super(message);
   }
@@ -17,7 +19,7 @@ export function notFoundHandler(_req: Request, res: Response) {
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof HttpError) {
-    res.status(err.status).json({ error: err.message });
+    res.status(err.status).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
     return;
   }
   // Unknown/unexpected error — log it server-side, hide details from the client.

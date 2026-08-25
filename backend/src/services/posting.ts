@@ -2,6 +2,7 @@ import { Prisma, type JournalSource, type PrismaClient, type VoucherType } from 
 import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { D, round2 } from "../utils/money";
+import { SYSTEM_CODES } from "./chartOfAccounts";
 
 // One side of a journal entry, as provided by callers (manual entry, invoice, bill...).
 export interface PostingLine {
@@ -21,6 +22,8 @@ export interface PostEntryInput {
   voucherType?: VoucherType;
   sourceId?: string;
   lines: PostingLine[];
+  // Smart-voucher guard overrides (set after the user confirms a warning).
+  overrides?: { allowNegativeCash?: boolean; allowDuplicateRef?: boolean };
 }
 
 // A Prisma transaction client OR the base client — lets callers post inside a larger
@@ -75,7 +78,7 @@ export async function postEntry(input: PostEntryInput, db: Db = prisma) {
   const accountIds = [...new Set(input.lines.map((l) => l.accountId))];
   const accounts = await db.account.findMany({
     where: { id: { in: accountIds }, orgId: input.orgId },
-    select: { id: true, code: true, name: true, isPostable: true },
+    select: { id: true, code: true, name: true, isPostable: true, type: true, subtype: true },
   });
   if (accounts.length !== accountIds.length) {
     throw new HttpError(400, "One or more accounts do not exist in this organization.");
@@ -88,6 +91,61 @@ export async function postEntry(input: PostEntryInput, db: Db = prisma) {
       400,
       `Account ${group.code} ${group.name} is a group and cannot be posted to. Choose a detail account.`,
     );
+  }
+
+  // Guard: period lock — no postings dated before the org's lock date (applies to everything).
+  const org = await db.organization.findUnique({
+    where: { id: input.orgId },
+    select: { booksLockedBefore: true },
+  });
+  if (org?.booksLockedBefore && input.date < org.booksLockedBefore) {
+    throw new HttpError(
+      400,
+      `Books are locked before ${org.booksLockedBefore.toISOString().slice(0, 10)}. Pick a later date.`,
+    );
+  }
+
+  // The following confirmable guards apply to MANUAL vouchers only — system-generated entries
+  // (invoices/bills/payments) legitimately reuse references and move cash.
+  const isManual = (input.source ?? "MANUAL") === "MANUAL";
+
+  // Guard: duplicate reference (confirmable).
+  if (isManual && input.reference && !input.overrides?.allowDuplicateRef) {
+    const dup = await db.journalEntry.findFirst({
+      where: { orgId: input.orgId, reference: input.reference, status: "POSTED" },
+      select: { id: true },
+    });
+    if (dup) {
+      throw new HttpError(409, `A voucher with reference "${input.reference}" already exists.`, "DUPLICATE_REF");
+    }
+  }
+
+  // Guard: a cash/bank account would go negative (confirmable).
+  if (isManual && !input.overrides?.allowNegativeCash) {
+    const cashAccounts = accounts.filter(
+      (a) =>
+        a.type === "ASSET" &&
+        (a.subtype === "Cash" || a.subtype === "Bank" || a.code === SYSTEM_CODES.CASH || a.code === SYSTEM_CODES.BANK),
+    );
+    for (const acc of cashAccounts) {
+      let delta = D(0);
+      for (const l of input.lines.filter((l) => l.accountId === acc.id)) {
+        delta = delta.plus(round2(l.debit ?? 0)).minus(round2(l.credit ?? 0));
+      }
+      if (delta.gte(0)) continue; // only a decrease can push it below zero
+      const agg = await db.journalLine.aggregate({
+        where: { accountId: acc.id, entry: { orgId: input.orgId, status: "POSTED" } },
+        _sum: { debit: true, credit: true },
+      });
+      const current = (agg._sum.debit ?? D(0)).minus(agg._sum.credit ?? D(0));
+      if (current.plus(delta).lt(0)) {
+        throw new HttpError(
+          409,
+          `${acc.code} ${acc.name} would go negative (${current.plus(delta).toFixed(2)}). Confirm to proceed.`,
+          "NEGATIVE_CASH",
+        );
+      }
+    }
   }
 
   return db.journalEntry.create({
@@ -139,6 +197,7 @@ export async function reverseEntry(
       reference: original.reference ?? undefined,
       source: original.source,
       sourceId: original.sourceId ?? undefined,
+      overrides: { allowNegativeCash: true, allowDuplicateRef: true },
       lines: original.lines.map((l) => ({
         accountId: l.accountId,
         // swap sides to cancel the original

@@ -22,6 +22,7 @@ const updateSchema = z.object({
   phone: z.string().max(40).optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   logoDataUrl: z.string().max(500_000).optional().or(z.literal("")), // inline data URL (small)
+  booksLockedBefore: z.union([z.coerce.date(), z.literal("")]).optional(), // period lock date
 });
 
 // Only ADMIN can change company settings.

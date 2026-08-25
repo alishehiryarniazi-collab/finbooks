@@ -43,11 +43,18 @@ const lineSchema = z.object({
   description: z.string().max(200).optional(),
 });
 
+// Confirmable-guard overrides sent after the user acknowledges a warning.
+const overrideFields = {
+  allowNegativeCash: z.boolean().optional(),
+  allowDuplicateRef: z.boolean().optional(),
+};
+
 const createSchema = z.object({
   date: z.coerce.date(),
   memo: z.string().max(200).optional(),
   reference: z.string().max(60).optional(),
   lines: z.array(lineSchema).min(2, "An entry needs at least two lines."),
+  ...overrideFields,
 });
 
 // Create a manual, balanced JOURNAL VOUCHER. The posting service enforces
@@ -63,6 +70,7 @@ journalRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => 
     source: "MANUAL",
     voucherType: "JOURNAL",
     lines: data.lines,
+    overrides: { allowNegativeCash: data.allowNegativeCash, allowDuplicateRef: data.allowDuplicateRef },
   });
   res.status(201).json({ entry });
 });
@@ -83,6 +91,7 @@ const voucherSchema = z.object({
       }),
     )
     .min(1, "Add at least one line."),
+  ...overrideFields,
 });
 
 // DEBIT (Payment) Voucher: cash/bank goes OUT. Counter accounts are DEBITED,
@@ -102,6 +111,7 @@ journalRouter.post("/debit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async (
       ...data.lines.map((l) => ({ accountId: l.accountId, debit: l.amount, description: l.description })),
       { accountId: data.bankAccountId, credit: total, description: "Payment" },
     ],
+    overrides: { allowNegativeCash: data.allowNegativeCash, allowDuplicateRef: data.allowDuplicateRef },
   });
   res.status(201).json({ entry });
 });
@@ -123,6 +133,7 @@ journalRouter.post("/credit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async 
       { accountId: data.bankAccountId, debit: total, description: "Receipt" },
       ...data.lines.map((l) => ({ accountId: l.accountId, credit: l.amount, description: l.description })),
     ],
+    overrides: { allowNegativeCash: data.allowNegativeCash, allowDuplicateRef: data.allowDuplicateRef },
   });
   res.status(201).json({ entry });
 });

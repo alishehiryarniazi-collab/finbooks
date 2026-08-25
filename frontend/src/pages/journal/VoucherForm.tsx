@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
-import { api, apiError } from "../../lib/api";
+import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
 import type { Account } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
@@ -34,8 +34,9 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
   const [busy, setBusy] = useState(false);
 
   if (loading) return <Spinner label="Loading accounts…" />;
-  const accounts = (data?.accounts ?? []).filter((a) => a.isPostable);
+  const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
   const bankAccounts = accounts.filter((a) => a.type === "ASSET");
+  const LARGE_AMOUNT = 1_000_000;
 
   const isPayment = kind === "DEBIT";
   const copy = isPayment
@@ -61,8 +62,8 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  // Posts the voucher; on a confirmable guard (negative cash / duplicate ref) it asks and retries.
+  async function doPost(overrides: { allowNegativeCash?: boolean; allowDuplicateRef?: boolean }) {
     setBusy(true);
     setError(null);
     try {
@@ -73,19 +74,32 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
         bankAccountId,
         lines: lines
           .filter((l) => l.accountId && Number(l.amount) > 0)
-          .map((l) => ({
-            accountId: l.accountId,
-            amount: Number(l.amount),
-            description: l.description || undefined,
-          })),
+          .map((l) => ({ accountId: l.accountId, amount: Number(l.amount), description: l.description || undefined })),
+        ...overrides,
       };
       await api.post(isPayment ? "/journal/debit-voucher" : "/journal/credit-voucher", payload);
       navigate("/journal");
     } catch (err) {
+      const code = apiErrorCode(err);
+      if (code === "NEGATIVE_CASH" && !overrides.allowNegativeCash) {
+        setBusy(false);
+        if (window.confirm(`${apiError(err)}\n\nProceed anyway?`)) return doPost({ ...overrides, allowNegativeCash: true });
+        return;
+      }
+      if (code === "DUPLICATE_REF" && !overrides.allowDuplicateRef) {
+        setBusy(false);
+        if (window.confirm(`${apiError(err)}\n\nPost it anyway?`)) return doPost({ ...overrides, allowDuplicateRef: true });
+        return;
+      }
       setError(apiError(err));
-    } finally {
       setBusy(false);
     }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (total > LARGE_AMOUNT && !window.confirm(`This voucher is large (${money(total)}). Post it?`)) return;
+    await doPost({});
   }
 
   return (

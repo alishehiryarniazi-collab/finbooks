@@ -12,6 +12,7 @@ export interface Organization {
   phone: string | null;
   email: string | null;
   logoDataUrl: string | null;
+  booksLockedBefore?: string | null;
 }
 
 export interface CompanyRef {

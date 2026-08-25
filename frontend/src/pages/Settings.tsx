@@ -37,6 +37,7 @@ export function Settings() {
     phone: org?.phone ?? "",
     email: org?.email ?? "",
     logoDataUrl: org?.logoDataUrl ?? "",
+    booksLockedBefore: org?.booksLockedBefore ?? "",
   });
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
@@ -139,6 +140,15 @@ export function Settings() {
               disabled={!canEdit}
               placeholder="+92 300 1234567"
             />
+            <div className="sm:col-span-2">
+              <TextField
+                label="Lock date — postings before this date are blocked (leave empty for none)"
+                type="date"
+                value={form.booksLockedBefore ?? ""}
+                onChange={(e) => set("booksLockedBefore", e.target.value)}
+                disabled={!canEdit}
+              />
+            </div>
             <div className="sm:col-span-2">
               <label className="block">
                 <span className="label">Address</span>

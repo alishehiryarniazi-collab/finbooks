@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
-import { api, apiError } from "../../lib/api";
+import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
 import type { Account } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
@@ -30,19 +30,31 @@ export function JournalEntryForm() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return <Spinner label="Loading accounts…" />;
-  // Only postable (leaf) accounts can appear as line accounts.
-  const accounts = (data?.accounts ?? []).filter((a) => a.isPostable);
+  // Only postable (leaf), ACTIVE accounts can appear as line accounts.
+  const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
 
   const totalDebit = lines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
   const totalCredit = lines.reduce((s, l) => s + (Number(l.credit) || 0), 0);
   const balanced = totalDebit > 0 && Math.abs(totalDebit - totalCredit) < 0.005;
+  const LARGE_AMOUNT = 1_000_000; // ask to confirm unusually large entries
 
   function setLine(i: number, patch: Partial<LineRow>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  // Fill the difference onto a line so debits === credits (smart helper).
+  function autoBalance() {
+    const diff = Math.round((totalDebit - totalCredit) * 100) / 100;
+    if (diff === 0) return;
+    // Prefer a line that has an account but no amount yet; else the last line.
+    let target = lines.findIndex((l) => l.accountId && !Number(l.debit) && !Number(l.credit));
+    if (target === -1) target = lines.length - 1;
+    const patch = diff > 0 ? { credit: String(diff), debit: "" } : { debit: String(-diff), credit: "" };
+    setLines(lines.map((l, idx) => (idx === target ? { ...l, ...patch } : l)));
+  }
+
+  // Posts the entry; on a confirmable guard (negative cash / duplicate ref) it asks and retries.
+  async function doPost(overrides: { allowNegativeCash?: boolean; allowDuplicateRef?: boolean }) {
     setBusy(true);
     setError(null);
     try {
@@ -52,19 +64,32 @@ export function JournalEntryForm() {
         reference: reference || undefined,
         lines: lines
           .filter((l) => l.accountId && (Number(l.debit) || Number(l.credit)))
-          .map((l) => ({
-            accountId: l.accountId,
-            debit: Number(l.debit) || 0,
-            credit: Number(l.credit) || 0,
-          })),
+          .map((l) => ({ accountId: l.accountId, debit: Number(l.debit) || 0, credit: Number(l.credit) || 0 })),
+        ...overrides,
       };
       await api.post("/journal", payload);
       navigate("/journal");
     } catch (err) {
+      const code = apiErrorCode(err);
+      if (code === "NEGATIVE_CASH" && !overrides.allowNegativeCash) {
+        setBusy(false);
+        if (window.confirm(`${apiError(err)}\n\nProceed anyway?`)) return doPost({ ...overrides, allowNegativeCash: true });
+        return;
+      }
+      if (code === "DUPLICATE_REF" && !overrides.allowDuplicateRef) {
+        setBusy(false);
+        if (window.confirm(`${apiError(err)}\n\nPost it anyway?`)) return doPost({ ...overrides, allowDuplicateRef: true });
+        return;
+      }
       setError(apiError(err));
-    } finally {
       setBusy(false);
     }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (totalDebit > LARGE_AMOUNT && !window.confirm(`This entry is large (${money(totalDebit)}). Post it?`)) return;
+    await doPost({});
   }
 
   return (
@@ -169,13 +194,20 @@ export function JournalEntryForm() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setLines([...lines, emptyLine()])}
-              className="btn-ghost text-sm"
-            >
-              + Add line
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setLines([...lines, emptyLine()])}
+                className="btn-ghost text-sm"
+              >
+                + Add line
+              </button>
+              {!balanced && totalDebit + totalCredit > 0 && (
+                <button type="button" onClick={autoBalance} className="btn-ghost text-sm">
+                  ⚖ Auto-balance
+                </button>
+              )}
+            </div>
             <span className={`text-sm ${balanced ? "text-emerald-300" : "text-amber-300"}`}>
               {balanced ? "✓ Balanced" : `Out of balance by ${money(Math.abs(totalDebit - totalCredit))}`}
             </span>

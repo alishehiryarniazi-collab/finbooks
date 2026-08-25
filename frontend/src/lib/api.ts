@@ -36,3 +36,12 @@ export function apiError(err: unknown): string {
   if (err instanceof Error) return err.message;
   return "Something went wrong.";
 }
+
+// Machine-readable code for confirmable warnings (e.g. "NEGATIVE_CASH", "DUPLICATE_REF").
+export function apiErrorCode(err: unknown): string | undefined {
+  if (axios.isAxiosError(err)) {
+    const code = (err.response?.data as { code?: unknown } | undefined)?.code;
+    if (typeof code === "string") return code;
+  }
+  return undefined;
+}

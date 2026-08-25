@@ -41,6 +41,7 @@ async function buildAuthUser(userId: string, activeOrgId: string) {
       phone: org.phone ?? null,
       email: org.email ?? null,
       logoDataUrl: org.logoDataUrl ?? null,
+      booksLockedBefore: org.booksLockedBefore ? org.booksLockedBefore.toISOString().slice(0, 10) : null,
     },
     companies: memberships.map((m) => ({ orgId: m.orgId, name: m.organization.name, role: m.role })),
   };

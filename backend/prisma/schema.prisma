@@ -104,6 +104,7 @@ model Organization {
   phone                String?
   email                String?
   logoDataUrl          String?  @db.MediumText // logo as inline data URL (TEXT's 64KB is too small)
+  booksLockedBefore    DateTime? // no postings allowed before this date (period lock)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
