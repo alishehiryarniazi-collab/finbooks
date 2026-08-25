@@ -2,12 +2,14 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import en from "./en.json";
 import ur from "./ur.json";
+import ar from "./ar.json";
 
 // Supported languages. `dir` drives RTL. Add more entries here (with a matching JSON file)
 // to offer more languages.
 export const LANGUAGES = [
   { code: "en", label: "English", dir: "ltr" as const },
   { code: "ur", label: "اردو", dir: "rtl" as const },
+  { code: "ar", label: "العربية", dir: "rtl" as const },
 ];
 
 const STORAGE_KEY = "finbooks_lang";
@@ -27,7 +29,7 @@ export function applyDir(lang: string) {
 }
 
 i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, ur: { translation: ur } },
+  resources: { en: { translation: en }, ur: { translation: ur }, ar: { translation: ar } },
   lng: initialLang(),
   fallbackLng: "en",
   interpolation: { escapeValue: false },
