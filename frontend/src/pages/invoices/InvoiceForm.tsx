@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
-import type { Account, Customer } from "../../lib/types";
+import type { Account, Customer, TaxRate } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
@@ -33,6 +33,7 @@ export function InvoiceForm() {
   const isEdit = !!id;
   const customersReq = useFetch<{ customers: Customer[] }>("/customers");
   const accountsReq = useFetch<{ accounts: Account[] }>("/accounts");
+  const taxRatesReq = useFetch<{ taxRates: TaxRate[] }>("/tax-rates");
 
   const [customerId, setCustomerId] = useState("");
   const [number, setNumber] = useState("");
@@ -90,11 +91,13 @@ export function InvoiceForm() {
     };
   }, [id, isEdit]);
 
-  if (customersReq.loading || accountsReq.loading || loadingDoc) return <Spinner label="Loading…" />;
+  if (customersReq.loading || accountsReq.loading || taxRatesReq.loading || loadingDoc)
+    return <Spinner label="Loading…" />;
   const customers = customersReq.data?.customers ?? [];
   const incomeAccounts = (accountsReq.data?.accounts ?? []).filter(
     (a) => a.type === "INCOME" && a.isPostable,
   );
+  const taxRates = (taxRatesReq.data?.taxRates ?? []).filter((r) => r.isActive);
 
   function setLine(i: number, patch: Partial<Line>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
@@ -243,14 +246,31 @@ export function InvoiceForm() {
                       />
                     </td>
                     <td className="px-2 py-1.5">
-                      <input
-                        className="input w-20 text-right"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={l.taxRatePercent}
-                        onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
-                      />
+                      {taxRates.length > 0 ? (
+                        <SelectField
+                          value={l.taxRatePercent}
+                          onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
+                        >
+                          <option value="0">No tax</option>
+                          {!["0", ...taxRates.map((r) => String(Number(r.ratePercent)))].includes(l.taxRatePercent) && (
+                            <option value={l.taxRatePercent}>{Number(l.taxRatePercent)}% (custom)</option>
+                          )}
+                          {taxRates.map((r) => (
+                            <option key={r.id} value={String(Number(r.ratePercent))}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </SelectField>
+                      ) : (
+                        <input
+                          className="input w-20 text-right"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={l.taxRatePercent}
+                          onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
+                        />
+                      )}
                     </td>
                     <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">
                       {money((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0))}

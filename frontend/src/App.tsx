@@ -28,6 +28,8 @@ import { ArAging } from "./pages/reports/ArAging";
 import { ApAging } from "./pages/reports/ApAging";
 import { Team } from "./pages/Team";
 import { Settings } from "./pages/Settings";
+import { TaxRates } from "./pages/TaxRates";
+import { TaxReport } from "./pages/reports/TaxReport";
 
 export default function App() {
   return (
@@ -67,8 +69,10 @@ export default function App() {
         <Route path="reports/balance-sheet" element={<BalanceSheet />} />
         <Route path="reports/ar-aging" element={<ArAging />} />
         <Route path="reports/ap-aging" element={<ApAging />} />
+        <Route path="reports/tax-summary" element={<TaxReport />} />
         <Route path="team" element={<Team />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="tax-rates" element={<TaxRates />} />
       </Route>
 
       {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}

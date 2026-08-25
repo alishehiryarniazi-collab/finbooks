@@ -341,3 +341,34 @@ export async function dashboard(orgId: string, today = new Date()) {
 function monthKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
+
+// Tax summary from the Sales Tax Payable ledger: output tax (collected on sales, credited)
+// minus input tax (paid on purchases, debited) = net tax payable to the authority.
+export async function taxSummary(orgId: string, range?: DateRange) {
+  const acc = await prisma.account.findFirst({
+    where: { orgId, code: SYSTEM_CODES.SALES_TAX_PAYABLE },
+    select: { id: true },
+  });
+  if (!acc) return { outputTax: "0.00", inputTax: "0.00", netPayable: "0.00" };
+
+  const dateFilter: Prisma.DateTimeFilter = {};
+  if (range?.from) dateFilter.gte = range.from;
+  if (range?.to) dateFilter.lte = range.to;
+
+  const lines = await prisma.journalLine.groupBy({
+    by: ["accountId"],
+    where: {
+      accountId: acc.id,
+      entry: { orgId, status: "POSTED", ...(range?.from || range?.to ? { date: dateFilter } : {}) },
+    },
+    _sum: { debit: true, credit: true },
+  });
+
+  const output = lines[0]?._sum.credit ?? D(0); // tax collected on sales
+  const input = lines[0]?._sum.debit ?? D(0); // recoverable tax on purchases
+  return {
+    outputTax: output.toFixed(2),
+    inputTax: input.toFixed(2),
+    netPayable: output.minus(input).toFixed(2),
+  };
+}

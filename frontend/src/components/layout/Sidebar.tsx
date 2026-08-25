@@ -48,12 +48,14 @@ const NAV = [
       { to: "/reports/balance-sheet", label: "Balance Sheet", icon: "🏦" },
       { to: "/reports/ar-aging", label: "AR Aging", icon: "⏳" },
       { to: "/reports/ap-aging", label: "AP Aging", icon: "⌛" },
+      { to: "/reports/tax-summary", label: "Tax Report", icon: "🧮" },
     ],
   },
   {
     section: "Settings",
     items: [
       { to: "/team", label: "Team", icon: "👥" },
+      { to: "/tax-rates", label: "Tax Rates", icon: "🧾" },
       { to: "/settings", label: "Company Settings", icon: "⚙️" },
     ],
   },

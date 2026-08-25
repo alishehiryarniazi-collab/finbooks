@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth";
-import { trialBalance, profitAndLoss, balanceSheet, arAging, apAging, dashboard } from "../services/reports";
+import { trialBalance, profitAndLoss, balanceSheet, arAging, apAging, dashboard, taxSummary } from "../services/reports";
 
 export const reportsRouter = Router();
 reportsRouter.use(requireAuth);
@@ -37,4 +37,9 @@ reportsRouter.get("/ap-aging", async (req, res) => {
 
 reportsRouter.get("/dashboard", async (req, res) => {
   res.json(await dashboard(req.auth!.orgId));
+});
+
+reportsRouter.get("/tax-summary", async (req, res) => {
+  const range = rangeSchema.parse(req.query);
+  res.json(await taxSummary(req.auth!.orgId, range));
 });

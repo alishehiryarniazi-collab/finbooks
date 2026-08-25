@@ -47,6 +47,13 @@ export interface Account {
 
 export type VoucherType = "JOURNAL" | "DEBIT" | "CREDIT";
 
+export interface TaxRate {
+  id: string;
+  name: string;
+  ratePercent: string;
+  isActive: boolean;
+}
+
 export interface JournalLine {
   id: string;
   accountId: string;

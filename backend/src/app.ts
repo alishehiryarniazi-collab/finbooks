@@ -14,6 +14,7 @@ import { billsRouter } from "./routes/bills.routes";
 import { paymentsRouter } from "./routes/payments.routes";
 import { reportsRouter } from "./routes/reports.routes";
 import { organizationRouter } from "./routes/organization.routes";
+import { taxRatesRouter } from "./routes/taxRates.routes";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 
 export function createApp() {
@@ -37,6 +38,7 @@ export function createApp() {
   app.use("/api/payments", paymentsRouter);
   app.use("/api/reports", reportsRouter);
   app.use("/api/organization", organizationRouter);
+  app.use("/api/tax-rates", taxRatesRouter);
 
   app.use(notFoundHandler);
 
