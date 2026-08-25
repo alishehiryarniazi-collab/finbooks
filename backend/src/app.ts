@@ -20,7 +20,8 @@ export function createApp() {
   const app = express();
 
   app.use(cors({ origin: env.corsOrigin, credentials: true }));
-  app.use(express.json());
+  // 2mb so an inline company logo (base64 data URL) fits; default is only 100kb.
+  app.use(express.json({ limit: "2mb" }));
 
   app.get("/health", (_req, res) => res.json({ ok: true, service: "finbooks-api" }));
 

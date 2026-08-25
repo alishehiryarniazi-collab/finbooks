@@ -103,7 +103,7 @@ model Organization {
   address              String?  @db.Text
   phone                String?
   email                String?
-  logoDataUrl          String?  @db.Text // small logo stored inline as a data URL
+  logoDataUrl          String?  @db.MediumText // logo as inline data URL (TEXT's 64KB is too small)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
