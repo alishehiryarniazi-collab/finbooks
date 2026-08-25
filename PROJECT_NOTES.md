@@ -7,6 +7,15 @@ A small-business **double-entry accounting system** built as a serious portfolio
 Real bookkeeping: chart of accounts, balanced journal entries, a general ledger that is the
 single source of truth, invoicing (AR), bills (AP), payments, and financial reports.
 
+## Feature set (as of Aug 2026)
+Auth + roles (Admin/Accountant/Viewer) · 3-level Chart of Accounts (leaf-only posting) ·
+Opening balances · Journal / Debit / Credit vouchers · General Ledger (statement w/ opening
+balance) · Customers & Vendors (search + edit/delete) · Invoices & Bills (draft edit/delete,
+auto-numbering, post to ledger, payments, void, PDF/print) · Reports: Trial Balance, P&L,
+Balance Sheet, AR/AP Aging (all CSV-exportable) · Dashboard · Company Settings (profile,
+currency, logo). Themed custom dropdowns app-wide. ESLint + Prettier; Vitest unit tests for
+the posting engine + money math. NOT pushed to GitHub yet (by request).
+
 ## Tech stack
 - **Backend:** Node.js + Express + TypeScript, Prisma ORM, **MySQL**, JWT auth, zod validation.
 - **Frontend:** React + Vite + TypeScript, Tailwind CSS (Aurora dark-glass style), React Router,
