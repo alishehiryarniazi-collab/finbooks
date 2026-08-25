@@ -60,7 +60,7 @@ export function InvoiceForm() {
     try {
       const payload = {
         customerId,
-        number,
+        number: number.trim() || undefined, // blank -> server auto-numbers (INV-0001)
         issueDate,
         dueDate,
         lines: lines
@@ -92,7 +92,7 @@ export function InvoiceForm() {
               <option value="">Select…</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </SelectField>
-            <TextField label="Invoice #" value={number} onChange={(e) => setNumber(e.target.value)} required placeholder="INV-1004" />
+            <TextField label="Invoice # (optional)" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Auto (INV-0001)" />
             <TextField label="Issue date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} required />
             <TextField label="Due date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
           </div>

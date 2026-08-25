@@ -41,7 +41,7 @@ const lineSchema = z.object({
 
 const createSchema = z.object({
   customerId: z.string().min(1),
-  number: z.string().min(1).max(40),
+  number: z.string().max(40).optional(),
   issueDate: z.coerce.date(),
   dueDate: z.coerce.date(),
   notes: z.string().max(500).optional(),

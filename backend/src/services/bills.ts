@@ -4,6 +4,7 @@ import { HttpError } from "../middleware/error";
 import { D, round2 } from "../utils/money";
 import { postEntry, reverseEntry, type PostingLine } from "./posting";
 import { SYSTEM_CODES } from "./chartOfAccounts";
+import { nextDocumentNumber } from "./numbering";
 
 type Db = Prisma.TransactionClient;
 
@@ -36,7 +37,7 @@ async function getSystemAccountId(db: Db, orgId: string, code: string) {
 
 export interface CreateBillInput {
   vendorId: string;
-  number: string;
+  number?: string; // optional — auto-generated (BILL-0001) when omitted
   billDate: Date;
   dueDate: Date;
   notes?: string;
@@ -51,14 +52,16 @@ export async function createBill(orgId: string, input: CreateBillInput) {
   const vendor = await prisma.vendor.findFirst({ where: { id: input.vendorId, orgId } });
   if (!vendor) throw new HttpError(400, "Vendor not found.");
 
-  const dupe = await prisma.bill.findFirst({ where: { orgId, number: input.number } });
-  if (dupe) throw new HttpError(409, `Bill number ${input.number} already exists.`);
+  // Auto-number when blank; otherwise enforce uniqueness.
+  const number = input.number?.trim() || (await nextDocumentNumber(orgId, "BILL"));
+  const dupe = await prisma.bill.findFirst({ where: { orgId, number } });
+  if (dupe) throw new HttpError(409, `Bill number ${number} already exists.`);
 
   return prisma.bill.create({
     data: {
       orgId,
       vendorId: input.vendorId,
-      number: input.number,
+      number,
       billDate: input.billDate,
       dueDate: input.dueDate,
       notes: input.notes,

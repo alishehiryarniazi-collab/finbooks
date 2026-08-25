@@ -4,6 +4,7 @@ import { HttpError } from "../middleware/error";
 import { D, round2 } from "../utils/money";
 import { postEntry, reverseEntry, type PostingLine } from "./posting";
 import { SYSTEM_CODES } from "./chartOfAccounts";
+import { nextDocumentNumber } from "./numbering";
 
 type Db = Prisma.TransactionClient;
 
@@ -37,7 +38,7 @@ async function getSystemAccountId(db: Db, orgId: string, code: string) {
 
 export interface CreateInvoiceInput {
   customerId: string;
-  number: string;
+  number?: string; // optional — auto-generated (INV-0001) when omitted
   issueDate: Date;
   dueDate: Date;
   notes?: string;
@@ -52,14 +53,16 @@ export async function createInvoice(orgId: string, input: CreateInvoiceInput) {
   const customer = await prisma.customer.findFirst({ where: { id: input.customerId, orgId } });
   if (!customer) throw new HttpError(400, "Customer not found.");
 
-  const dupe = await prisma.invoice.findFirst({ where: { orgId, number: input.number } });
-  if (dupe) throw new HttpError(409, `Invoice number ${input.number} already exists.`);
+  // Auto-number when the user leaves it blank; otherwise enforce uniqueness.
+  const number = input.number?.trim() || (await nextDocumentNumber(orgId, "INVOICE"));
+  const dupe = await prisma.invoice.findFirst({ where: { orgId, number } });
+  if (dupe) throw new HttpError(409, `Invoice number ${number} already exists.`);
 
   return prisma.invoice.create({
     data: {
       orgId,
       customerId: input.customerId,
-      number: input.number,
+      number,
       issueDate: input.issueDate,
       dueDate: input.dueDate,
       notes: input.notes,

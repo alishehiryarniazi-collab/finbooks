@@ -59,7 +59,7 @@ export function BillForm() {
     try {
       const payload = {
         vendorId,
-        number,
+        number: number.trim() || undefined, // blank -> server auto-numbers (BILL-0001)
         billDate,
         dueDate,
         lines: lines
@@ -91,7 +91,7 @@ export function BillForm() {
               <option value="">Select…</option>
               {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </SelectField>
-            <TextField label="Bill #" value={number} onChange={(e) => setNumber(e.target.value)} required placeholder="BILL-2004" />
+            <TextField label="Bill # (optional)" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Auto (BILL-0001)" />
             <TextField label="Bill date" type="date" value={billDate} onChange={(e) => setBillDate(e.target.value)} required />
             <TextField label="Due date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
           </div>
