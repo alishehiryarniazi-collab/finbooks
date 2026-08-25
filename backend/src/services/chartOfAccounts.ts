@@ -2,8 +2,8 @@ import type { AccountType, NormalBalance, Prisma, PrismaClient } from "@prisma/c
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
-// Well-known account codes the automation relies on. Invoice/bill/payment posting
-// looks these up by code, so they must exist in every organization's chart.
+// Well-known LEAF (postable) account codes the automation relies on. Invoice/bill/payment
+// posting looks these up by code, so they must exist as postable accounts in every org.
 export const SYSTEM_CODES = {
   CASH: "1000",
   BANK: "1010",
@@ -13,51 +13,162 @@ export const SYSTEM_CODES = {
   SALES_REVENUE: "4000",
 } as const;
 
-interface SeedAccount {
-  code: string;
-  name: string;
-  type: AccountType;
-  normalBalance: NormalBalance;
-  subtype?: string;
+// Debit-normal for assets & expenses; credit-normal for the rest.
+function normalFor(type: AccountType): NormalBalance {
+  return type === "ASSET" || type === "EXPENSE" ? "DEBIT" : "CREDIT";
 }
 
-// A standard small-business chart of accounts. Codes follow the usual convention:
-// 1xxx assets, 2xxx liabilities, 3xxx equity, 4xxx income, 5xxx COGS, 6xxx expenses.
-export const DEFAULT_ACCOUNTS: SeedAccount[] = [
-  // Assets (debit-normal)
-  { code: "1000", name: "Cash", type: "ASSET", normalBalance: "DEBIT", subtype: "Cash" },
-  { code: "1010", name: "Bank Account", type: "ASSET", normalBalance: "DEBIT", subtype: "Bank" },
-  { code: "1200", name: "Accounts Receivable", type: "ASSET", normalBalance: "DEBIT", subtype: "Accounts Receivable" },
-  { code: "1400", name: "Inventory", type: "ASSET", normalBalance: "DEBIT", subtype: "Inventory" },
-  { code: "1500", name: "Equipment", type: "ASSET", normalBalance: "DEBIT", subtype: "Fixed Asset" },
+// A node in the default chart. A node WITH children is a group (not postable);
+// a leaf node is a postable detail account.
+interface SeedNode {
+  code: string;
+  name: string;
+  subtype?: string;
+  children?: SeedNode[];
+}
 
-  // Liabilities (credit-normal)
-  { code: "2000", name: "Accounts Payable", type: "LIABILITY", normalBalance: "CREDIT", subtype: "Accounts Payable" },
-  { code: "2100", name: "Sales Tax Payable", type: "LIABILITY", normalBalance: "CREDIT", subtype: "Tax" },
-  { code: "2200", name: "Loans Payable", type: "LIABILITY", normalBalance: "CREDIT", subtype: "Loan" },
-
-  // Equity (credit-normal)
-  { code: "3000", name: "Owner's Equity", type: "EQUITY", normalBalance: "CREDIT" },
-  { code: "3100", name: "Retained Earnings", type: "EQUITY", normalBalance: "CREDIT" },
-
-  // Income (credit-normal)
-  { code: "4000", name: "Sales Revenue", type: "INCOME", normalBalance: "CREDIT" },
-  { code: "4100", name: "Service Revenue", type: "INCOME", normalBalance: "CREDIT" },
-  { code: "4200", name: "Other Income", type: "INCOME", normalBalance: "CREDIT" },
-
-  // Cost of goods sold + expenses (debit-normal)
-  { code: "5000", name: "Cost of Goods Sold", type: "EXPENSE", normalBalance: "DEBIT", subtype: "COGS" },
-  { code: "6000", name: "Rent Expense", type: "EXPENSE", normalBalance: "DEBIT" },
-  { code: "6100", name: "Salaries & Wages", type: "EXPENSE", normalBalance: "DEBIT" },
-  { code: "6200", name: "Utilities", type: "EXPENSE", normalBalance: "DEBIT" },
-  { code: "6300", name: "Office Supplies", type: "EXPENSE", normalBalance: "DEBIT" },
-  { code: "6400", name: "Advertising & Marketing", type: "EXPENSE", normalBalance: "DEBIT" },
-  { code: "6900", name: "Miscellaneous Expense", type: "EXPENSE", normalBalance: "DEBIT" },
+// Standard small-business chart, three levels deep:
+//   Level 1 = major category, Level 2 = sub-group, Level 3 = postable detail account.
+export const DEFAULT_TREE: { type: AccountType; groups: SeedNode[] }[] = [
+  {
+    type: "ASSET",
+    groups: [
+      {
+        code: "1", name: "Assets",
+        children: [
+          {
+            code: "10", name: "Current Assets",
+            children: [
+              { code: "1000", name: "Cash", subtype: "Cash" },
+              { code: "1010", name: "Bank Account", subtype: "Bank" },
+              { code: "1200", name: "Accounts Receivable", subtype: "Accounts Receivable" },
+              { code: "1400", name: "Inventory", subtype: "Inventory" },
+            ],
+          },
+          {
+            code: "15", name: "Fixed Assets",
+            children: [{ code: "1500", name: "Equipment", subtype: "Fixed Asset" }],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: "LIABILITY",
+    groups: [
+      {
+        code: "2", name: "Liabilities",
+        children: [
+          {
+            code: "20", name: "Current Liabilities",
+            children: [
+              { code: "2000", name: "Accounts Payable", subtype: "Accounts Payable" },
+              { code: "2100", name: "Sales Tax Payable", subtype: "Tax" },
+            ],
+          },
+          {
+            code: "22", name: "Long-term Liabilities",
+            children: [{ code: "2200", name: "Loans Payable", subtype: "Loan" }],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: "EQUITY",
+    groups: [
+      {
+        code: "3", name: "Equity",
+        children: [
+          {
+            code: "30", name: "Owner's Equity",
+            children: [
+              { code: "3000", name: "Owner's Capital" },
+              { code: "3100", name: "Retained Earnings" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: "INCOME",
+    groups: [
+      {
+        code: "4", name: "Income",
+        children: [
+          {
+            code: "40", name: "Operating Revenue",
+            children: [
+              { code: "4000", name: "Sales Revenue" },
+              { code: "4100", name: "Service Revenue" },
+            ],
+          },
+          {
+            code: "42", name: "Other Income",
+            children: [{ code: "4200", name: "Other Income" }],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: "EXPENSE",
+    groups: [
+      {
+        code: "5", name: "Expenses",
+        children: [
+          {
+            code: "50", name: "Cost of Sales",
+            children: [{ code: "5000", name: "Cost of Goods Sold", subtype: "COGS" }],
+          },
+          {
+            code: "60", name: "Operating Expenses",
+            children: [
+              { code: "6000", name: "Rent Expense" },
+              { code: "6100", name: "Salaries & Wages" },
+              { code: "6200", name: "Utilities" },
+              { code: "6300", name: "Office Supplies" },
+              { code: "6400", name: "Advertising & Marketing" },
+              { code: "6900", name: "Miscellaneous Expense" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
-// Inserts the default chart for a new organization. Safe to call once at org creation.
-export async function seedDefaultAccounts(orgId: string, db: Db) {
-  await db.account.createMany({
-    data: DEFAULT_ACCOUNTS.map((a) => ({ ...a, orgId })),
+// Recursively creates a node and its descendants. A node is postable only if it's a leaf.
+async function createNode(
+  db: Db,
+  orgId: string,
+  type: AccountType,
+  node: SeedNode,
+  parentId: string | null,
+) {
+  const created = await db.account.create({
+    data: {
+      orgId,
+      code: node.code,
+      name: node.name,
+      type,
+      subtype: node.subtype,
+      normalBalance: normalFor(type),
+      parentId,
+      isPostable: !node.children || node.children.length === 0,
+    },
   });
+  for (const child of node.children ?? []) {
+    await createNode(db, orgId, type, child, created.id);
+  }
+}
+
+// Seeds the full 3-level default chart for a new organization.
+export async function seedDefaultAccounts(orgId: string, db: Db) {
+  for (const { type, groups } of DEFAULT_TREE) {
+    for (const group of groups) {
+      await createNode(db, orgId, type, group, null);
+    }
+  }
 }

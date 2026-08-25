@@ -5,14 +5,20 @@ import { HttpError } from "../middleware/error";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { postEntry, reverseEntry } from "../services/posting";
 import { D } from "../utils/money";
+import type { VoucherType } from "@prisma/client";
 
 export const journalRouter = Router();
 journalRouter.use(requireAuth);
 
-// List journal entries (newest first) with their lines and account names.
+// List journal entries (newest first). Optional ?type=JOURNAL|DEBIT|CREDIT filter.
 journalRouter.get("/", async (req, res) => {
+  const type = req.query.type;
+  const voucherFilter =
+    type === "JOURNAL" || type === "DEBIT" || type === "CREDIT"
+      ? { voucherType: type as VoucherType }
+      : {};
   const entries = await prisma.journalEntry.findMany({
-    where: { orgId: req.auth!.orgId },
+    where: { orgId: req.auth!.orgId, ...voucherFilter },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
     take: 200,
     include: {
@@ -46,7 +52,7 @@ const createSchema = z.object({
   lines: z.array(lineSchema).min(2, "An entry needs at least two lines."),
 });
 
-// Create a manual, balanced journal entry. The posting service enforces
+// Create a manual, balanced JOURNAL VOUCHER. The posting service enforces
 // debits === credits inside a transaction (throws 400 if not balanced).
 journalRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const data = createSchema.parse(req.body);
@@ -57,7 +63,68 @@ journalRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => 
     memo: data.memo,
     reference: data.reference,
     source: "MANUAL",
+    voucherType: "JOURNAL",
     lines: data.lines,
+  });
+  res.status(201).json({ entry });
+});
+
+// --- Cash/Bank vouchers -----------------------------------------------------
+// Both take a cash/bank account plus one or more counter lines with a positive amount.
+const voucherSchema = z.object({
+  date: z.coerce.date(),
+  memo: z.string().max(200).optional(),
+  reference: z.string().max(60).optional(),
+  bankAccountId: z.string().min(1, "Choose the cash/bank account."),
+  lines: z
+    .array(
+      z.object({
+        accountId: z.string().min(1),
+        amount: z.coerce.number().positive(),
+        description: z.string().max(200).optional(),
+      }),
+    )
+    .min(1, "Add at least one line."),
+});
+
+// DEBIT (Payment) Voucher: cash/bank goes OUT. Counter accounts are DEBITED,
+// the cash/bank account is CREDITED for the total.
+journalRouter.post("/debit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  const data = voucherSchema.parse(req.body);
+  const total = data.lines.reduce((sum, l) => sum + l.amount, 0);
+  const entry = await postEntry({
+    orgId: req.auth!.orgId,
+    createdById: req.auth!.userId,
+    date: data.date,
+    memo: data.memo,
+    reference: data.reference,
+    source: "MANUAL",
+    voucherType: "DEBIT",
+    lines: [
+      ...data.lines.map((l) => ({ accountId: l.accountId, debit: l.amount, description: l.description })),
+      { accountId: data.bankAccountId, credit: total, description: "Payment" },
+    ],
+  });
+  res.status(201).json({ entry });
+});
+
+// CREDIT (Receipt) Voucher: cash/bank comes IN. The cash/bank account is DEBITED
+// for the total, counter accounts are CREDITED.
+journalRouter.post("/credit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
+  const data = voucherSchema.parse(req.body);
+  const total = data.lines.reduce((sum, l) => sum + l.amount, 0);
+  const entry = await postEntry({
+    orgId: req.auth!.orgId,
+    createdById: req.auth!.userId,
+    date: data.date,
+    memo: data.memo,
+    reference: data.reference,
+    source: "MANUAL",
+    voucherType: "CREDIT",
+    lines: [
+      { accountId: data.bankAccountId, debit: total, description: "Receipt" },
+      ...data.lines.map((l) => ({ accountId: l.accountId, credit: l.amount, description: l.description })),
+    ],
   });
   res.status(201).json({ entry });
 });

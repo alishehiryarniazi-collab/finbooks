@@ -36,7 +36,7 @@ export function BillForm() {
 
   if (vendorsReq.loading || accountsReq.loading) return <Spinner label="Loading…" />;
   const vendors = vendorsReq.data?.vendors ?? [];
-  const expenseAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "EXPENSE");
+  const expenseAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "EXPENSE" && a.isPostable);
 
   function setLine(i: number, patch: Partial<Line>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));

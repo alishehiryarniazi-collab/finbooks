@@ -7,6 +7,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { ChartOfAccounts } from "./pages/accounts/ChartOfAccounts";
 import { JournalList } from "./pages/journal/JournalList";
 import { JournalEntryForm } from "./pages/journal/JournalEntryForm";
+import { VoucherForm } from "./pages/journal/VoucherForm";
 import { Customers } from "./pages/customers/Customers";
 import { Vendors } from "./pages/vendors/Vendors";
 import { InvoiceList } from "./pages/invoices/InvoiceList";
@@ -40,6 +41,8 @@ export default function App() {
         <Route path="accounts" element={<ChartOfAccounts />} />
         <Route path="journal" element={<JournalList />} />
         <Route path="journal/new" element={<JournalEntryForm />} />
+        <Route path="vouchers/debit/new" element={<VoucherForm kind="DEBIT" />} />
+        <Route path="vouchers/credit/new" element={<VoucherForm kind="CREDIT" />} />
         <Route path="customers" element={<Customers />} />
         <Route path="invoices" element={<InvoiceList />} />
         <Route path="invoices/new" element={<InvoiceForm />} />

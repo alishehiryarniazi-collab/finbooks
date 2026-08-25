@@ -1,4 +1,4 @@
-import { Prisma, type JournalSource, type PrismaClient } from "@prisma/client";
+import { Prisma, type JournalSource, type PrismaClient, type VoucherType } from "@prisma/client";
 import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { D, round2 } from "../utils/money";
@@ -18,6 +18,7 @@ export interface PostEntryInput {
   memo?: string;
   reference?: string;
   source?: JournalSource;
+  voucherType?: VoucherType;
   sourceId?: string;
   lines: PostingLine[];
 }
@@ -74,10 +75,19 @@ export async function postEntry(input: PostEntryInput, db: Db = prisma) {
   const accountIds = [...new Set(input.lines.map((l) => l.accountId))];
   const accounts = await db.account.findMany({
     where: { id: { in: accountIds }, orgId: input.orgId },
-    select: { id: true },
+    select: { id: true, code: true, name: true, isPostable: true },
   });
   if (accounts.length !== accountIds.length) {
     throw new HttpError(400, "One or more accounts do not exist in this organization.");
+  }
+
+  // Guard: you can only post to leaf (detail) accounts, never to a group/header account.
+  const group = accounts.find((a) => !a.isPostable);
+  if (group) {
+    throw new HttpError(
+      400,
+      `Account ${group.code} ${group.name} is a group and cannot be posted to. Choose a detail account.`,
+    );
   }
 
   return db.journalEntry.create({
@@ -88,6 +98,7 @@ export async function postEntry(input: PostEntryInput, db: Db = prisma) {
       reference: input.reference,
       status: "POSTED",
       source: input.source ?? "MANUAL",
+      voucherType: input.voucherType ?? "JOURNAL",
       sourceId: input.sourceId,
       createdById: input.createdById,
       lines: {

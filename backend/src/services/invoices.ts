@@ -175,6 +175,7 @@ export async function recordInvoicePayment(
         memo: `Payment for invoice ${invoice.number}`,
         reference: input.reference ?? invoice.number,
         source: "PAYMENT",
+        voucherType: "CREDIT", // money received = Credit (Receipt) Voucher
         sourceId: invoice.id,
         lines: [
           { accountId: bank.id, debit: amount, description: `Payment ${invoice.number}` },

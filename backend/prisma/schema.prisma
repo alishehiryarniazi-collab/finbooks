@@ -54,6 +54,16 @@ enum JournalSource {
   PAYMENT
 }
 
+// The kind of voucher an entry represents (Tally/South-Asian style):
+//   JOURNAL — non-cash adjusting entry (free-form balanced Dr/Cr)
+//   DEBIT   — Debit (Payment) Voucher: cash/bank paid OUT (counter accounts debited)
+//   CREDIT  — Credit (Receipt) Voucher: cash/bank received IN (counter accounts credited)
+enum VoucherType {
+  JOURNAL
+  DEBIT
+  CREDIT
+}
+
 enum InvoiceStatus {
   DRAFT
   SENT
@@ -136,6 +146,9 @@ model Account {
   parentId      String?
   parent        Account?      @relation("AccountTree", fields: [parentId], references: [id])
   children      Account[]     @relation("AccountTree")
+  // Only leaf (level-3) detail accounts are postable. Level-1/2 accounts are groups
+  // that roll up their children's balances and cannot receive journal lines.
+  isPostable    Boolean       @default(false)
   isActive      Boolean       @default(true)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -163,6 +176,7 @@ model JournalEntry {
   reference   String?
   status      JournalStatus @default(POSTED)
   source      JournalSource @default(MANUAL)
+  voucherType VoucherType   @default(JOURNAL)
   sourceId    String? // id of the Invoice/Bill/Payment that generated this entry
   createdById String
   createdBy   User          @relation(fields: [createdById], references: [id])

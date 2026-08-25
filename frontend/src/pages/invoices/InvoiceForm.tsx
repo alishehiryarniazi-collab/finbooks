@@ -36,7 +36,7 @@ export function InvoiceForm() {
 
   if (customersReq.loading || accountsReq.loading) return <Spinner label="Loading…" />;
   const customers = customersReq.data?.customers ?? [];
-  const incomeAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "INCOME");
+  const incomeAccounts = (accountsReq.data?.accounts ?? []).filter((a) => a.type === "INCOME" && a.isPostable);
 
   function setLine(i: number, patch: Partial<Line>) {
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));

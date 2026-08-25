@@ -41,6 +41,8 @@ interface AccountBalance {
   type: AccountType;
   subtype: string | null;
   normalBalance: "DEBIT" | "CREDIT";
+  parentId: string | null;
+  isPostable: boolean;
   isActive: boolean;
   debit: Prisma.Decimal;
   credit: Prisma.Decimal;
@@ -71,6 +73,8 @@ export async function accountBalances(orgId: string, range?: DateRange) {
     type: r.type,
     subtype: r.subtype,
     normalBalance: r.normalBalance,
+    parentId: r.parentId,
+    isPostable: r.isPostable,
     isActive: r.isActive,
     debit: r.debit.toFixed(2),
     credit: r.credit.toFixed(2),

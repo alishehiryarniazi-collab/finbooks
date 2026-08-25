@@ -19,11 +19,15 @@ export interface Account {
   type: AccountType;
   subtype: string | null;
   normalBalance: "DEBIT" | "CREDIT";
+  parentId: string | null;
+  isPostable: boolean; // only leaf (level-3) accounts can receive postings
   isActive: boolean;
   debit: string;
   credit: string;
   balance: string;
 }
+
+export type VoucherType = "JOURNAL" | "DEBIT" | "CREDIT";
 
 export interface JournalLine {
   id: string;
@@ -41,6 +45,7 @@ export interface JournalEntry {
   reference: string | null;
   status: "DRAFT" | "POSTED" | "VOID";
   source: string;
+  voucherType: VoucherType;
   lines: JournalLine[];
   createdBy?: { name: string };
 }

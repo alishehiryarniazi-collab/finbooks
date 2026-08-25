@@ -30,7 +30,8 @@ export function JournalEntryForm() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return <Spinner label="Loading accounts…" />;
-  const accounts = data?.accounts ?? [];
+  // Only postable (leaf) accounts can appear as line accounts.
+  const accounts = (data?.accounts ?? []).filter((a) => a.isPostable);
 
   const totalDebit = lines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
   const totalCredit = lines.reduce((s, l) => s + (Number(l.credit) || 0), 0);
@@ -64,7 +65,7 @@ export function JournalEntryForm() {
 
   return (
     <div>
-      <PageHeader title="New Journal Entry" subtitle="Debits must equal credits" />
+      <PageHeader title="New Journal Voucher" subtitle="Non-cash adjusting entry — debits must equal credits" />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">

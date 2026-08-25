@@ -115,7 +115,7 @@ export function BillView() {
         <PayModal
           billId={bill.id}
           outstanding={outstanding}
-          bankAccounts={(accountsReq.data?.accounts ?? []).filter((a) => a.type === "ASSET")}
+          bankAccounts={(accountsReq.data?.accounts ?? []).filter((a) => a.type === "ASSET" && a.isPostable)}
           onClose={() => setPayOpen(false)}
           onSaved={() => { setPayOpen(false); refetch(); }}
         />

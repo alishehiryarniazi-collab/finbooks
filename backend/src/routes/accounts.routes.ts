@@ -30,11 +30,32 @@ accountsRouter.get("/", async (req, res) => {
 const createSchema = z.object({
   code: z.string().min(1).max(20),
   name: z.string().min(1).max(120),
-  type: z.enum(ACCOUNT_TYPES),
+  // Type is required for a top-level account, but inherited from the parent otherwise.
+  type: z.enum(ACCOUNT_TYPES).optional(),
   subtype: z.string().max(60).optional(),
+  parentId: z.string().min(1).optional(),
 });
 
+// Walks up the parent chain to find an account's depth (level 1 = top of the tree).
+async function accountLevel(orgId: string, accountId: string): Promise<number> {
+  let level = 1;
+  let current = await prisma.account.findFirst({
+    where: { id: accountId, orgId },
+    select: { parentId: true },
+  });
+  // Cap the walk at the 3-level design to avoid any accidental infinite loop.
+  while (current?.parentId && level < 5) {
+    level++;
+    current = await prisma.account.findFirst({
+      where: { id: current.parentId, orgId },
+      select: { parentId: true },
+    });
+  }
+  return level;
+}
+
 // Create requires ACCOUNTANT or ADMIN (VIEWER is read-only).
+// Only leaf (level-3) accounts are postable; levels 1 & 2 are groups. Max depth is 3.
 accountsRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const data = createSchema.parse(req.body);
   const orgId = req.auth!.orgId;
@@ -42,14 +63,32 @@ accountsRouter.post("/", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) =>
   const dupe = await prisma.account.findFirst({ where: { orgId, code: data.code } });
   if (dupe) throw new HttpError(409, `Account code ${data.code} already exists.`);
 
+  let level = 1;
+  let type = data.type;
+
+  if (data.parentId) {
+    const parent = await prisma.account.findFirst({ where: { id: data.parentId, orgId } });
+    if (!parent) throw new HttpError(400, "Parent account not found.");
+    const parentLevel = await accountLevel(orgId, parent.id);
+    if (parentLevel >= 3) {
+      throw new HttpError(400, "Accounts can be at most 3 levels deep. Pick a level-1 or level-2 group as the parent.");
+    }
+    level = parentLevel + 1;
+    type = parent.type; // children inherit their parent's category
+  } else if (!type) {
+    throw new HttpError(400, "Choose an account type for a top-level account.");
+  }
+
   const account = await prisma.account.create({
     data: {
       orgId,
       code: data.code,
       name: data.name,
-      type: data.type,
+      type: type!,
       subtype: data.subtype,
-      normalBalance: NORMAL_BY_TYPE[data.type],
+      normalBalance: NORMAL_BY_TYPE[type!],
+      parentId: data.parentId ?? null,
+      isPostable: level === 3, // only detail (level-3) accounts can receive postings
     },
   });
   res.status(201).json({ account });
@@ -79,6 +118,11 @@ accountsRouter.delete("/:id", requireRole("ADMIN"), async (req, res) => {
   const orgId = req.auth!.orgId;
   const existing = await prisma.account.findFirst({ where: { id: req.params.id, orgId } });
   if (!existing) throw new HttpError(404, "Account not found.");
+
+  const childCount = await prisma.account.count({ where: { parentId: existing.id } });
+  if (childCount > 0) {
+    throw new HttpError(409, "This group has sub-accounts. Delete or move them first.");
+  }
 
   const usage = await prisma.journalLine.count({ where: { accountId: existing.id } });
   if (usage > 0) {
