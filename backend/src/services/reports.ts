@@ -342,6 +342,71 @@ function monthKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
+// --- Cost accounting: profit per dimension (cost centre / project) ----------
+// Income (credit-debit on INCOME accounts) minus expense (debit-credit on EXPENSE accounts),
+// grouped by the chosen dimension. Untagged lines fall into "Unassigned".
+async function dimensionPnl(orgId: string, dim: "costCenterId" | "projectId", range?: DateRange) {
+  const dateFilter: Prisma.DateTimeFilter = {};
+  if (range?.from) dateFilter.gte = range.from;
+  if (range?.to) dateFilter.lte = range.to;
+
+  const lines = await prisma.journalLine.findMany({
+    where: {
+      entry: { orgId, status: "POSTED", ...(range?.from || range?.to ? { date: dateFilter } : {}) },
+      account: { type: { in: ["INCOME", "EXPENSE"] } },
+    },
+    select: { debit: true, credit: true, costCenterId: true, projectId: true, account: { select: { type: true } } },
+  });
+
+  const map = new Map<string | null, { income: Prisma.Decimal; expense: Prisma.Decimal }>();
+  for (const l of lines) {
+    const key = (dim === "costCenterId" ? l.costCenterId : l.projectId) ?? null;
+    const slot = map.get(key) ?? { income: D(0), expense: D(0) };
+    if (l.account.type === "INCOME") slot.income = slot.income.plus(l.credit.minus(l.debit));
+    else slot.expense = slot.expense.plus(l.debit.minus(l.credit));
+    map.set(key, slot);
+  }
+  return map;
+}
+
+function serializeDimension(
+  map: Map<string | null, { income: Prisma.Decimal; expense: Prisma.Decimal }>,
+  nameById: Map<string, string>,
+) {
+  let ti = D(0);
+  let te = D(0);
+  const rows = [...map.entries()].map(([id, v]) => {
+    ti = ti.plus(v.income);
+    te = te.plus(v.expense);
+    return {
+      id: id ?? "unassigned",
+      name: id ? (nameById.get(id) ?? "—") : "Unassigned",
+      income: v.income.toFixed(2),
+      expense: v.expense.toFixed(2),
+      net: v.income.minus(v.expense).toFixed(2),
+    };
+  });
+  rows.sort((a, b) => Number(b.net) - Number(a.net));
+  return {
+    rows,
+    totals: { income: ti.toFixed(2), expense: te.toFixed(2), net: ti.minus(te).toFixed(2) },
+  };
+}
+
+export async function costCenterReport(orgId: string, range?: DateRange) {
+  const map = await dimensionPnl(orgId, "costCenterId", range);
+  const centers = await prisma.costCenter.findMany({ where: { orgId } });
+  const nameById = new Map(centers.map((c) => [c.id, `${c.code ? c.code + " " : ""}${c.name}`]));
+  return serializeDimension(map, nameById);
+}
+
+export async function projectReport(orgId: string, range?: DateRange) {
+  const map = await dimensionPnl(orgId, "projectId", range);
+  const projects = await prisma.project.findMany({ where: { orgId } });
+  const nameById = new Map(projects.map((p) => [p.id, `${p.code ? p.code + " " : ""}${p.name}`]));
+  return serializeDimension(map, nameById);
+}
+
 // Tax summary from the Sales Tax Payable ledger: output tax (collected on sales, credited)
 // minus input tax (paid on purchases, debited) = net tax payable to the authority.
 export async function taxSummary(orgId: string, range?: DateRange) {

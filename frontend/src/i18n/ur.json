@@ -45,7 +45,12 @@
     "settings": "ترتیبات",
     "team": "ٹیم",
     "taxRates": "ٹیکس ریٹس",
-    "companySettings": "کمپنی کی ترتیبات"
+    "companySettings": "کمپنی کی ترتیبات",
+    "costAccounting": "لاگت اکاؤنٹنگ",
+    "costCenters": "کاسٹ سینٹرز",
+    "projects": "پروجیکٹس",
+    "costCenterReport": "کاسٹ سینٹر منافع",
+    "projectReport": "پروجیکٹ نفع و نقصان"
   },
   "auth": {
     "welcomeBack": "خوش آمدید",

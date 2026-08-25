@@ -14,6 +14,8 @@ interface LineInput {
   unitPrice: number;
   taxRatePercent?: number;
   expenseAccountId: string;
+  costCenterId?: string | null;
+  projectId?: string | null;
 }
 
 function computeTotals(lines: LineInput[]) {
@@ -77,6 +79,8 @@ export async function createBill(orgId: string, input: CreateBillInput) {
           taxRatePercent: D(c.taxRatePercent ?? 0),
           lineTotal: c.lineTotal,
           expenseAccountId: c.expenseAccountId,
+          costCenterId: c.costCenterId || null,
+          projectId: c.projectId || null,
         })),
       },
     },
@@ -123,6 +127,8 @@ export async function updateBill(orgId: string, id: string, input: CreateBillInp
             taxRatePercent: D(c.taxRatePercent ?? 0),
             lineTotal: c.lineTotal,
             expenseAccountId: c.expenseAccountId,
+            costCenterId: c.costCenterId || null,
+            projectId: c.projectId || null,
           })),
         },
       },
@@ -150,16 +156,26 @@ export async function postBill(orgId: string, userId: string, billId: string) {
 
     const apId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.ACCOUNTS_PAYABLE);
 
-    const expenseByAccount = new Map<string, Prisma.Decimal>();
+    // Debit expense grouped by account + cost centre + project (so the dimensions survive).
+    const expenseGroups = new Map<
+      string,
+      { accountId: string; costCenterId: string | null; projectId: string | null; amount: Prisma.Decimal }
+    >();
     for (const l of bill.lines) {
-      expenseByAccount.set(
-        l.expenseAccountId,
-        (expenseByAccount.get(l.expenseAccountId) ?? D(0)).plus(l.lineTotal),
-      );
+      const key = `${l.expenseAccountId}|${l.costCenterId ?? ""}|${l.projectId ?? ""}`;
+      const g = expenseGroups.get(key) ?? {
+        accountId: l.expenseAccountId,
+        costCenterId: l.costCenterId,
+        projectId: l.projectId,
+        amount: D(0),
+      };
+      g.amount = g.amount.plus(l.lineTotal);
+      expenseGroups.set(key, g);
     }
 
     const lines: PostingLine[] = [];
-    for (const [accountId, amount] of expenseByAccount) lines.push({ accountId, debit: amount });
+    for (const g of expenseGroups.values())
+      lines.push({ accountId: g.accountId, debit: g.amount, costCenterId: g.costCenterId, projectId: g.projectId });
     if (bill.taxTotal.gt(0)) {
       // Input tax reduces the net Sales Tax Payable liability (VAT recoverable).
       const taxId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.SALES_TAX_PAYABLE);

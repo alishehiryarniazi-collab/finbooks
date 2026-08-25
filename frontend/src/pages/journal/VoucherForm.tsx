@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
-import type { Account } from "../../lib/types";
+import type { Account, CostCenter, Project } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
@@ -25,10 +25,14 @@ const emptyLine = (): LineRow => ({ accountId: "", amount: "", description: "" }
 export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
   const navigate = useNavigate();
   const { data, loading } = useFetch<{ accounts: Account[] }>("/accounts");
+  const ccReq = useFetch<{ costCenters: CostCenter[] }>("/cost-centers");
+  const projReq = useFetch<{ projects: Project[] }>("/projects");
   const [date, setDate] = useState(inputDate());
   const [reference, setReference] = useState("");
   const [memo, setMemo] = useState("");
   const [bankAccountId, setBankAccountId] = useState("");
+  const [costCenterId, setCostCenterId] = useState("");
+  const [projectId, setProjectId] = useState("");
   const [lines, setLines] = useState<LineRow[]>([emptyLine()]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,6 +40,8 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
   if (loading) return <Spinner label="Loading accounts…" />;
   const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
   const bankAccounts = accounts.filter((a) => a.type === "ASSET");
+  const costCenters = (ccReq.data?.costCenters ?? []).filter((c) => c.isActive);
+  const projects = (projReq.data?.projects ?? []).filter((p) => p.isActive);
   const LARGE_AMOUNT = 1_000_000;
 
   const isPayment = kind === "DEBIT";
@@ -74,7 +80,13 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
         bankAccountId,
         lines: lines
           .filter((l) => l.accountId && Number(l.amount) > 0)
-          .map((l) => ({ accountId: l.accountId, amount: Number(l.amount), description: l.description || undefined })),
+          .map((l) => ({
+            accountId: l.accountId,
+            amount: Number(l.amount),
+            description: l.description || undefined,
+            costCenterId: costCenterId || undefined,
+            projectId: projectId || undefined,
+          })),
         ...overrides,
       };
       await api.post(isPayment ? "/journal/debit-voucher" : "/journal/credit-voucher", payload);
@@ -142,6 +154,27 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
               </option>
             ))}
           </SelectField>
+
+          {(costCenters.length > 0 || projects.length > 0) && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {costCenters.length > 0 && (
+                <SelectField label="Cost center (optional)" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
+                  <option value="">— None —</option>
+                  {costCenters.map((c) => (
+                    <option key={c.id} value={c.id}>{c.code ? `${c.code} · ` : ""}{c.name}</option>
+                  ))}
+                </SelectField>
+              )}
+              {projects.length > 0 && (
+                <SelectField label="Project (optional)" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+                  <option value="">— None —</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.code ? `${p.code} · ` : ""}{p.name}</option>
+                  ))}
+                </SelectField>
+              )}
+            </div>
+          )}
 
           <div>
             <p className="label mb-2">{copy.lines}</p>

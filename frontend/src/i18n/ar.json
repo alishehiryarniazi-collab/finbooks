@@ -45,7 +45,12 @@
     "settings": "الإعدادات",
     "team": "الفريق",
     "taxRates": "معدلات الضريبة",
-    "companySettings": "إعدادات الشركة"
+    "companySettings": "إعدادات الشركة",
+    "costAccounting": "محاسبة التكاليف",
+    "costCenters": "مراكز التكلفة",
+    "projects": "المشاريع",
+    "costCenterReport": "الربح حسب مركز التكلفة",
+    "projectReport": "أرباح وخسائر المشروع"
   },
   "auth": {
     "welcomeBack": "مرحبًا بعودتك",

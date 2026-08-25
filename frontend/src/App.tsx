@@ -30,6 +30,9 @@ import { Team } from "./pages/Team";
 import { Settings } from "./pages/Settings";
 import { TaxRates } from "./pages/TaxRates";
 import { TaxReport } from "./pages/reports/TaxReport";
+import { CostCenters } from "./pages/CostCenters";
+import { Projects } from "./pages/Projects";
+import { CostCenterReport, ProjectReport } from "./pages/reports/DimensionReport";
 
 export default function App() {
   return (
@@ -73,6 +76,10 @@ export default function App() {
         <Route path="team" element={<Team />} />
         <Route path="settings" element={<Settings />} />
         <Route path="tax-rates" element={<TaxRates />} />
+        <Route path="cost-centers" element={<CostCenters />} />
+        <Route path="projects" element={<Projects />} />
+        <Route path="reports/cost-centers" element={<CostCenterReport />} />
+        <Route path="reports/projects" element={<ProjectReport />} />
       </Route>
 
       {/* Standalone printable documents — protected, but outside AppLayout (no sidebar). */}

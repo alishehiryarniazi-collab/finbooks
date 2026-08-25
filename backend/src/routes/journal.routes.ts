@@ -41,6 +41,8 @@ const lineSchema = z.object({
   debit: z.coerce.number().min(0).optional(),
   credit: z.coerce.number().min(0).optional(),
   description: z.string().max(200).optional(),
+  costCenterId: z.string().optional(),
+  projectId: z.string().optional(),
 });
 
 // Confirmable-guard overrides sent after the user acknowledges a warning.
@@ -88,6 +90,8 @@ const voucherSchema = z.object({
         accountId: z.string().min(1),
         amount: z.coerce.number().positive(),
         description: z.string().max(200).optional(),
+        costCenterId: z.string().optional(),
+        projectId: z.string().optional(),
       }),
     )
     .min(1, "Add at least one line."),
@@ -108,7 +112,13 @@ journalRouter.post("/debit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async (
     source: "MANUAL",
     voucherType: "DEBIT",
     lines: [
-      ...data.lines.map((l) => ({ accountId: l.accountId, debit: l.amount, description: l.description })),
+      ...data.lines.map((l) => ({
+        accountId: l.accountId,
+        debit: l.amount,
+        description: l.description,
+        costCenterId: l.costCenterId,
+        projectId: l.projectId,
+      })),
       { accountId: data.bankAccountId, credit: total, description: "Payment" },
     ],
     overrides: { allowNegativeCash: data.allowNegativeCash, allowDuplicateRef: data.allowDuplicateRef },
@@ -131,7 +141,13 @@ journalRouter.post("/credit-voucher", requireRole("ADMIN", "ACCOUNTANT"), async 
     voucherType: "CREDIT",
     lines: [
       { accountId: data.bankAccountId, debit: total, description: "Receipt" },
-      ...data.lines.map((l) => ({ accountId: l.accountId, credit: l.amount, description: l.description })),
+      ...data.lines.map((l) => ({
+        accountId: l.accountId,
+        credit: l.amount,
+        description: l.description,
+        costCenterId: l.costCenterId,
+        projectId: l.projectId,
+      })),
     ],
     overrides: { allowNegativeCash: data.allowNegativeCash, allowDuplicateRef: data.allowDuplicateRef },
   });

@@ -45,7 +45,12 @@
     "settings": "Settings",
     "team": "Team",
     "taxRates": "Tax Rates",
-    "companySettings": "Company Settings"
+    "companySettings": "Company Settings",
+    "costAccounting": "Cost Accounting",
+    "costCenters": "Cost Centers",
+    "projects": "Projects",
+    "costCenterReport": "Profit by Cost Center",
+    "projectReport": "Project P&L"
   },
   "auth": {
     "welcomeBack": "Welcome back",

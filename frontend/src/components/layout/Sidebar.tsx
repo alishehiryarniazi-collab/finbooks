@@ -42,6 +42,13 @@ const NAV = [
     items: [{ to: "/payments", labelKey: "payments", icon: "💸" }],
   },
   {
+    sectionKey: "costAccounting",
+    items: [
+      { to: "/cost-centers", labelKey: "costCenters", icon: "🏷️" },
+      { to: "/projects", labelKey: "projects", icon: "📁" },
+    ],
+  },
+  {
     sectionKey: "reports",
     items: [
       { to: "/reports/trial-balance", labelKey: "trialBalance", icon: "⚖️" },
@@ -50,6 +57,8 @@ const NAV = [
       { to: "/reports/ar-aging", labelKey: "arAging", icon: "⏳" },
       { to: "/reports/ap-aging", labelKey: "apAging", icon: "⌛" },
       { to: "/reports/tax-summary", labelKey: "taxReport", icon: "🧮" },
+      { to: "/reports/cost-centers", labelKey: "costCenterReport", icon: "🏷️" },
+      { to: "/reports/projects", labelKey: "projectReport", icon: "📁" },
     ],
   },
   {

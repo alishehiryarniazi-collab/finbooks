@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
-import type { Account } from "../../lib/types";
+import type { Account, CostCenter, Project } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
@@ -22,9 +22,13 @@ const emptyLine = (): LineRow => ({ accountId: "", debit: "", credit: "" });
 export function JournalEntryForm() {
   const navigate = useNavigate();
   const { data, loading } = useFetch<{ accounts: Account[] }>("/accounts");
+  const ccReq = useFetch<{ costCenters: CostCenter[] }>("/cost-centers");
+  const projReq = useFetch<{ projects: Project[] }>("/projects");
   const [date, setDate] = useState(inputDate());
   const [memo, setMemo] = useState("");
   const [reference, setReference] = useState("");
+  const [costCenterId, setCostCenterId] = useState("");
+  const [projectId, setProjectId] = useState("");
   const [lines, setLines] = useState<LineRow[]>([emptyLine(), emptyLine()]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -32,6 +36,8 @@ export function JournalEntryForm() {
   if (loading) return <Spinner label="Loading accounts…" />;
   // Only postable (leaf), ACTIVE accounts can appear as line accounts.
   const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
+  const costCenters = (ccReq.data?.costCenters ?? []).filter((c) => c.isActive);
+  const projects = (projReq.data?.projects ?? []).filter((p) => p.isActive);
 
   const totalDebit = lines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
   const totalCredit = lines.reduce((s, l) => s + (Number(l.credit) || 0), 0);
@@ -64,7 +70,13 @@ export function JournalEntryForm() {
         reference: reference || undefined,
         lines: lines
           .filter((l) => l.accountId && (Number(l.debit) || Number(l.credit)))
-          .map((l) => ({ accountId: l.accountId, debit: Number(l.debit) || 0, credit: Number(l.credit) || 0 })),
+          .map((l) => ({
+            accountId: l.accountId,
+            debit: Number(l.debit) || 0,
+            credit: Number(l.credit) || 0,
+            costCenterId: costCenterId || undefined,
+            projectId: projectId || undefined,
+          })),
         ...overrides,
       };
       await api.post("/journal", payload);
@@ -121,6 +133,27 @@ export function JournalEntryForm() {
               placeholder="Description"
             />
           </div>
+
+          {(costCenters.length > 0 || projects.length > 0) && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {costCenters.length > 0 && (
+                <SelectField label="Cost center (optional)" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
+                  <option value="">— None —</option>
+                  {costCenters.map((c) => (
+                    <option key={c.id} value={c.id}>{c.code ? `${c.code} · ` : ""}{c.name}</option>
+                  ))}
+                </SelectField>
+              )}
+              {projects.length > 0 && (
+                <SelectField label="Project (optional)" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+                  <option value="">— None —</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.code ? `${p.code} · ` : ""}{p.name}</option>
+                  ))}
+                </SelectField>
+              )}
+            </div>
+          )}
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">

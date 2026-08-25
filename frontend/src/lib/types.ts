@@ -55,6 +55,21 @@ export interface TaxRate {
   isActive: boolean;
 }
 
+export interface CostCenter {
+  id: string;
+  name: string;
+  code: string | null;
+  isActive: boolean;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  code: string | null;
+  status: string;
+  isActive: boolean;
+}
+
 export interface JournalLine {
   id: string;
   accountId: string;

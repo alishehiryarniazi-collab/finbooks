@@ -10,6 +10,8 @@ export interface PostingLine {
   debit?: Prisma.Decimal.Value;
   credit?: Prisma.Decimal.Value;
   description?: string;
+  costCenterId?: string | null;
+  projectId?: string | null;
 }
 
 export interface PostEntryInput {
@@ -165,6 +167,8 @@ export async function postEntry(input: PostEntryInput, db: Db = prisma) {
           debit: round2(l.debit ?? 0),
           credit: round2(l.credit ?? 0),
           description: l.description,
+          costCenterId: l.costCenterId || null,
+          projectId: l.projectId || null,
         })),
       },
     },

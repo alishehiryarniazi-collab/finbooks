@@ -14,6 +14,8 @@ interface LineInput {
   unitPrice: number;
   taxRatePercent?: number;
   incomeAccountId: string;
+  costCenterId?: string | null;
+  projectId?: string | null;
 }
 
 // Computes per-line totals plus invoice subtotal/tax/total, all exact Decimals.
@@ -78,6 +80,8 @@ export async function createInvoice(orgId: string, input: CreateInvoiceInput) {
           taxRatePercent: D(c.taxRatePercent ?? 0),
           lineTotal: c.lineTotal,
           incomeAccountId: c.incomeAccountId,
+          costCenterId: c.costCenterId || null,
+          projectId: c.projectId || null,
         })),
       },
     },
@@ -124,6 +128,8 @@ export async function updateInvoice(orgId: string, id: string, input: CreateInvo
             taxRatePercent: D(c.taxRatePercent ?? 0),
             lineTotal: c.lineTotal,
             incomeAccountId: c.incomeAccountId,
+            costCenterId: c.costCenterId || null,
+            projectId: c.projectId || null,
           })),
         },
       },
@@ -154,19 +160,28 @@ export async function postInvoice(orgId: string, userId: string, invoiceId: stri
 
     const arId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.ACCOUNTS_RECEIVABLE);
 
-    // Credit income per account (group lines sharing an income account).
-    const incomeByAccount = new Map<string, Prisma.Decimal>();
+    // Credit income grouped by account + cost centre + project (so the dimensions survive).
+    const incomeGroups = new Map<
+      string,
+      { accountId: string; costCenterId: string | null; projectId: string | null; amount: Prisma.Decimal }
+    >();
     for (const l of invoice.lines) {
-      incomeByAccount.set(
-        l.incomeAccountId,
-        (incomeByAccount.get(l.incomeAccountId) ?? D(0)).plus(l.lineTotal),
-      );
+      const key = `${l.incomeAccountId}|${l.costCenterId ?? ""}|${l.projectId ?? ""}`;
+      const g = incomeGroups.get(key) ?? {
+        accountId: l.incomeAccountId,
+        costCenterId: l.costCenterId,
+        projectId: l.projectId,
+        amount: D(0),
+      };
+      g.amount = g.amount.plus(l.lineTotal);
+      incomeGroups.set(key, g);
     }
 
     const lines: PostingLine[] = [
       { accountId: arId, debit: invoice.total, description: `Invoice ${invoice.number}` },
     ];
-    for (const [accountId, amount] of incomeByAccount) lines.push({ accountId, credit: amount });
+    for (const g of incomeGroups.values())
+      lines.push({ accountId: g.accountId, credit: g.amount, costCenterId: g.costCenterId, projectId: g.projectId });
     if (invoice.taxTotal.gt(0)) {
       const taxId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.SALES_TAX_PAYABLE);
       lines.push({ accountId: taxId, credit: invoice.taxTotal });

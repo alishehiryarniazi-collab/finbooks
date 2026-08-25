@@ -117,6 +117,8 @@ model Organization {
   bills        Bill[]
   payments     Payment[]
   taxRates     TaxRate[]
+  costCenters  CostCenter[]
+  projects     Project[]
 }
 
 // A user is a global identity (unique email). Company access + role live on Membership,
@@ -217,9 +219,53 @@ model JournalLine {
   debit       Decimal      @default(0) @db.Decimal(18, 2)
   credit      Decimal      @default(0) @db.Decimal(18, 2)
   description String?
+  // Cost-accounting dimensions (optional).
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
+  projectId    String?
+  project      Project?    @relation(fields: [projectId], references: [id])
 
   @@index([entryId])
   @@index([accountId])
+  @@index([costCenterId])
+  @@index([projectId])
+}
+
+// ---------------------------------------------------------------------------
+// Cost accounting dimensions
+// ---------------------------------------------------------------------------
+
+model CostCenter {
+  id           String       @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  code         String?
+  name         String
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  journalLines JournalLine[]
+  invoiceLines InvoiceLine[]
+  billLines    BillLine[]
+
+  @@index([orgId])
+}
+
+model Project {
+  id           String       @id @default(cuid())
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  code         String?
+  name         String
+  status       String       @default("ACTIVE") // ACTIVE | COMPLETED | ON_HOLD
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  journalLines JournalLine[]
+  invoiceLines InvoiceLine[]
+  billLines    BillLine[]
+
+  @@index([orgId])
 }
 
 // ---------------------------------------------------------------------------
@@ -281,6 +327,10 @@ model InvoiceLine {
   lineTotal       Decimal @default(0) @db.Decimal(18, 2)
   incomeAccountId String
   incomeAccount   Account @relation(fields: [incomeAccountId], references: [id])
+  costCenterId    String?
+  costCenter      CostCenter? @relation(fields: [costCenterId], references: [id])
+  projectId       String?
+  project         Project?    @relation(fields: [projectId], references: [id])
 
   @@index([invoiceId])
 }
@@ -344,6 +394,10 @@ model BillLine {
   lineTotal        Decimal @default(0) @db.Decimal(18, 2)
   expenseAccountId String
   expenseAccount   Account @relation(fields: [expenseAccountId], references: [id])
+  costCenterId     String?
+  costCenter       CostCenter? @relation(fields: [costCenterId], references: [id])
+  projectId        String?
+  project          Project?    @relation(fields: [projectId], references: [id])
 
   @@index([billId])
 }

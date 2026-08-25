@@ -15,6 +15,7 @@ import { paymentsRouter } from "./routes/payments.routes";
 import { reportsRouter } from "./routes/reports.routes";
 import { organizationRouter } from "./routes/organization.routes";
 import { taxRatesRouter } from "./routes/taxRates.routes";
+import { costCentersRouter, projectsRouter } from "./routes/costAccounting.routes";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 
 export function createApp() {
@@ -39,6 +40,8 @@ export function createApp() {
   app.use("/api/reports", reportsRouter);
   app.use("/api/organization", organizationRouter);
   app.use("/api/tax-rates", taxRatesRouter);
+  app.use("/api/cost-centers", costCentersRouter);
+  app.use("/api/projects", projectsRouter);
 
   app.use(notFoundHandler);
 

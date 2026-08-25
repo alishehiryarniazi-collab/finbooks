@@ -32,6 +32,8 @@ const lineSchema = z.object({
   unitPrice: z.coerce.number().min(0),
   taxRatePercent: z.coerce.number().min(0).max(100).optional(),
   expenseAccountId: z.string().min(1),
+  costCenterId: z.string().optional(),
+  projectId: z.string().optional(),
 });
 
 const createSchema = z.object({
