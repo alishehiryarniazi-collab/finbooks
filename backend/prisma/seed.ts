@@ -6,70 +6,87 @@ import { createBill, postBill, recordBillPayment } from "../src/services/bills";
 import { postEntry } from "../src/services/posting";
 
 const DEMO_ADMIN_EMAIL = "demo@finbooks.app";
+const DEMO_EMAILS = [DEMO_ADMIN_EMAIL, "accountant@finbooks.app", "viewer@finbooks.app"];
 
 // Days ago -> Date, so demo data spreads across recent months for a nice trend chart.
 const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 
+// Best-effort cleanup so re-running the seed on a populated DB stays idempotent.
 async function wipeExistingDemo() {
-  const admin = await prisma.user.findUnique({ where: { email: DEMO_ADMIN_EMAIL } });
+  const admin = await prisma.user.findUnique({
+    where: { email: DEMO_ADMIN_EMAIL },
+    include: { memberships: true },
+  });
   if (!admin) return;
-  const orgId = admin.orgId;
 
-  // Delete in FK-safe order (children first). Invoice/Bill/JournalEntry lines cascade.
-  await prisma.paymentAllocation.deleteMany({ where: { payment: { orgId } } });
-  await prisma.payment.deleteMany({ where: { orgId } });
-  await prisma.invoice.deleteMany({ where: { orgId } });
-  await prisma.bill.deleteMany({ where: { orgId } });
-  await prisma.journalEntry.deleteMany({ where: { orgId } });
-  await prisma.taxRate.deleteMany({ where: { orgId } });
-  await prisma.account.deleteMany({ where: { orgId } });
-  await prisma.customer.deleteMany({ where: { orgId } });
-  await prisma.vendor.deleteMany({ where: { orgId } });
-  await prisma.user.deleteMany({ where: { orgId } });
-  await prisma.organization.delete({ where: { id: orgId } });
+  for (const orgId of admin.memberships.map((m) => m.orgId)) {
+    await prisma.paymentAllocation.deleteMany({ where: { payment: { orgId } } });
+    await prisma.payment.deleteMany({ where: { orgId } });
+    await prisma.invoice.deleteMany({ where: { orgId } });
+    await prisma.bill.deleteMany({ where: { orgId } });
+    await prisma.journalEntry.deleteMany({ where: { orgId } });
+    await prisma.taxRate.deleteMany({ where: { orgId } });
+    await prisma.account.deleteMany({ where: { orgId } });
+    await prisma.customer.deleteMany({ where: { orgId } });
+    await prisma.vendor.deleteMany({ where: { orgId } });
+    await prisma.membership.deleteMany({ where: { orgId } });
+    await prisma.organization.delete({ where: { id: orgId } });
+  }
+  await prisma.user.deleteMany({ where: { email: { in: DEMO_EMAILS } } });
   console.log("• Cleared previous demo data");
 }
 
 async function main() {
   await wipeExistingDemo();
+  const hash = (pw: string) => bcrypt.hash(pw, 10);
 
-  // --- Organization + default chart of accounts ---
+  // --- Company 1 + default chart of accounts ---
   const org = await prisma.organization.create({ data: { name: "FinBooks Demo Co." } });
   await seedDefaultAccounts(org.id, prisma);
   console.log("• Created organization + chart of accounts");
 
-  // --- Users (one per role) ---
-  const hash = (pw: string) => bcrypt.hash(pw, 10);
+  // --- Global users; roles live on their memberships ---
   const admin = await prisma.user.create({
-    data: {
-      orgId: org.id,
-      name: "Demo Admin",
-      email: DEMO_ADMIN_EMAIL,
-      passwordHash: await hash("demo1234"),
-      role: "ADMIN",
-    },
+    data: { name: "Demo Admin", email: DEMO_ADMIN_EMAIL, passwordHash: await hash("demo1234") },
   });
-  await prisma.user.create({
-    data: {
-      orgId: org.id,
-      name: "Aisha Accountant",
-      email: "accountant@finbooks.app",
-      passwordHash: await hash("demo1234"),
-      role: "ACCOUNTANT",
-    },
+  const accountant = await prisma.user.create({
+    data: { name: "Aisha Accountant", email: "accountant@finbooks.app", passwordHash: await hash("demo1234") },
   });
-  await prisma.user.create({
-    data: {
-      orgId: org.id,
-      name: "Vince Viewer",
-      email: "viewer@finbooks.app",
-      passwordHash: await hash("demo1234"),
-      role: "VIEWER",
-    },
+  const viewer = await prisma.user.create({
+    data: { name: "Vince Viewer", email: "viewer@finbooks.app", passwordHash: await hash("demo1234") },
+  });
+  await prisma.membership.createMany({
+    data: [
+      { userId: admin.id, orgId: org.id, role: "ADMIN" },
+      { userId: accountant.id, orgId: org.id, role: "ACCOUNTANT" },
+      { userId: viewer.id, orgId: org.id, role: "VIEWER" },
+    ],
   });
   console.log("• Created users (admin / accountant / viewer)");
 
-  // Handy account lookups by code.
+  // --- Company 2 (demonstrates the switcher): admin belongs to this one too ---
+  const org2 = await prisma.organization.create({
+    data: { name: "Sharyar Traders (Demo)", baseCurrency: "PKR" },
+  });
+  await seedDefaultAccounts(org2.id, prisma);
+  await prisma.membership.create({ data: { userId: admin.id, orgId: org2.id, role: "ADMIN" } });
+  const org2Bank = (await prisma.account.findFirst({ where: { orgId: org2.id, code: SYSTEM_CODES.BANK } }))!;
+  const org2Capital = (await prisma.account.findFirst({ where: { orgId: org2.id, code: "3000" } }))!;
+  await postEntry({
+    orgId: org2.id,
+    createdById: admin.id,
+    date: daysAgo(30),
+    memo: "Owner capital investment",
+    reference: "RV-001",
+    voucherType: "CREDIT",
+    lines: [
+      { accountId: org2Bank.id, debit: 300000 },
+      { accountId: org2Capital.id, credit: 300000 },
+    ],
+  });
+  console.log("• Created second company for the switcher (Sharyar Traders)");
+
+  // Handy account lookups by code for company 1.
   const accounts = await prisma.account.findMany({ where: { orgId: org.id } });
   const byCode = new Map(accounts.map((a) => [a.code, a]));
   const acc = (code: string) => byCode.get(code)!.id;
@@ -117,21 +134,11 @@ async function main() {
     issueDate: daysAgo(80),
     dueDate: daysAgo(50),
     lines: [
-      {
-        description: "Wholesale goods",
-        quantity: 100,
-        unitPrice: 45,
-        taxRatePercent: 10,
-        incomeAccountId: salesAcc,
-      },
+      { description: "Wholesale goods", quantity: 100, unitPrice: 45, taxRatePercent: 10, incomeAccountId: salesAcc },
     ],
   });
   await postInvoice(org.id, admin.id, inv1.id);
-  await recordInvoicePayment(org.id, admin.id, inv1.id, {
-    date: daysAgo(40),
-    amount: 4950,
-    bankAccountId: bank,
-  });
+  await recordInvoicePayment(org.id, admin.id, inv1.id, { date: daysAgo(40), amount: 4950, bankAccountId: bank });
 
   const inv2 = await createInvoice(org.id, {
     customerId: customers[1].id,
@@ -139,22 +146,12 @@ async function main() {
     issueDate: daysAgo(55),
     dueDate: daysAgo(25),
     lines: [
-      {
-        description: "Retail stock",
-        quantity: 60,
-        unitPrice: 30,
-        taxRatePercent: 10,
-        incomeAccountId: salesAcc,
-      },
+      { description: "Retail stock", quantity: 60, unitPrice: 30, taxRatePercent: 10, incomeAccountId: salesAcc },
       { description: "Setup service", quantity: 1, unitPrice: 500, incomeAccountId: serviceAcc },
     ],
   });
   await postInvoice(org.id, admin.id, inv2.id);
-  await recordInvoicePayment(org.id, admin.id, inv2.id, {
-    date: daysAgo(20),
-    amount: 1000,
-    bankAccountId: bank,
-  });
+  await recordInvoicePayment(org.id, admin.id, inv2.id, { date: daysAgo(20), amount: 1000, bankAccountId: bank });
 
   const inv3 = await createInvoice(org.id, {
     customerId: customers[2].id,
@@ -179,26 +176,14 @@ async function main() {
     lines: [{ description: "Office rent - month", quantity: 1, unitPrice: 2000, expenseAccountId: rentAcc }],
   });
   await postBill(org.id, admin.id, bill1.id);
-  await recordBillPayment(org.id, admin.id, bill1.id, {
-    date: daysAgo(44),
-    amount: 2000,
-    bankAccountId: bank,
-  });
+  await recordBillPayment(org.id, admin.id, bill1.id, { date: daysAgo(44), amount: 2000, bankAccountId: bank });
 
   const bill2 = await createBill(org.id, {
     vendorId: vendors[0].id,
     number: "BILL-2002",
     billDate: daysAgo(30),
     dueDate: daysAgo(0),
-    lines: [
-      {
-        description: "Electricity",
-        quantity: 1,
-        unitPrice: 340,
-        taxRatePercent: 10,
-        expenseAccountId: utilAcc,
-      },
-    ],
+    lines: [{ description: "Electricity", quantity: 1, unitPrice: 340, taxRatePercent: 10, expenseAccountId: utilAcc }],
   });
   await postBill(org.id, admin.id, bill2.id);
 
@@ -207,15 +192,13 @@ async function main() {
     number: "BILL-2003",
     billDate: daysAgo(15),
     dueDate: daysAgo(-15),
-    lines: [
-      { description: "Stationery & supplies", quantity: 1, unitPrice: 260, expenseAccountId: suppliesAcc },
-    ],
+    lines: [{ description: "Stationery & supplies", quantity: 1, unitPrice: 260, expenseAccountId: suppliesAcc }],
   });
   await postBill(org.id, admin.id, bill3.id);
   console.log("• Created + posted bills (with payments)");
 
   console.log("\n✓ Seed complete. Log in with:");
-  console.log("   Admin      -> demo@finbooks.app / demo1234");
+  console.log("   Admin      -> demo@finbooks.app / demo1234   (member of 2 companies)");
   console.log("   Accountant -> accountant@finbooks.app / demo1234");
   console.log("   Viewer     -> viewer@finbooks.app / demo1234");
 }

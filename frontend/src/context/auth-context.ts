@@ -20,6 +20,8 @@ export interface AuthState {
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  switchCompany: (orgId: string) => Promise<void>;
+  createCompany: (name: string) => Promise<void>;
   hasRole: (...roles: Role[]) => boolean;
 }
 

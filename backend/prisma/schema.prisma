@@ -107,7 +107,7 @@ model Organization {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  users        User[]
+  memberships  Membership[]
   accounts     Account[]
   journals     JournalEntry[]
   customers    Customer[]
@@ -118,20 +118,33 @@ model Organization {
   taxRates     TaxRate[]
 }
 
+// A user is a global identity (unique email). Company access + role live on Membership,
+// so one login can belong to many companies (each with its own role).
 model User {
   id           String   @id @default(cuid())
-  orgId        String
-  organization Organization @relation(fields: [orgId], references: [id])
   name         String
   email        String   @unique
   passwordHash String
-  role         Role     @default(VIEWER)
-  isActive     Boolean  @default(true)
+  isActive     Boolean  @default(true) // global disable (blocks all companies)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  memberships    Membership[]
   journalEntries JournalEntry[]
+}
 
+// Join between a user and a company, carrying that user's role in that company.
+model Membership {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id])
+  role         Role         @default(VIEWER)
+  isActive     Boolean      @default(true) // per-company access
+  createdAt    DateTime     @default(now())
+
+  @@unique([userId, orgId])
   @@index([orgId])
 }
 

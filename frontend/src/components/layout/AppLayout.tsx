@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
+import { CompanySwitcher } from "./CompanySwitcher";
 import { useAuth } from "../../context/AuthContext";
 
 // Shell around every authenticated page: fixed sidebar + top bar + routed content.
@@ -36,7 +37,7 @@ export function AppLayout() {
           <button className="btn-ghost lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Menu">
             ☰
           </button>
-          <div className="hidden text-sm text-slate-400 sm:block">{user?.organization?.name}</div>
+          <CompanySwitcher />
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-medium text-white">{user?.name}</p>

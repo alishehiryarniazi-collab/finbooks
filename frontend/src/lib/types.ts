@@ -14,13 +14,20 @@ export interface Organization {
   logoDataUrl: string | null;
 }
 
+export interface CompanyRef {
+  orgId: string;
+  name: string;
+  role: Role;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: Role;
-  orgId: string;
-  organization: Organization | null;
+  role: Role; // role in the ACTIVE company
+  orgId: string; // active company
+  organization: Organization | null; // active company profile
+  companies: CompanyRef[]; // all companies this user can switch between
 }
 
 export interface Account {

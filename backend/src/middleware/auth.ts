@@ -36,7 +36,17 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   if (!user) throw new HttpError(401, "Invalid or expired token");
   if (!user.isActive) throw new HttpError(403, "Your account is deactivated. Contact an admin.");
 
-  req.auth = payload;
+  // The token names an active company; confirm the user still has access to it and pick up
+  // their current role there (so a role change or removal takes effect immediately).
+  const membership = await prisma.membership.findUnique({
+    where: { userId_orgId: { userId: payload.userId, orgId: payload.orgId } },
+    select: { isActive: true, role: true },
+  });
+  if (!membership || !membership.isActive) {
+    throw new HttpError(403, "You don't have access to this company.");
+  }
+
+  req.auth = { ...payload, role: membership.role };
   next();
 }
 

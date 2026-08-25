@@ -72,10 +72,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Switch the active company: get a new token for it, then hard-reload so every page's
+  // data re-fetches for the new company (simplest and safest).
+  async function switchCompany(orgId: string) {
+    try {
+      const { data } = await api.post<{ token: string; user: User }>("/auth/switch", { orgId });
+      setToken(data.token);
+      window.location.assign("/");
+    } catch (err) {
+      throw new Error(apiError(err), { cause: err });
+    }
+  }
+
+  // Create a brand-new company, then switch into it.
+  async function createCompany(name: string) {
+    try {
+      const { data } = await api.post<{ organization: { id: string; name: string } }>("/auth/companies", { name });
+      await switchCompany(data.organization.id);
+    } catch (err) {
+      throw new Error(apiError(err), { cause: err });
+    }
+  }
+
   const hasRole = (...roles: Role[]) => !!user && roles.includes(user.role);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, hasRole }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshUser, switchCompany, createCompany, hasRole }}
+    >
       {children}
     </AuthContext.Provider>
   );
