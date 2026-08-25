@@ -24,7 +24,11 @@ export function SelectField({ label, children, className = "", ...rest }: Select
   return (
     <label className="block">
       {label && <span className="label">{label}</span>}
-      <select className={`input ${className} [&>option]:bg-aurora-bg2`} {...rest}>
+      {/* Use descendant selectors so options stay dark even inside <optgroup>. */}
+      <select
+        className={`input ${className} [&_option]:bg-aurora-bg2 [&_option]:text-slate-200 [&_optgroup]:bg-aurora-bg2 [&_optgroup]:font-medium [&_optgroup]:text-slate-400`}
+        {...rest}
+      >
         {children}
       </select>
     </label>
