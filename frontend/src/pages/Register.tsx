@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { TextField } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
@@ -7,6 +8,7 @@ import { AuthShell } from "./Login";
 
 export function Register() {
   const { register } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [form, setForm] = useState({ organizationName: "", name: "", email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
@@ -30,18 +32,18 @@ export function Register() {
   }
 
   return (
-    <AuthShell title="Create your workspace" subtitle="Set up your organization and admin account">
+    <AuthShell title={t("auth.createTitle")} subtitle={t("auth.createSubtitle")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <TextField
-          label="Organization name"
+          label={t("auth.organizationName")}
           value={form.organizationName}
           onChange={set("organizationName")}
           required
         />
-        <TextField label="Your name" value={form.name} onChange={set("name")} required />
-        <TextField label="Email" type="email" value={form.email} onChange={set("email")} required />
+        <TextField label={t("auth.yourName")} value={form.name} onChange={set("name")} required />
+        <TextField label={t("auth.email")} type="email" value={form.email} onChange={set("email")} required />
         <TextField
-          label="Password"
+          label={t("auth.password")}
           type="password"
           value={form.password}
           onChange={set("password")}
@@ -49,13 +51,13 @@ export function Register() {
         />
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <Button type="submit" disabled={busy}>
-          {busy ? "Creating…" : "Create workspace"}
+          {busy ? t("auth.creating") : t("auth.createAccount")}
         </Button>
       </form>
       <p className="mt-4 text-center text-sm text-slate-400">
-        Already have an account?{" "}
+        {t("auth.alreadyHaveAccount")}{" "}
         <Link to="/login" className="text-aurora-mint hover:underline">
-          Sign in
+          {t("auth.signInLink")}
         </Link>
       </p>
     </AuthShell>

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { TextField } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
+import { LanguageSwitcher } from "../components/layout/LanguageSwitcher";
 
 export function Login() {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("demo@finbooks.app");
   const [password, setPassword] = useState("demo1234");
@@ -27,17 +30,11 @@ export function Login() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to your FinBooks workspace">
+    <AuthShell title={t("auth.welcomeBack")} subtitle={t("auth.signInSubtitle")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <TextField label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <TextField
-          label="Password"
+          label={t("auth.password")}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -45,13 +42,13 @@ export function Login() {
         />
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <Button type="submit" disabled={busy}>
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? t("auth.signingIn") : t("auth.signIn")}
         </Button>
       </form>
       <p className="mt-4 text-center text-sm text-slate-400">
-        New here?{" "}
+        {t("auth.newHere")}{" "}
         <Link to="/register" className="text-aurora-mint hover:underline">
-          Create an organization
+          {t("auth.createOrganization")}
         </Link>
       </p>
       <p className="mt-2 text-center text-xs text-slate-500">Demo: demo@finbooks.app / demo1234</p>
@@ -69,6 +66,7 @@ export function AuthShell({
   subtitle: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
       <div className="aurora-bg-blobs">
@@ -76,9 +74,12 @@ export function AuthShell({
         <span />
         <span />
       </div>
+      <div className="absolute end-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div className="glass w-full max-w-md p-8">
         <div className="mb-6 text-center">
-          <span className="text-2xl font-bold gradient-text">FinBooks</span>
+          <span className="text-2xl font-bold gradient-text">{t("app.name")}</span>
           <h1 className="mt-4 text-xl font-semibold text-white">{title}</h1>
           <p className="text-sm text-slate-400">{subtitle}</p>
         </div>

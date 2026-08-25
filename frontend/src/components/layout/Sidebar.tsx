@@ -1,75 +1,77 @@
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-// Navigation grouped into sections. Icons are simple emoji to stay dependency-free.
+// Navigation grouped into sections. Labels are i18n keys under "nav.*".
 const NAV = [
   {
-    section: "Overview",
-    items: [{ to: "/", label: "Dashboard", icon: "📊", end: true }],
+    sectionKey: "overview",
+    items: [{ to: "/", labelKey: "dashboard", icon: "📊", end: true }],
   },
   {
-    section: "Bookkeeping",
+    sectionKey: "bookkeeping",
     items: [
-      { to: "/accounts", label: "Chart of Accounts", icon: "📚" },
-      { to: "/ledger", label: "General Ledger", icon: "📓" },
+      { to: "/accounts", labelKey: "chartOfAccounts", icon: "📚" },
+      { to: "/ledger", labelKey: "generalLedger", icon: "📓" },
     ],
   },
   {
-    section: "Vouchers",
+    sectionKey: "vouchers",
     items: [
-      { to: "/journal", label: "All Vouchers", icon: "📗" },
-      { to: "/vouchers/credit/new", label: "Credit Voucher", icon: "🟢" },
-      { to: "/vouchers/debit/new", label: "Debit Voucher", icon: "🔴" },
-      { to: "/journal/new", label: "Journal Voucher", icon: "📝" },
+      { to: "/journal", labelKey: "allVouchers", icon: "📗" },
+      { to: "/vouchers/credit/new", labelKey: "creditVoucher", icon: "🟢" },
+      { to: "/vouchers/debit/new", labelKey: "debitVoucher", icon: "🔴" },
+      { to: "/journal/new", labelKey: "journalVoucher", icon: "📝" },
     ],
   },
   {
-    section: "Sales (AR)",
+    sectionKey: "salesAr",
     items: [
-      { to: "/customers", label: "Customers", icon: "🧑‍💼" },
-      { to: "/invoices", label: "Invoices", icon: "🧾" },
+      { to: "/customers", labelKey: "customers", icon: "🧑‍💼" },
+      { to: "/invoices", labelKey: "invoices", icon: "🧾" },
     ],
   },
   {
-    section: "Purchases (AP)",
+    sectionKey: "purchasesAp",
     items: [
-      { to: "/vendors", label: "Vendors", icon: "🏭" },
-      { to: "/bills", label: "Bills", icon: "📄" },
+      { to: "/vendors", labelKey: "vendors", icon: "🏭" },
+      { to: "/bills", labelKey: "bills", icon: "📄" },
     ],
   },
   {
-    section: "Money",
-    items: [{ to: "/payments", label: "Payments", icon: "💸" }],
+    sectionKey: "money",
+    items: [{ to: "/payments", labelKey: "payments", icon: "💸" }],
   },
   {
-    section: "Reports",
+    sectionKey: "reports",
     items: [
-      { to: "/reports/trial-balance", label: "Trial Balance", icon: "⚖️" },
-      { to: "/reports/profit-loss", label: "Profit & Loss", icon: "📈" },
-      { to: "/reports/balance-sheet", label: "Balance Sheet", icon: "🏦" },
-      { to: "/reports/ar-aging", label: "AR Aging", icon: "⏳" },
-      { to: "/reports/ap-aging", label: "AP Aging", icon: "⌛" },
-      { to: "/reports/tax-summary", label: "Tax Report", icon: "🧮" },
+      { to: "/reports/trial-balance", labelKey: "trialBalance", icon: "⚖️" },
+      { to: "/reports/profit-loss", labelKey: "profitLoss", icon: "📈" },
+      { to: "/reports/balance-sheet", labelKey: "balanceSheet", icon: "🏦" },
+      { to: "/reports/ar-aging", labelKey: "arAging", icon: "⏳" },
+      { to: "/reports/ap-aging", labelKey: "apAging", icon: "⌛" },
+      { to: "/reports/tax-summary", labelKey: "taxReport", icon: "🧮" },
     ],
   },
   {
-    section: "Settings",
+    sectionKey: "settings",
     items: [
-      { to: "/team", label: "Team", icon: "👥" },
-      { to: "/tax-rates", label: "Tax Rates", icon: "🧾" },
-      { to: "/settings", label: "Company Settings", icon: "⚙️" },
+      { to: "/team", labelKey: "team", icon: "👥" },
+      { to: "/tax-rates", labelKey: "taxRates", icon: "🧾" },
+      { to: "/settings", labelKey: "companySettings", icon: "⚙️" },
     ],
   },
 ];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
   return (
     <nav className="flex h-full flex-col gap-5 overflow-y-auto p-4">
       <div className="px-2 py-2">
-        <span className="text-xl font-bold gradient-text">FinBooks</span>
+        <span className="text-xl font-bold gradient-text">{t("app.name")}</span>
       </div>
       {NAV.map((group) => (
-        <div key={group.section}>
-          <p className="mb-1 px-2 text-xs uppercase tracking-wider text-slate-500">{group.section}</p>
+        <div key={group.sectionKey}>
+          <p className="mb-1 px-2 text-xs uppercase tracking-wider text-slate-500">{t(`nav.${group.sectionKey}`)}</p>
           <div className="flex flex-col gap-0.5">
             {group.items.map((item) => (
               <NavLink
@@ -86,7 +88,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 }
               >
                 <span className="text-base">{item.icon}</span>
-                {item.label}
+                {t(`nav.${item.labelKey}`)}
               </NavLink>
             ))}
           </div>
