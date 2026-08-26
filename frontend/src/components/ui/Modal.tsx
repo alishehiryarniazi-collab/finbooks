@@ -21,11 +21,12 @@ export function Modal({ open, onClose, title, children, subtitle, icon }: Props)
       onClick={onClose}
     >
       <div
-        className="glass relative w-full max-w-lg overflow-hidden p-6 shadow-2xl"
+        className="relative w-full max-w-lg overflow-hidden rounded-xl2 border border-white/10
+          bg-gradient-to-b from-[#171b28] to-[#0d1018] p-6 shadow-2xl ring-1 ring-white/5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Aurora hairline across the top edge */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-aurora-mint/60 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-aurora-mint/70 to-transparent" />
 
         <div className="mb-5 flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
