@@ -17,7 +17,6 @@ export async function financialAnalysis(orgId: string) {
 
   // Bucket account balances by accounting-number convention (matches the default chart).
   let currentAssets = 0;
-  let totalAssets = 0;
   let currentLiabilities = 0;
   let totalLiabilities = 0;
   let inventory = 0;
@@ -29,7 +28,6 @@ export async function financialAnalysis(orgId: string) {
     const bal = n(a.balance);
     const c = codeInt(a.code);
     if (a.type === "ASSET") {
-      totalAssets += bal;
       if (c >= 1000 && c < 1500) currentAssets += bal;
       if (a.code === "1400") inventory += bal;
       if (a.code === "1000" || a.code === "1010") cash += bal;
