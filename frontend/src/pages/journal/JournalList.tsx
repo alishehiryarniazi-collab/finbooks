@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../context/AuthContext";
 import { money, shortDate } from "../../lib/format";
@@ -11,10 +12,11 @@ import { Button } from "../../components/ui/Button";
 import { StatusBadge } from "../../components/ui/Badge";
 import { ErrorNote } from "../Dashboard";
 
-const VOUCHER_LABEL: Record<VoucherType, string> = {
-  JOURNAL: "Journal Voucher",
-  DEBIT: "Debit Voucher",
-  CREDIT: "Credit Voucher",
+// nav.* i18n key per voucher type (labels come from the active language).
+const VOUCHER_LABEL_KEY: Record<VoucherType, string> = {
+  JOURNAL: "nav.journalVoucher",
+  DEBIT: "nav.debitVoucher",
+  CREDIT: "nav.creditVoucher",
 };
 
 const VOUCHER_STYLE: Record<VoucherType, string> = {
@@ -27,11 +29,12 @@ type Filter = "ALL" | VoucherType;
 const FILTERS: Filter[] = ["ALL", "JOURNAL", "DEBIT", "CREDIT"];
 
 export function JournalList() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<{ entries: JournalEntry[] }>("/journal");
   const { hasRole } = useAuth();
   const [filter, setFilter] = useState<Filter>("ALL");
 
-  if (loading) return <Spinner label="Loading vouchers…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
 
   const all = data?.entries ?? [];
@@ -41,19 +44,19 @@ export function JournalList() {
   return (
     <div>
       <PageHeader
-        title="Vouchers & Journal"
-        subtitle="Every posting in the general ledger"
+        title={t("pages.vouchersTitle")}
+        subtitle={t("pages.vouchersSubtitle")}
         action={
           canWrite && (
             <div className="flex flex-wrap gap-2">
               <Link to="/vouchers/credit/new">
-                <Button variant="ghost">+ Credit Voucher</Button>
+                <Button variant="ghost">+ {t("nav.creditVoucher")}</Button>
               </Link>
               <Link to="/vouchers/debit/new">
-                <Button variant="ghost">+ Debit Voucher</Button>
+                <Button variant="ghost">+ {t("nav.debitVoucher")}</Button>
               </Link>
               <Link to="/journal/new">
-                <Button>+ Journal Voucher</Button>
+                <Button>+ {t("nav.journalVoucher")}</Button>
               </Link>
             </div>
           )
@@ -70,14 +73,14 @@ export function JournalList() {
               filter === f ? "bg-aurora-mint/15 text-white" : "bg-white/5 text-slate-400 hover:text-white"
             }`}
           >
-            {f === "ALL" ? "All" : VOUCHER_LABEL[f]}
+            {f === "ALL" ? t("common.all") : t(VOUCHER_LABEL_KEY[f])}
           </button>
         ))}
       </div>
 
       {entries.length === 0 ? (
         <Card>
-          <p className="py-8 text-center text-sm text-slate-500">No vouchers here yet.</p>
+          <p className="py-8 text-center text-sm text-slate-500">{t("pages.noVouchers")}</p>
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
@@ -88,7 +91,7 @@ export function JournalList() {
               <Card key={entry.id}>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <span className="text-sm font-medium text-white">{entry.memo ?? VOUCHER_LABEL[vt]}</span>
+                    <span className="text-sm font-medium text-white">{entry.memo ?? t(VOUCHER_LABEL_KEY[vt])}</span>
                     {entry.reference && (
                       <span className="ml-2 text-xs text-slate-500">#{entry.reference}</span>
                     )}
@@ -98,7 +101,7 @@ export function JournalList() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-[11px] ${VOUCHER_STYLE[vt]}`}>
-                      {VOUCHER_LABEL[vt]}
+                      {t(VOUCHER_LABEL_KEY[vt])}
                     </span>
                     <span className="tabular-nums text-sm text-slate-300">{money(total)}</span>
                     <StatusBadge status={entry.status} />
@@ -108,9 +111,9 @@ export function JournalList() {
                   <table className="w-full min-w-[420px] text-sm">
                     <thead>
                       <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-                        <th className="py-1 font-medium">Account</th>
-                        <th className="py-1 text-right font-medium">Debit</th>
-                        <th className="py-1 text-right font-medium">Credit</th>
+                        <th className="py-1 font-medium">{t("fields.account")}</th>
+                        <th className="py-1 text-right font-medium">{t("fields.debit")}</th>
+                        <th className="py-1 text-right font-medium">{t("fields.credit")}</th>
                       </tr>
                     </thead>
                     <tbody>

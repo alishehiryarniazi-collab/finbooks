@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 // Reusable search box + optional status filter pills for list pages.
 export function ListControls({
   query,
@@ -16,11 +18,12 @@ export function ListControls({
   onStatus?: (s: string) => void;
   right?: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-4 flex flex-wrap items-center gap-3">
       <input
         className="input max-w-xs"
-        placeholder={placeholder ?? "Search…"}
+        placeholder={placeholder ?? t("common.search")}
         value={query}
         onChange={(e) => onQuery(e.target.value)}
       />
@@ -35,7 +38,7 @@ export function ListControls({
                 status === s ? "bg-aurora-mint/15 text-white" : "bg-white/5 text-slate-400 hover:text-white"
               }`}
             >
-              {s === "ALL" ? "All" : s.toLowerCase()}
+              {s === "ALL" ? t("common.all") : t(`status.${s}`, s.toLowerCase())}
             </button>
           ))}
         </div>

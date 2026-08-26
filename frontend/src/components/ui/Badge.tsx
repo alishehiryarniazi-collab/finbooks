@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 // Status pill with a color per document/entry status.
 const STYLES: Record<string, string> = {
   PAID: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
@@ -10,10 +12,11 @@ const STYLES: Record<string, string> = {
 };
 
 export function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const style = STYLES[status] ?? STYLES.DRAFT;
   return (
     <span className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${style}`}>
-      {status}
+      {t(`status.${status}`, status)}
     </span>
   );
 }

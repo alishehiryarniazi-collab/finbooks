@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../context/AuthContext";
 import { money, shortDate } from "../../lib/format";
@@ -16,13 +17,14 @@ import { ErrorNote } from "../Dashboard";
 const STATUSES = ["DRAFT", "SENT", "PARTIAL", "PAID", "VOID"];
 
 export function InvoiceList() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<{ invoices: Invoice[] }>("/invoices");
   const { hasRole } = useAuth();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("ALL");
 
-  if (loading) return <Spinner label="Loading invoices…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
   const all = data?.invoices ?? [];
   const needle = q.trim().toLowerCase();
@@ -37,12 +39,12 @@ export function InvoiceList() {
   return (
     <div>
       <PageHeader
-        title="Invoices"
-        subtitle="Money your customers owe you"
+        title={t("nav.invoices")}
+        subtitle={t("pages.invoicesSubtitle")}
         action={
           hasRole("ADMIN", "ACCOUNTANT") && (
             <Link to="/invoices/new">
-              <Button>+ New invoice</Button>
+              <Button>{t("pages.newInvoice")}</Button>
             </Link>
           )
         }
@@ -50,7 +52,7 @@ export function InvoiceList() {
       <ListControls
         query={q}
         onQuery={setQ}
-        placeholder="Search number or customer…"
+        placeholder={t("pages.searchInvoiceCustomer")}
         statuses={STATUSES}
         status={status}
         onStatus={setStatus}
@@ -60,15 +62,15 @@ export function InvoiceList() {
           rows={invoices}
           keyOf={(r) => r.id}
           onRowClick={(r) => navigate(`/invoices/${r.id}`)}
-          empty="No invoices yet."
+          empty={t("pages.noInvoices")}
           columns={[
-            { header: "Number", cell: (r) => <span className="text-white">{r.number}</span> },
-            { header: "Customer", cell: (r) => r.customer?.name ?? "—" },
-            { header: "Issued", cell: (r) => shortDate(r.issueDate) },
-            { header: "Due", cell: (r) => shortDate(r.dueDate) },
-            { header: "Total", align: "right", cell: (r) => money(r.total) },
-            { header: "Paid", align: "right", cell: (r) => money(r.amountPaid) },
-            { header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+            { header: t("fields.number"), cell: (r) => <span className="text-white">{r.number}</span> },
+            { header: t("fields.customer"), cell: (r) => r.customer?.name ?? "—" },
+            { header: t("fields.issued"), cell: (r) => shortDate(r.issueDate) },
+            { header: t("fields.due"), cell: (r) => shortDate(r.dueDate) },
+            { header: t("fields.total"), align: "right", cell: (r) => money(r.total) },
+            { header: t("fields.paid"), align: "right", cell: (r) => money(r.amountPaid) },
+            { header: t("fields.status"), cell: (r) => <StatusBadge status={r.status} /> },
           ]}
         />
       </Card>

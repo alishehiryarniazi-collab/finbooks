@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../hooks/useFetch";
 import { api, apiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -13,18 +14,18 @@ import { DataTable } from "../components/ui/DataTable";
 import { ListControls } from "../components/ui/ListControls";
 import { ErrorNote } from "./Dashboard";
 
-// Shared CRUD screen for customers and vendors (same shape, different endpoint/label).
+// Shared CRUD screen for customers and vendors (same shape, different endpoint/labels).
+// All labels are derived from `kind` so nothing mixes across languages.
 export function PartyManager({
   resource,
-  singular,
-  plural,
+  kind,
   dataKey,
 }: {
   resource: "customers" | "vendors";
-  singular: string;
-  plural: string;
+  kind: "customer" | "vendor";
   dataKey: "customers" | "vendors";
 }) {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useFetch<Record<string, Customer[]>>(`/${resource}`);
   const { hasRole } = useAuth();
   const [creating, setCreating] = useState(false);
@@ -32,8 +33,9 @@ export function PartyManager({
   const [q, setQ] = useState("");
 
   const canEdit = hasRole("ADMIN", "ACCOUNTANT");
+  const isCustomer = kind === "customer";
 
-  if (loading) return <Spinner label={`Loading ${plural.toLowerCase()}…`} />;
+  if (loading) return <Spinner label={t(isCustomer ? "pages.loadingCustomers" : "pages.loadingVendors")} />;
   if (error) return <ErrorNote message={error} />;
 
   const all = data?.[dataKey] ?? [];
@@ -49,21 +51,31 @@ export function PartyManager({
   return (
     <div>
       <PageHeader
-        title={plural}
-        subtitle={`People and businesses you ${resource === "customers" ? "sell to" : "buy from"}`}
-        action={canEdit && <Button onClick={() => setCreating(true)}>+ New {singular.toLowerCase()}</Button>}
+        title={t(isCustomer ? "nav.customers" : "nav.vendors")}
+        subtitle={t(isCustomer ? "pages.customersSubtitle" : "pages.vendorsSubtitle")}
+        action={
+          canEdit && (
+            <Button onClick={() => setCreating(true)}>
+              {t(isCustomer ? "pages.newCustomer" : "pages.newVendor")}
+            </Button>
+          )
+        }
       />
-      <ListControls query={q} onQuery={setQ} placeholder={`Search ${plural.toLowerCase()}…`} />
+      <ListControls
+        query={q}
+        onQuery={setQ}
+        placeholder={t(isCustomer ? "pages.searchCustomers" : "pages.searchVendors")}
+      />
       <Card>
         <DataTable
           rows={rows}
           keyOf={(r) => r.id}
           onRowClick={canEdit ? (r) => setEditing(r) : undefined}
-          empty={`No ${plural.toLowerCase()} yet.`}
+          empty={t(isCustomer ? "pages.noCustomers" : "pages.noVendors")}
           columns={[
-            { header: "Name", cell: (r) => <span className="text-white">{r.name}</span> },
-            { header: "Email", cell: (r) => r.email ?? "—" },
-            { header: "Phone", cell: (r) => r.phone ?? "—" },
+            { header: t("fields.name"), cell: (r) => <span className="text-white">{r.name}</span> },
+            { header: t("fields.email"), cell: (r) => r.email ?? "—" },
+            { header: t("fields.phone"), cell: (r) => r.phone ?? "—" },
           ]}
         />
       </Card>
@@ -71,7 +83,7 @@ export function PartyManager({
       {(creating || editing) && (
         <PartyModal
           resource={resource}
-          singular={singular}
+          kind={kind}
           party={editing}
           canDelete={hasRole("ADMIN")}
           onClose={() => {
@@ -91,20 +103,22 @@ export function PartyManager({
 
 function PartyModal({
   resource,
-  singular,
+  kind,
   party,
   canDelete,
   onClose,
   onSaved,
 }: {
   resource: string;
-  singular: string;
+  kind: "customer" | "vendor";
   party: Customer | null;
   canDelete: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const isEdit = !!party;
+  const isCustomer = kind === "customer";
   const [form, setForm] = useState({
     name: party?.name ?? "",
     email: party?.email ?? "",
@@ -132,7 +146,7 @@ function PartyModal({
   }
 
   async function del() {
-    if (!window.confirm(`Delete this ${singular.toLowerCase()}?`)) return;
+    if (!window.confirm(t(isCustomer ? "pages.deleteCustomerConfirm" : "pages.deleteVendorConfirm"))) return;
     setBusy(true);
     setError(null);
     try {
@@ -144,19 +158,19 @@ function PartyModal({
     }
   }
 
+  const title = isEdit
+    ? t(isCustomer ? "pages.editCustomer" : "pages.editVendor")
+    : t(isCustomer ? "pages.addCustomer" : "pages.addVendor");
+
   return (
-    <Modal
-      open
-      onClose={onClose}
-      title={isEdit ? `Edit ${singular.toLowerCase()}` : `New ${singular.toLowerCase()}`}
-    >
+    <Modal open onClose={onClose} title={title}>
       <form onSubmit={save} className="flex flex-col gap-4">
-        <TextField label="Name" value={form.name} onChange={set("name")} required />
+        <TextField label={t("fields.name")} value={form.name} onChange={set("name")} required />
         <div className="grid grid-cols-2 gap-4">
-          <TextField label="Email" type="email" value={form.email} onChange={set("email")} />
-          <TextField label="Phone" value={form.phone} onChange={set("phone")} />
+          <TextField label={t("fields.email")} type="email" value={form.email} onChange={set("email")} />
+          <TextField label={t("fields.phone")} value={form.phone} onChange={set("phone")} />
         </div>
-        <TextField label="Address" value={form.address} onChange={set("address")} />
+        <TextField label={t("fields.address")} value={form.address} onChange={set("address")} />
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex items-center justify-between gap-2">
           {isEdit && canDelete ? (
@@ -166,17 +180,17 @@ function PartyModal({
               disabled={busy}
               className="text-sm text-rose-400 hover:text-rose-300"
             >
-              Delete
+              {t("common.delete")}
             </button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving…" : isEdit ? "Save" : "Create"}
+              {busy ? t("actions.saving") : isEdit ? t("common.save") : t("common.create")}
             </Button>
           </div>
         </div>

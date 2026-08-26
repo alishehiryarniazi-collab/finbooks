@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../context/AuthContext";
 import { money, shortDate } from "../../lib/format";
@@ -16,13 +17,14 @@ import { ErrorNote } from "../Dashboard";
 const STATUSES = ["DRAFT", "OPEN", "PARTIAL", "PAID", "VOID"];
 
 export function BillList() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<{ bills: Bill[] }>("/bills");
   const { hasRole } = useAuth();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("ALL");
 
-  if (loading) return <Spinner label="Loading bills…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
   const all = data?.bills ?? [];
   const needle = q.trim().toLowerCase();
@@ -37,12 +39,12 @@ export function BillList() {
   return (
     <div>
       <PageHeader
-        title="Bills"
-        subtitle="Money you owe your vendors"
+        title={t("nav.bills")}
+        subtitle={t("pages.billsSubtitle")}
         action={
           hasRole("ADMIN", "ACCOUNTANT") && (
             <Link to="/bills/new">
-              <Button>+ New bill</Button>
+              <Button>{t("pages.newBill")}</Button>
             </Link>
           )
         }
@@ -50,7 +52,7 @@ export function BillList() {
       <ListControls
         query={q}
         onQuery={setQ}
-        placeholder="Search number or vendor…"
+        placeholder={t("pages.searchBillVendor")}
         statuses={STATUSES}
         status={status}
         onStatus={setStatus}
@@ -60,15 +62,15 @@ export function BillList() {
           rows={bills}
           keyOf={(r) => r.id}
           onRowClick={(r) => navigate(`/bills/${r.id}`)}
-          empty="No bills yet."
+          empty={t("pages.noBills")}
           columns={[
-            { header: "Number", cell: (r) => <span className="text-white">{r.number}</span> },
-            { header: "Vendor", cell: (r) => r.vendor?.name ?? "—" },
-            { header: "Date", cell: (r) => shortDate(r.billDate) },
-            { header: "Due", cell: (r) => shortDate(r.dueDate) },
-            { header: "Total", align: "right", cell: (r) => money(r.total) },
-            { header: "Paid", align: "right", cell: (r) => money(r.amountPaid) },
-            { header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+            { header: t("fields.number"), cell: (r) => <span className="text-white">{r.number}</span> },
+            { header: t("fields.vendor"), cell: (r) => r.vendor?.name ?? "—" },
+            { header: t("fields.date"), cell: (r) => shortDate(r.billDate) },
+            { header: t("fields.due"), cell: (r) => shortDate(r.dueDate) },
+            { header: t("fields.total"), align: "right", cell: (r) => money(r.total) },
+            { header: t("fields.paid"), align: "right", cell: (r) => money(r.amountPaid) },
+            { header: t("fields.status"), cell: (r) => <StatusBadge status={r.status} /> },
           ]}
         />
       </Card>
