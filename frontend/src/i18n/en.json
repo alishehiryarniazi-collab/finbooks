@@ -349,5 +349,43 @@
     "hintTop": "Top-level accounts are groups (headers). Add sub-accounts under them; the deepest (level 3) become postable.",
     "hintLevel3": "This will be a level-3 detail account — postable.",
     "hintLevel2": "This will be a level-2 group. Add detail accounts under it next."
+  },
+  "forms": {
+    "editInvoice": "Edit Invoice",
+    "newInvoice": "New Invoice",
+    "editBill": "Edit Bill",
+    "newBill": "New Bill",
+    "draftSubtitle": "Saved as a draft — post it to hit the ledger",
+    "select": "Select…",
+    "invoiceNumberOptional": "Invoice # (optional)",
+    "billNumberOptional": "Bill # (optional)",
+    "autoInvoice": "Auto (INV-0001)",
+    "autoBill": "Auto (BILL-0001)",
+    "noTax": "No tax",
+    "custom": "{{pct}}% (custom)"
+  },
+  "view": {
+    "invoiceTitle": "Invoice {{number}}",
+    "billTitle": "Bill {{number}}",
+    "back": "Back",
+    "due": "Due {{date}}",
+    "price": "Price",
+    "summary": "Summary",
+    "payBill": "Pay bill",
+    "depositTo": "Deposit to",
+    "payFrom": "Pay from",
+    "savePayment": "Save payment",
+    "deleteInvoiceConfirm": "Delete this draft invoice? This can't be undone.",
+    "deleteBillConfirm": "Delete this draft bill? This can't be undone."
+  },
+  "opening": {
+    "title": "Opening Balances",
+    "subtitle": "Enter each account's starting balance; the difference is offset to Opening Balance Equity",
+    "asOfDate": "As of date",
+    "obEquityAuto": "Opening Balance Equity (auto)",
+    "openingBalance": "Opening balance",
+    "enterAtLeastOne": "Enter at least one opening balance.",
+    "postButton": "Post opening balances",
+    "hint": "Amounts are each account's normal-side balance (e.g. cash on hand, money owed to you)."
   }
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
@@ -14,6 +15,7 @@ import { ErrorNote } from "../Dashboard";
 const TYPE_ORDER: AccountType[] = ["ASSET", "LIABILITY", "EQUITY", "INCOME", "EXPENSE"];
 
 export function OpeningBalances() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, loading } = useFetch<{ accounts: Account[] }>("/accounts");
   const [date, setDate] = useState(inputDate());
@@ -33,7 +35,7 @@ export function OpeningBalances() {
       if (!map.has(a.type)) map.set(a.type, []);
       map.get(a.type)!.push(a);
     }
-    return TYPE_ORDER.filter((t) => map.has(t)).map((t) => ({ type: t, rows: map.get(t)! }));
+    return TYPE_ORDER.filter((ty) => map.has(ty)).map((ty) => ({ type: ty, rows: map.get(ty)! }));
   }, [accounts]);
 
   // Net (debit-positive) of all entered balances; the offset goes to Opening Balance Equity.
@@ -46,7 +48,7 @@ export function OpeningBalances() {
     return net;
   }, [accounts, amounts]);
 
-  if (loading) return <Spinner label="Loading accounts…" />;
+  if (loading) return <Spinner label={t("coa.loading")} />;
 
   async function post() {
     setBusy(true);
@@ -56,7 +58,7 @@ export function OpeningBalances() {
         .map((a) => ({ accountId: a.id, amount: Number(amounts[a.id]) || 0 }))
         .filter((l) => Math.abs(l.amount) > 0);
       if (lines.length === 0) {
-        setError("Enter at least one opening balance.");
+        setError(t("opening.enterAtLeastOne"));
         setBusy(false);
         return;
       }
@@ -72,11 +74,11 @@ export function OpeningBalances() {
   return (
     <div>
       <PageHeader
-        title="Opening Balances"
-        subtitle="Enter each account's starting balance; the difference is offset to Opening Balance Equity"
+        title={t("opening.title")}
+        subtitle={t("opening.subtitle")}
         action={
           <Button variant="ghost" onClick={() => navigate("/accounts")}>
-            ← Back
+            ← {t("view.back")}
           </Button>
         }
       />
@@ -85,14 +87,14 @@ export function OpeningBalances() {
         <div className="flex flex-wrap items-end gap-4">
           <div className="w-48">
             <TextField
-              label="As of date"
+              label={t("opening.asOfDate")}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
           <div className="ml-auto text-right">
-            <p className="text-xs text-slate-500">Opening Balance Equity (auto)</p>
+            <p className="text-xs text-slate-500">{t("opening.obEquityAuto")}</p>
             <p className="tabular-nums text-sm font-semibold text-white">
               {money(Math.abs(netDebit))} {netDebit > 0 ? "Cr" : netDebit < 0 ? "Dr" : ""}
             </p>
@@ -102,14 +104,14 @@ export function OpeningBalances() {
 
       <div className="glass overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs uppercase tracking-wider text-slate-500">
-          <span>Account</span>
-          <span>Opening balance</span>
+          <span>{t("fields.account")}</span>
+          <span>{t("opening.openingBalance")}</span>
         </div>
         <div className="flex flex-col divide-y divide-white/5">
           {grouped.map((g) => (
             <div key={g.type}>
               <p className="bg-white/[0.02] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                {g.type}
+                {t(`acctType.${g.type}`)}
               </p>
               {g.rows.map((a) => (
                 <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-2">
@@ -140,10 +142,10 @@ export function OpeningBalances() {
 
       <div className="mt-4 flex items-center gap-3">
         <Button onClick={post} disabled={busy}>
-          {busy ? "Posting…" : "Post opening balances"}
+          {busy ? t("actions.posting") : t("opening.postButton")}
         </Button>
         <p className="text-xs text-slate-500">
-          Amounts are each account's normal-side balance (e.g. cash on hand, money owed to you).
+          {t("opening.hint")}
         </p>
       </div>
     </div>

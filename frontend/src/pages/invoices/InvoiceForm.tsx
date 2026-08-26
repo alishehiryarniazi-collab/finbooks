@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
@@ -28,6 +29,7 @@ const emptyLine = (): Line => ({
 });
 
 export function InvoiceForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
@@ -92,7 +94,7 @@ export function InvoiceForm() {
   }, [id, isEdit]);
 
   if (customersReq.loading || accountsReq.loading || taxRatesReq.loading || loadingDoc)
-    return <Spinner label="Loading…" />;
+    return <Spinner label={t("common.loading")} />;
   const customers = customersReq.data?.customers ?? [];
   const incomeAccounts = (accountsReq.data?.accounts ?? []).filter(
     (a) => a.type === "INCOME" && a.isPostable,
@@ -148,19 +150,19 @@ export function InvoiceForm() {
   return (
     <div>
       <PageHeader
-        title={isEdit ? "Edit Invoice" : "New Invoice"}
-        subtitle="Saved as a draft — post it to hit the ledger"
+        title={isEdit ? t("forms.editInvoice") : t("forms.newInvoice")}
+        subtitle={t("forms.draftSubtitle")}
       />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SelectField
-              label="Customer"
+              label={t("fields.customer")}
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
               required
             >
-              <option value="">Select…</option>
+              <option value="">{t("forms.select")}</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -168,20 +170,20 @@ export function InvoiceForm() {
               ))}
             </SelectField>
             <TextField
-              label="Invoice # (optional)"
+              label={t("forms.invoiceNumberOptional")}
               value={number}
               onChange={(e) => setNumber(e.target.value)}
-              placeholder="Auto (INV-0001)"
+              placeholder={t("forms.autoInvoice")}
             />
             <TextField
-              label="Issue date"
+              label={t("fields.issueDate")}
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
               required
             />
             <TextField
-              label="Due date"
+              label={t("fields.dueDate")}
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -193,12 +195,12 @@ export function InvoiceForm() {
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="text-left text-slate-400">
-                  <th className="px-2 py-1 font-medium">Description</th>
-                  <th className="px-2 py-1 font-medium">Income account</th>
-                  <th className="px-2 py-1 text-right font-medium">Qty</th>
-                  <th className="px-2 py-1 text-right font-medium">Unit price</th>
-                  <th className="px-2 py-1 text-right font-medium">Tax %</th>
-                  <th className="px-2 py-1 text-right font-medium">Amount</th>
+                  <th className="px-2 py-1 font-medium">{t("fields.description")}</th>
+                  <th className="px-2 py-1 font-medium">{t("fields.incomeAccount")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.qty")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.unitPrice")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.taxPct")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.amount")}</th>
                   <th />
                 </tr>
               </thead>
@@ -217,7 +219,7 @@ export function InvoiceForm() {
                         value={l.incomeAccountId}
                         onChange={(e) => setLine(i, { incomeAccountId: e.target.value })}
                       >
-                        <option value="">Select…</option>
+                        <option value="">{t("forms.select")}</option>
                         {incomeAccounts.map((a) => (
                           <option key={a.id} value={a.id}>
                             {a.code} · {a.name}
@@ -251,9 +253,9 @@ export function InvoiceForm() {
                           value={l.taxRatePercent}
                           onChange={(e) => setLine(i, { taxRatePercent: e.target.value })}
                         >
-                          <option value="0">No tax</option>
+                          <option value="0">{t("forms.noTax")}</option>
                           {!["0", ...taxRates.map((r) => String(Number(r.ratePercent)))].includes(l.taxRatePercent) && (
-                            <option value={l.taxRatePercent}>{Number(l.taxRatePercent)}% (custom)</option>
+                            <option value={l.taxRatePercent}>{t("forms.custom", { pct: Number(l.taxRatePercent) })}</option>
                           )}
                           {taxRates.map((r) => (
                             <option key={r.id} value={String(Number(r.ratePercent))}>
@@ -298,13 +300,13 @@ export function InvoiceForm() {
               onClick={() => setLines([...lines, emptyLine()])}
               className="btn-ghost text-sm"
             >
-              + Add line
+              {t("actions.addLine")}
             </button>
             <div className="w-full max-w-xs space-y-1 text-sm">
-              <Row label="Subtotal" value={money(totals.subtotal)} />
-              <Row label="Tax" value={money(totals.tax)} />
+              <Row label={t("fields.subtotal")} value={money(totals.subtotal)} />
+              <Row label={t("fields.tax")} value={money(totals.tax)} />
               <div className="border-t border-white/10 pt-1">
-                <Row label="Total" value={money(totals.subtotal + totals.tax)} strong />
+                <Row label={t("fields.total")} value={money(totals.subtotal + totals.tax)} strong />
               </div>
             </div>
           </div>
@@ -312,10 +314,10 @@ export function InvoiceForm() {
           {error && <ErrorNote message={error} />}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => navigate("/invoices")}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving…" : isEdit ? "Save changes" : "Save draft"}
+              {busy ? t("actions.saving") : isEdit ? t("actions.saveChanges") : t("actions.saveDraft")}
             </Button>
           </div>
         </form>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -15,6 +16,7 @@ import { TextField, SelectField } from "../../components/ui/Field";
 import { ErrorNote } from "../Dashboard";
 
 export function InvoiceView() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
@@ -24,7 +26,7 @@ export function InvoiceView() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <Spinner label="Loading invoice…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
@@ -46,7 +48,7 @@ export function InvoiceView() {
   }
 
   async function del() {
-    if (!window.confirm("Delete this draft invoice? This can't be undone.")) return;
+    if (!window.confirm(t("view.deleteInvoiceConfirm"))) return;
     setBusy(true);
     setActionError(null);
     try {
@@ -61,37 +63,37 @@ export function InvoiceView() {
   return (
     <div>
       <PageHeader
-        title={`Invoice ${inv.number}`}
+        title={t("view.invoiceTitle", { number: inv.number })}
         subtitle={inv.customer?.name}
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => navigate("/invoices")}>
-              ← Back
+              ← {t("view.back")}
             </Button>
             <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/print`)}>
-              🖨 Print / PDF
+              🖨 {t("actions.printPdf")}
             </Button>
             {canEdit && inv.status === "DRAFT" && (
               <Button variant="ghost" onClick={() => navigate(`/invoices/${id}/edit`)}>
-                Edit
+                {t("common.edit")}
               </Button>
             )}
             {canEdit && inv.status === "DRAFT" && (
               <Button variant="ghost" onClick={del} disabled={busy}>
-                Delete
+                {t("common.delete")}
               </Button>
             )}
             {canEdit && inv.status === "DRAFT" && (
               <Button onClick={() => action("post")} disabled={busy}>
-                Post to ledger
+                {t("actions.postToLedger")}
               </Button>
             )}
             {canEdit && (inv.status === "SENT" || inv.status === "PARTIAL") && outstanding > 0 && (
-              <Button onClick={() => setPayOpen(true)}>Record payment</Button>
+              <Button onClick={() => setPayOpen(true)}>{t("actions.recordPayment")}</Button>
             )}
             {canEdit && inv.status !== "VOID" && inv.status !== "PAID" && Number(inv.amountPaid) === 0 && (
               <Button variant="ghost" onClick={() => action("void")} disabled={busy}>
-                Void
+                {t("actions.void")}
               </Button>
             )}
           </div>
@@ -108,16 +110,16 @@ export function InvoiceView() {
         <Card className="lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <StatusBadge status={inv.status} />
-            <span className="text-sm text-slate-400">Due {shortDate(inv.dueDate)}</span>
+            <span className="text-sm text-slate-400">{t("view.due", { date: shortDate(inv.dueDate) })}</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-slate-400">
-                  <th className="px-2 py-2 font-medium">Description</th>
-                  <th className="px-2 py-2 text-right font-medium">Qty</th>
-                  <th className="px-2 py-2 text-right font-medium">Price</th>
-                  <th className="px-2 py-2 text-right font-medium">Amount</th>
+                  <th className="px-2 py-2 font-medium">{t("fields.description")}</th>
+                  <th className="px-2 py-2 text-right font-medium">{t("fields.qty")}</th>
+                  <th className="px-2 py-2 text-right font-medium">{t("view.price")}</th>
+                  <th className="px-2 py-2 text-right font-medium">{t("fields.amount")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,15 +142,15 @@ export function InvoiceView() {
         </Card>
 
         <Card>
-          <h3 className="mb-3 text-lg font-semibold text-white">Summary</h3>
+          <h3 className="mb-3 text-lg font-semibold text-white">{t("view.summary")}</h3>
           <div className="space-y-2 text-sm">
-            <SummaryRow label="Subtotal" value={money(inv.subtotal)} />
-            <SummaryRow label="Tax" value={money(inv.taxTotal)} />
+            <SummaryRow label={t("fields.subtotal")} value={money(inv.subtotal)} />
+            <SummaryRow label={t("fields.tax")} value={money(inv.taxTotal)} />
             <div className="border-t border-white/10 pt-2">
-              <SummaryRow label="Total" value={money(inv.total)} strong />
+              <SummaryRow label={t("fields.total")} value={money(inv.total)} strong />
             </div>
-            <SummaryRow label="Paid" value={money(inv.amountPaid)} />
-            <SummaryRow label="Outstanding" value={money(outstanding)} strong />
+            <SummaryRow label={t("fields.paid")} value={money(inv.amountPaid)} />
+            <SummaryRow label={t("fields.outstanding")} value={money(outstanding)} strong />
           </div>
         </Card>
       </div>
@@ -191,6 +193,7 @@ function PaymentModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [amount, setAmount] = useState(outstanding.toFixed(2));
   const [bankAccountId, setBankAccountId] = useState(bankAccounts[0]?.id ?? "");
   const [date, setDate] = useState(inputDate());
@@ -212,10 +215,10 @@ function PaymentModal({
   }
 
   return (
-    <Modal open onClose={onClose} title="Record payment">
+    <Modal open onClose={onClose} title={t("actions.recordPayment")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <SelectField
-          label="Deposit to"
+          label={t("view.depositTo")}
           value={bankAccountId}
           onChange={(e) => setBankAccountId(e.target.value)}
           required
@@ -228,7 +231,7 @@ function PaymentModal({
         </SelectField>
         <div className="grid grid-cols-2 gap-4">
           <TextField
-            label="Amount"
+            label={t("fields.amount")}
             type="number"
             min="0"
             step="0.01"
@@ -237,7 +240,7 @@ function PaymentModal({
             required
           />
           <TextField
-            label="Date"
+            label={t("fields.date")}
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -247,10 +250,10 @@ function PaymentModal({
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Save payment"}
+            {busy ? t("actions.saving") : t("view.savePayment")}
           </Button>
         </div>
       </form>
