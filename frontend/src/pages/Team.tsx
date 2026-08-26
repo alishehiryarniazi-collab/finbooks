@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../hooks/useFetch";
 import { api, apiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -11,7 +12,6 @@ import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { TextField, SelectField } from "../components/ui/Field";
 import { DataTable } from "../components/ui/DataTable";
-import { StatusBadge } from "../components/ui/Badge";
 import { ErrorNote } from "./Dashboard";
 
 interface Member {
@@ -26,11 +26,12 @@ interface Member {
 const ROLES: Role[] = ["ADMIN", "ACCOUNTANT", "VIEWER"];
 
 export function Team() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useFetch<{ users: Member[] }>("/users");
   const { user, hasRole } = useAuth();
   const [open, setOpen] = useState(false);
 
-  if (loading) return <Spinner label="Loading team…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
   const members = data?.users ?? [];
   const isAdmin = hasRole("ADMIN");
@@ -47,9 +48,9 @@ export function Team() {
   return (
     <div>
       <PageHeader
-        title="Team"
-        subtitle="People with access to this workspace"
-        action={isAdmin && <Button onClick={() => setOpen(true)}>+ Invite user</Button>}
+        title={t("nav.team")}
+        subtitle={t("team.subtitle")}
+        action={isAdmin && <Button onClick={() => setOpen(true)}>{t("team.invite")}</Button>}
       />
       <Card>
         <DataTable
@@ -57,17 +58,17 @@ export function Team() {
           keyOf={(r) => r.id}
           columns={[
             {
-              header: "Name",
+              header: t("fields.name"),
               cell: (r) => (
                 <span className="text-white">
                   {r.name}
-                  {r.id === user?.id && <span className="ml-2 text-xs text-slate-500">(you)</span>}
+                  {r.id === user?.id && <span className="ml-2 text-xs text-slate-500">{t("team.you")}</span>}
                 </span>
               ),
             },
-            { header: "Email", cell: (r) => r.email },
+            { header: t("fields.email"), cell: (r) => r.email },
             {
-              header: "Role",
+              header: t("team.role"),
               cell: (r) =>
                 isAdmin && r.id !== user?.id ? (
                   <select
@@ -77,16 +78,29 @@ export function Team() {
                   >
                     {ROLES.map((role) => (
                       <option key={role} value={role}>
-                        {role}
+                        {t(`roles.${role}`)}
                       </option>
                     ))}
                   </select>
                 ) : (
-                  r.role
+                  t(`roles.${r.role}`)
                 ),
             },
-            { header: "Status", cell: (r) => <StatusBadge status={r.isActive ? "POSTED" : "VOID"} /> },
-            { header: "Joined", cell: (r) => shortDate(r.createdAt) },
+            {
+              header: t("fields.status"),
+              cell: (r) => (
+                <span
+                  className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                    r.isActive
+                      ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300"
+                      : "border-slate-500/30 bg-slate-500/15 text-slate-300"
+                  }`}
+                >
+                  {r.isActive ? t("team.active") : t("team.inactive")}
+                </span>
+              ),
+            },
+            { header: t("team.joined"), cell: (r) => shortDate(r.createdAt) },
           ]}
         />
       </Card>
@@ -105,6 +119,7 @@ export function Team() {
 }
 
 function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "VIEWER" as Role });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -124,16 +139,16 @@ function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   }
 
   return (
-    <Modal open onClose={onClose} title="Invite user">
+    <Modal open onClose={onClose} title={t("team.inviteTitle")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField
-          label="Name"
+          label={t("fields.name")}
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
         />
         <TextField
-          label="Email"
+          label={t("fields.email")}
           type="email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -141,20 +156,20 @@ function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
         />
         <div className="grid grid-cols-2 gap-4">
           <TextField
-            label="Temp password"
+            label={t("team.tempPassword")}
             type="text"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
           />
           <SelectField
-            label="Role"
+            label={t("team.role")}
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
           >
             {ROLES.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {t(`roles.${role}`)}
               </option>
             ))}
           </SelectField>
@@ -162,10 +177,10 @@ function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Add user"}
+            {busy ? t("actions.saving") : t("team.addUser")}
           </Button>
         </div>
       </form>

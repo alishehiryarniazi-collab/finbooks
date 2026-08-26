@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../hooks/useFetch";
 import { api, apiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -11,27 +12,28 @@ import { TextField } from "../components/ui/Field";
 import { ErrorNote } from "./Dashboard";
 
 export function CostCenters() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useFetch<{ costCenters: CostCenter[] }>("/cost-centers");
   const { hasRole } = useAuth();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<CostCenter | null>(null);
   const canEdit = hasRole("ADMIN", "ACCOUNTANT");
 
-  if (loading) return <Spinner label="Loading cost centers…" />;
+  if (loading) return <Spinner label={t("crud.ccLoading")} />;
   if (error) return <ErrorNote message={error} />;
   const rows = data?.costCenters ?? [];
 
   return (
     <div>
       <PageHeader
-        title="Cost Centers"
-        subtitle="Departments/segments you can tag transactions with (e.g. Sales, Admin, Production)"
-        action={canEdit && <Button onClick={() => setCreating(true)}>+ New cost center</Button>}
+        title={t("nav.costCenters")}
+        subtitle={t("crud.ccSubtitle")}
+        action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.ccNew")}</Button>}
       />
 
       <div className="glass overflow-hidden rounded-2xl">
         {rows.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">No cost centers yet.</p>
+          <p className="px-4 py-8 text-center text-sm text-slate-500">{t("crud.ccEmpty")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-white/5">
             {rows.map((c) => (
@@ -44,7 +46,7 @@ export function CostCenters() {
                 <span className="text-sm text-white">
                   {c.code && <span className="mr-2 text-xs text-slate-500">{c.code}</span>}
                   {c.name}
-                  {!c.isActive && <span className="ml-2 text-[10px] uppercase text-amber-400">inactive</span>}
+                  {!c.isActive && <span className="ml-2 text-[10px] uppercase text-amber-400">{t("crud.inactive")}</span>}
                 </span>
               </button>
             ))}
@@ -71,6 +73,7 @@ export function CostCenters() {
 }
 
 function CostCenterModal({ item, onClose, onSaved }: { item: CostCenter | null; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const isEdit = !!item;
   const [name, setName] = useState(item?.name ?? "");
   const [code, setCode] = useState(item?.code ?? "");
@@ -93,7 +96,7 @@ function CostCenterModal({ item, onClose, onSaved }: { item: CostCenter | null; 
   }
 
   async function del() {
-    if (!window.confirm("Delete this cost center?")) return;
+    if (!window.confirm(t("crud.ccDelete"))) return;
     setBusy(true);
     setError(null);
     try {
@@ -106,22 +109,22 @@ function CostCenterModal({ item, onClose, onSaved }: { item: CostCenter | null; 
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? "Edit cost center" : "New cost center"}>
+    <Modal open onClose={onClose} title={isEdit ? t("crud.ccEdit") : t("crud.ccAdd")}>
       <form onSubmit={save} className="flex flex-col gap-4">
-        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} required placeholder="Sales Department" />
-        <TextField label="Code (optional)" value={code ?? ""} onChange={(e) => setCode(e.target.value)} placeholder="CC-SALES" />
+        <TextField label={t("fields.name")} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t("crud.ccNamePlaceholder")} />
+        <TextField label={t("crud.codeOptional")} value={code ?? ""} onChange={(e) => setCode(e.target.value)} placeholder="CC-SALES" />
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex items-center justify-between gap-2">
           {isEdit ? (
             <button type="button" onClick={del} disabled={busy} className="text-sm text-rose-400 hover:text-rose-300">
-              Delete
+              {t("common.delete")}
             </button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={busy}>{busy ? "Saving…" : isEdit ? "Save" : "Create"}</Button>
+            <Button type="button" variant="ghost" onClick={onClose}>{t("common.cancel")}</Button>
+            <Button type="submit" disabled={busy}>{busy ? t("actions.saving") : isEdit ? t("common.save") : t("common.create")}</Button>
           </div>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../hooks/useFetch";
 import { api, apiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -11,31 +12,32 @@ import { TextField } from "../components/ui/Field";
 import { ErrorNote } from "./Dashboard";
 
 export function TaxRates() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useFetch<{ taxRates: TaxRate[] }>("/tax-rates");
   const { hasRole } = useAuth();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<TaxRate | null>(null);
   const canEdit = hasRole("ADMIN", "ACCOUNTANT");
 
-  if (loading) return <Spinner label="Loading tax rates…" />;
+  if (loading) return <Spinner label={t("crud.taxLoading")} />;
   if (error) return <ErrorNote message={error} />;
   const rates = data?.taxRates ?? [];
 
   return (
     <div>
       <PageHeader
-        title="Tax Rates"
-        subtitle="Reusable tax presets (e.g. GST 17%) for invoices and bills"
-        action={canEdit && <Button onClick={() => setCreating(true)}>+ New tax rate</Button>}
+        title={t("nav.taxRates")}
+        subtitle={t("crud.taxSubtitle")}
+        action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.taxNew")}</Button>}
       />
 
       <div className="glass overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs uppercase tracking-wider text-slate-500">
-          <span>Name</span>
-          <span>Rate</span>
+          <span>{t("fields.name")}</span>
+          <span>{t("crud.rate")}</span>
         </div>
         {rates.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">No tax rates yet. Add one like "GST 17%".</p>
+          <p className="px-4 py-8 text-center text-sm text-slate-500">{t("crud.taxEmpty")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-white/5">
             {rates.map((r) => (
@@ -46,7 +48,7 @@ export function TaxRates() {
                 disabled={!canEdit}
               >
                 <span className="text-sm text-white">
-                  {r.name} {!r.isActive && <span className="ml-1 text-[10px] uppercase text-amber-400">inactive</span>}
+                  {r.name} {!r.isActive && <span className="ml-1 text-[10px] uppercase text-amber-400">{t("crud.inactive")}</span>}
                 </span>
                 <span className="tabular-nums text-sm text-slate-300">{Number(r.ratePercent)}%</span>
               </button>
@@ -74,6 +76,7 @@ export function TaxRates() {
 }
 
 function TaxRateModal({ rate, onClose, onSaved }: { rate: TaxRate | null; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const isEdit = !!rate;
   const [name, setName] = useState(rate?.name ?? "");
   const [percent, setPercent] = useState(rate ? String(Number(rate.ratePercent)) : "");
@@ -96,7 +99,7 @@ function TaxRateModal({ rate, onClose, onSaved }: { rate: TaxRate | null; onClos
   }
 
   async function del() {
-    if (!window.confirm("Delete this tax rate?")) return;
+    if (!window.confirm(t("crud.taxDelete"))) return;
     setBusy(true);
     setError(null);
     try {
@@ -109,11 +112,11 @@ function TaxRateModal({ rate, onClose, onSaved }: { rate: TaxRate | null; onClos
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? "Edit tax rate" : "New tax rate"}>
+    <Modal open onClose={onClose} title={isEdit ? t("crud.taxEdit") : t("crud.taxAdd")}>
       <form onSubmit={save} className="flex flex-col gap-4">
-        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} required placeholder="GST 17%" />
+        <TextField label={t("fields.name")} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t("crud.taxNamePlaceholder")} />
         <TextField
-          label="Rate (%)"
+          label={t("crud.rateLabel")}
           type="number"
           min="0"
           max="100"
@@ -127,17 +130,17 @@ function TaxRateModal({ rate, onClose, onSaved }: { rate: TaxRate | null; onClos
         <div className="flex items-center justify-between gap-2">
           {isEdit ? (
             <button type="button" onClick={del} disabled={busy} className="text-sm text-rose-400 hover:text-rose-300">
-              Delete
+              {t("common.delete")}
             </button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving…" : isEdit ? "Save" : "Create"}
+              {busy ? t("actions.saving") : isEdit ? t("common.save") : t("common.create")}
             </Button>
           </div>
         </div>
