@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -50,6 +51,7 @@ function buildRows(accounts: Account[]): Row[] {
 }
 
 export function ChartOfAccounts() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useFetch<{ accounts: Account[] }>("/accounts");
   const { hasRole } = useAuth();
   const [open, setOpen] = useState(false);
@@ -57,21 +59,21 @@ export function ChartOfAccounts() {
   const accounts = useMemo(() => data?.accounts ?? [], [data]);
   const rows = useMemo(() => buildRows(accounts), [accounts]);
 
-  if (loading) return <Spinner label="Loading accounts…" />;
+  if (loading) return <Spinner label={t("coa.loading")} />;
   if (error) return <ErrorNote message={error} />;
 
   return (
     <div>
       <PageHeader
-        title="Chart of Accounts"
-        subtitle="Three levels — only detail (level 3) accounts can be posted to"
+        title={t("nav.chartOfAccounts")}
+        subtitle={t("coa.subtitle")}
         action={
           hasRole("ADMIN", "ACCOUNTANT") && (
             <div className="flex flex-wrap gap-2">
               <Link to="/accounts/opening-balances">
-                <Button variant="ghost">Opening balances</Button>
+                <Button variant="ghost">{t("coa.openingBalances")}</Button>
               </Link>
-              <Button onClick={() => setOpen(true)}>+ New account</Button>
+              <Button onClick={() => setOpen(true)}>{t("coa.newAccount")}</Button>
             </div>
           )
         }
@@ -80,8 +82,8 @@ export function ChartOfAccounts() {
       <div className="glass overflow-hidden rounded-2xl">
         {/* Column header */}
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs uppercase tracking-wider text-slate-500">
-          <span>Account</span>
-          <span>Balance</span>
+          <span>{t("fields.account")}</span>
+          <span>{t("fields.balance")}</span>
         </div>
 
         <div className="flex flex-col divide-y divide-white/5">
@@ -101,11 +103,11 @@ export function ChartOfAccounts() {
                   </span>
                   {level === 0 && (
                     <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-                      {account.type}
+                      {t(`acctType.${account.type}`)}
                     </span>
                   )}
                   {!isGroup && !account.isActive && (
-                    <span className="text-[10px] uppercase tracking-wide text-amber-400">inactive</span>
+                    <span className="text-[10px] uppercase tracking-wide text-amber-400">{t("crud.inactive")}</span>
                   )}
                 </div>
                 <span
@@ -128,7 +130,7 @@ export function ChartOfAccounts() {
                 to={`/ledger/${account.id}`}
                 className={`${rowClass} transition hover:bg-white/5`}
                 style={style}
-                title="View ledger"
+                title={t("coa.viewLedger")}
               >
                 {inner}
               </Link>
@@ -160,6 +162,7 @@ function NewAccountModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ parentId: "", code: "", name: "", type: "EXPENSE" as AccountType });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -185,14 +188,14 @@ function NewAccountModal({
   }
 
   return (
-    <Modal open onClose={onClose} title="New account">
+    <Modal open onClose={onClose} title={t("coa.newAccountTitle")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <SelectField
-          label="Parent group"
+          label={t("coa.parentGroup")}
           value={form.parentId}
           onChange={(e) => setForm({ ...form, parentId: e.target.value })}
         >
-          <option value="">— Top level (new category) —</option>
+          <option value="">{t("coa.topLevelOption")}</option>
           {groups.map((g) => (
             <option key={g.id} value={g.id}>
               {g.code} · {g.name}
@@ -202,7 +205,7 @@ function NewAccountModal({
 
         <div className="grid grid-cols-2 gap-4">
           <TextField
-            label="Code"
+            label={t("fields.code")}
             value={form.code}
             onChange={(e) => setForm({ ...form, code: e.target.value })}
             required
@@ -210,46 +213,46 @@ function NewAccountModal({
           />
           {isTopLevel ? (
             <SelectField
-              label="Type"
+              label={t("fields.type")}
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value as AccountType })}
             >
-              {TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TYPES.map((ty) => (
+                <option key={ty} value={ty}>
+                  {t(`acctType.${ty}`)}
                 </option>
               ))}
             </SelectField>
           ) : (
-            <SelectField label="Type (inherited)" value={parent?.type ?? ""} disabled>
-              <option>{parent?.type}</option>
+            <SelectField label={t("coa.typeInherited")} value={parent?.type ?? ""} disabled>
+              <option>{parent ? t(`acctType.${parent.type}`) : ""}</option>
             </SelectField>
           )}
         </div>
 
         <TextField
-          label="Name"
+          label={t("fields.name")}
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
-          placeholder="Software Subscriptions"
+          placeholder={t("coa.namePlaceholder")}
         />
 
         <p className="text-xs text-slate-500">
           {isTopLevel
-            ? "Top-level accounts are groups (headers). Add sub-accounts under them; the deepest (level 3) become postable."
+            ? t("coa.hintTop")
             : parent && groups.some((g) => g.id === parent.parentId)
-              ? "This will be a level-3 detail account — postable."
-              : "This will be a level-2 group. Add detail accounts under it next."}
+              ? t("coa.hintLevel3")
+              : t("coa.hintLevel2")}
         </p>
 
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Create"}
+            {busy ? t("actions.saving") : t("common.create")}
           </Button>
         </div>
       </form>

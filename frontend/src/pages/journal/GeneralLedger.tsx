@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { money, shortDate } from "../../lib/format";
@@ -35,6 +36,7 @@ const VT_SHORT: Record<VoucherType, string> = { JOURNAL: "JV", DEBIT: "DV", CRED
 const TYPE_ORDER: AccountType[] = ["ASSET", "LIABILITY", "EQUITY", "INCOME", "EXPENSE"];
 
 export function GeneralLedger() {
+  const { t } = useTranslation();
   const { accountId: paramId } = useParams();
   const accountsReq = useFetch<{ accounts: Account[] }>("/accounts");
 
@@ -88,21 +90,21 @@ export function GeneralLedger() {
       if (!map.has(a.type)) map.set(a.type, []);
       map.get(a.type)!.push(a);
     }
-    return TYPE_ORDER.filter((t) => map.has(t)).map((t) => ({ type: t, accounts: map.get(t)! }));
+    return TYPE_ORDER.filter((ty) => map.has(ty)).map((ty) => ({ type: ty, accounts: map.get(ty)! }));
   }, [postable]);
 
   return (
     <div>
-      <PageHeader title="General Ledger" subtitle="Account statement with a running balance" />
+      <PageHeader title={t("nav.generalLedger")} subtitle={t("ledger.subtitle")} />
 
       {/* Controls */}
       <Card className="mb-4">
         <div className="grid gap-4 sm:grid-cols-4">
           <div className="sm:col-span-2">
-            <SelectField label="Account" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-              <option value="">Select account…</option>
+            <SelectField label={t("fields.account")} value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <option value="">{t("ledger.selectAccount")}</option>
               {grouped.map((g) => (
-                <optgroup key={g.type} label={g.type}>
+                <optgroup key={g.type} label={t(`acctType.${g.type}`)}>
                   {g.accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.code} · {a.name}
@@ -112,8 +114,8 @@ export function GeneralLedger() {
               ))}
             </SelectField>
           </div>
-          <TextField label="From" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          <TextField label="To" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <TextField label={t("fields.from")} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <TextField label={t("fields.to")} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
         {(from || to) && (
           <button
@@ -123,12 +125,12 @@ export function GeneralLedger() {
             }}
             className="btn-ghost mt-3 text-xs"
           >
-            Clear dates
+            {t("ledger.clearDates")}
           </button>
         )}
       </Card>
 
-      {loading && <Spinner label="Loading ledger…" />}
+      {loading && <Spinner label={t("ledger.loading")} />}
       {error && !loading && <ErrorNote message={error} />}
 
       {!loading && !error && ledger && (
@@ -138,21 +140,21 @@ export function GeneralLedger() {
               <span className="text-xs text-slate-500">{ledger.account.code}</span>
               <span className="ml-2 text-sm font-semibold text-white">{ledger.account.name}</span>
               <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-                {ledger.account.type}
+                {t(`acctType.${ledger.account.type}`)}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-xs text-slate-500">Closing balance</p>
+                <p className="text-xs text-slate-500">{t("ledger.closing")}</p>
                 <p className="tabular-nums text-sm font-semibold text-white">{money(ledger.closing)}</p>
               </div>
               <Button
                 variant="ghost"
                 onClick={() => {
                   const csv = toCsv(
-                    ["Date", "Type", "Ref", "Details", "Debit", "Credit", "Balance"],
+                    [t("fields.date"), t("fields.type"), t("fields.reference"), t("ledger.details"), t("fields.debit"), t("fields.credit"), t("fields.balance")],
                     [
-                      ["", "", "", "Opening balance", "", "", ledger.opening],
+                      ["", "", "", t("ledger.opening"), "", "", ledger.opening],
                       ...ledger.rows.map((r) => [
                         shortDate(r.date),
                         r.voucherType,
@@ -162,13 +164,13 @@ export function GeneralLedger() {
                         r.credit,
                         r.balance,
                       ]),
-                      ["", "", "", "Closing balance", "", "", ledger.closing],
+                      ["", "", "", t("ledger.closing"), "", "", ledger.closing],
                     ],
                   );
                   downloadCsv(`ledger-${ledger.account.code}`, csv);
                 }}
               >
-                Export CSV
+                {t("common.exportCsv")}
               </Button>
             </div>
           </div>
@@ -177,20 +179,20 @@ export function GeneralLedger() {
             <table className="w-full min-w-[680px] text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-2 font-medium">Date</th>
-                  <th className="px-3 py-2 font-medium">Type</th>
-                  <th className="px-3 py-2 font-medium">Ref</th>
-                  <th className="px-3 py-2 font-medium">Details</th>
-                  <th className="px-3 py-2 text-right font-medium">Debit</th>
-                  <th className="px-3 py-2 text-right font-medium">Credit</th>
-                  <th className="px-3 py-2 text-right font-medium">Balance</th>
+                  <th className="px-3 py-2 font-medium">{t("fields.date")}</th>
+                  <th className="px-3 py-2 font-medium">{t("fields.type")}</th>
+                  <th className="px-3 py-2 font-medium">{t("fields.reference")}</th>
+                  <th className="px-3 py-2 font-medium">{t("ledger.details")}</th>
+                  <th className="px-3 py-2 text-right font-medium">{t("fields.debit")}</th>
+                  <th className="px-3 py-2 text-right font-medium">{t("fields.credit")}</th>
+                  <th className="px-3 py-2 text-right font-medium">{t("fields.balance")}</th>
                 </tr>
               </thead>
               <tbody>
                 {/* Opening balance row */}
                 <tr className="border-b border-white/5 text-slate-400">
                   <td className="px-3 py-2" colSpan={4}>
-                    Opening balance
+                    {t("ledger.opening")}
                   </td>
                   <td className="px-3 py-2" />
                   <td className="px-3 py-2" />
@@ -216,7 +218,7 @@ export function GeneralLedger() {
                 {ledger.rows.length === 0 && (
                   <tr>
                     <td className="px-3 py-8 text-center text-slate-500" colSpan={7}>
-                      No transactions in this period.
+                      {t("ledger.noTransactions")}
                     </td>
                   </tr>
                 )}
@@ -224,7 +226,7 @@ export function GeneralLedger() {
               <tfoot>
                 <tr className="border-t border-white/10 font-semibold text-white">
                   <td className="px-3 py-2" colSpan={6}>
-                    Closing balance
+                    {t("ledger.closing")}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">{money(ledger.closing)}</td>
                 </tr>

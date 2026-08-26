@@ -317,5 +317,37 @@
     "ADMIN": "Admin",
     "ACCOUNTANT": "Accountant",
     "VIEWER": "Viewer"
+  },
+  "acctType": {
+    "ASSET": "Assets",
+    "LIABILITY": "Liabilities",
+    "EQUITY": "Equity",
+    "INCOME": "Income",
+    "EXPENSE": "Expenses"
+  },
+  "ledger": {
+    "subtitle": "Account statement with a running balance",
+    "selectAccount": "Select account…",
+    "clearDates": "Clear dates",
+    "loading": "Loading ledger…",
+    "closing": "Closing balance",
+    "opening": "Opening balance",
+    "details": "Details",
+    "noTransactions": "No transactions in this period."
+  },
+  "coa": {
+    "subtitle": "Three levels — only detail (level 3) accounts can be posted to",
+    "openingBalances": "Opening balances",
+    "newAccount": "+ New account",
+    "loading": "Loading accounts…",
+    "newAccountTitle": "New account",
+    "parentGroup": "Parent group",
+    "topLevelOption": "— Top level (new category) —",
+    "typeInherited": "Type (inherited)",
+    "namePlaceholder": "Software Subscriptions",
+    "viewLedger": "View ledger",
+    "hintTop": "Top-level accounts are groups (headers). Add sub-accounts under them; the deepest (level 3) become postable.",
+    "hintLevel3": "This will be a level-3 detail account — postable.",
+    "hintLevel2": "This will be a level-2 group. Add detail accounts under it next."
   }
 }
