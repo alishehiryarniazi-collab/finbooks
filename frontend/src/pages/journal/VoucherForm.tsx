@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
@@ -23,6 +24,7 @@ const emptyLine = (): LineRow => ({ accountId: "", amount: "", description: "" }
 //   DEBIT  = Payment: cash/bank goes OUT, counter accounts are debited.
 //   CREDIT = Receipt: cash/bank comes IN, counter accounts are credited.
 export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, loading } = useFetch<{ accounts: Account[] }>("/accounts");
   const ccReq = useFetch<{ costCenters: CostCenter[] }>("/cost-centers");
@@ -37,7 +39,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <Spinner label="Loading accounts…" />;
+  if (loading) return <Spinner label={t("coa.loading")} />;
   const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
   const bankAccounts = accounts.filter((a) => a.type === "ASSET");
   const costCenters = (ccReq.data?.costCenters ?? []).filter((c) => c.isActive);
@@ -47,18 +49,18 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
   const isPayment = kind === "DEBIT";
   const copy = isPayment
     ? {
-        title: "New Debit Voucher",
-        sub: "Payment — cash/bank goes out",
-        bank: "Paid from (Cash / Bank)",
-        lines: "Accounts debited (expense / party)",
-        cta: "Post payment",
+        title: t("voucher.debitTitle"),
+        sub: t("voucher.debitSub"),
+        bank: t("voucher.paidFrom"),
+        lines: t("voucher.debitLines"),
+        cta: t("voucher.postPayment"),
       }
     : {
-        title: "New Credit Voucher",
-        sub: "Receipt — cash/bank comes in",
-        bank: "Received in (Cash / Bank)",
-        lines: "Accounts credited (income / party)",
-        cta: "Post receipt",
+        title: t("voucher.creditTitle"),
+        sub: t("voucher.creditSub"),
+        bank: t("voucher.receivedIn"),
+        lines: t("voucher.creditLines"),
+        cta: t("voucher.postReceipt"),
       };
 
   const total = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
@@ -95,12 +97,12 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
       const code = apiErrorCode(err);
       if (code === "NEGATIVE_CASH" && !overrides.allowNegativeCash) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\nProceed anyway?`)) return doPost({ ...overrides, allowNegativeCash: true });
+        if (window.confirm(`${apiError(err)}\n\n${t("actions.proceedAnyway")}`)) return doPost({ ...overrides, allowNegativeCash: true });
         return;
       }
       if (code === "DUPLICATE_REF" && !overrides.allowDuplicateRef) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\nPost it anyway?`)) return doPost({ ...overrides, allowDuplicateRef: true });
+        if (window.confirm(`${apiError(err)}\n\n${t("voucher.postAnyway")}`)) return doPost({ ...overrides, allowDuplicateRef: true });
         return;
       }
       setError(apiError(err));
@@ -110,7 +112,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (total > LARGE_AMOUNT && !window.confirm(`This voucher is large (${money(total)}). Post it?`)) return;
+    if (total > LARGE_AMOUNT && !window.confirm(t("voucher.largeVoucherConfirm", { amount: money(total) }))) return;
     await doPost({});
   }
 
@@ -121,23 +123,23 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField
-              label="Date"
+              label={t("fields.date")}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
             <TextField
-              label="Reference"
+              label={t("fields.reference")}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               placeholder={isPayment ? "PV-001" : "RV-001"}
             />
             <TextField
-              label="Memo"
+              label={t("voucher.memo")}
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              placeholder="Description"
+              placeholder={t("fields.description")}
             />
           </div>
 
@@ -147,7 +149,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
             onChange={(e) => setBankAccountId(e.target.value)}
             required
           >
-            <option value="">Select account…</option>
+            <option value="">{t("ledger.selectAccount")}</option>
             {bankAccounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.code} · {a.name}
@@ -158,16 +160,16 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
           {(costCenters.length > 0 || projects.length > 0) && (
             <div className="grid gap-4 sm:grid-cols-2">
               {costCenters.length > 0 && (
-                <SelectField label="Cost center (optional)" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
-                  <option value="">— None —</option>
+                <SelectField label={t("voucher.costCenterOptional")} value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
+                  <option value="">{t("voucher.none")}</option>
                   {costCenters.map((c) => (
                     <option key={c.id} value={c.id}>{c.code ? `${c.code} · ` : ""}{c.name}</option>
                   ))}
                 </SelectField>
               )}
               {projects.length > 0 && (
-                <SelectField label="Project (optional)" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-                  <option value="">— None —</option>
+                <SelectField label={t("voucher.projectOptional")} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+                  <option value="">{t("voucher.none")}</option>
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>{p.code ? `${p.code} · ` : ""}{p.name}</option>
                   ))}
@@ -182,9 +184,9 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
               <table className="w-full min-w-[520px] text-sm">
                 <thead>
                   <tr className="text-left text-slate-400">
-                    <th className="px-2 py-1 font-medium">Account</th>
-                    <th className="px-2 py-1 font-medium">Description</th>
-                    <th className="px-2 py-1 text-right font-medium">Amount</th>
+                    <th className="px-2 py-1 font-medium">{t("fields.account")}</th>
+                    <th className="px-2 py-1 font-medium">{t("fields.description")}</th>
+                    <th className="px-2 py-1 text-right font-medium">{t("fields.amount")}</th>
                     <th />
                   </tr>
                 </thead>
@@ -196,7 +198,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                           value={line.accountId}
                           onChange={(e) => setLine(i, { accountId: e.target.value })}
                         >
-                          <option value="">Select account…</option>
+                          <option value="">{t("ledger.selectAccount")}</option>
                           {accounts
                             .filter((a) => a.id !== bankAccountId)
                             .map((a) => (
@@ -211,7 +213,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                           className="input"
                           value={line.description}
                           onChange={(e) => setLine(i, { description: e.target.value })}
-                          placeholder="Optional"
+                          placeholder={t("voucher.optional")}
                         />
                       </td>
                       <td className="px-2 py-1.5">
@@ -241,7 +243,7 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
                 <tfoot>
                   <tr className="border-t border-white/10 font-medium text-white">
                     <td className="px-2 py-2" colSpan={2}>
-                      Total {isPayment ? "paid" : "received"}
+                      {isPayment ? t("voucher.totalPaid") : t("voucher.totalReceived")}
                     </td>
                     <td className="px-2 py-2 text-right tabular-nums">{money(total)}</td>
                     <td />
@@ -257,10 +259,12 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
               onClick={() => setLines([...lines, emptyLine()])}
               className="btn-ghost text-sm"
             >
-              + Add line
+              {t("actions.addLine")}
             </button>
             <span className="text-xs text-slate-500">
-              {isPayment ? "Cash/Bank will be credited" : "Cash/Bank will be debited"} for {money(total)}
+              {isPayment
+                ? t("voucher.cashCredited", { amount: money(total) })
+                : t("voucher.cashDebited", { amount: money(total) })}
             </span>
           </div>
 
@@ -268,10 +272,10 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={busy || !ready}>
-              {busy ? "Posting…" : copy.cta}
+              {busy ? t("actions.posting") : copy.cta}
             </Button>
           </div>
         </form>

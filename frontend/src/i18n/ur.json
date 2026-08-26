@@ -387,5 +387,49 @@
     "enterAtLeastOne": "کم از کم ایک ابتدائی بیلنس درج کریں۔",
     "postButton": "ابتدائی بیلنس پوسٹ کریں",
     "hint": "رقمیں ہر اکاؤنٹ کے نارمل سائیڈ کا بیلنس ہیں (مثلاً ہاتھ میں نقد، آپ کو واجب رقم)۔"
+  },
+  "voucher": {
+    "debitTitle": "نیا ڈیبٹ واؤچر",
+    "creditTitle": "نیا کریڈٹ واؤچر",
+    "journalTitle": "نیا جرنل واؤچر",
+    "debitSub": "ادائیگی — نقد/بینک باہر جاتا ہے",
+    "creditSub": "وصولی — نقد/بینک اندر آتا ہے",
+    "journalSub": "غیر نقدی ایڈجسٹنگ اندراج — ڈیبٹ اور کریڈٹ برابر ہونے چاہئیں",
+    "paidFrom": "ادائیگی کہاں سے (نقد / بینک)",
+    "receivedIn": "وصولی کہاں (نقد / بینک)",
+    "debitLines": "ڈیبٹ ہونے والے اکاؤنٹس (اخراجات / فریق)",
+    "creditLines": "کریڈٹ ہونے والے اکاؤنٹس (آمدن / فریق)",
+    "postPayment": "ادائیگی پوسٹ کریں",
+    "postReceipt": "وصولی پوسٹ کریں",
+    "postEntry": "اندراج پوسٹ کریں",
+    "memo": "میمو",
+    "costCenterOptional": "کاسٹ سینٹر (اختیاری)",
+    "projectOptional": "پروجیکٹ (اختیاری)",
+    "none": "— کوئی نہیں —",
+    "optional": "اختیاری",
+    "totalPaid": "کل ادا شدہ",
+    "totalReceived": "کل موصول",
+    "cashCredited": "نقد/بینک {{amount}} کے لیے کریڈٹ ہوگا",
+    "cashDebited": "نقد/بینک {{amount}} کے لیے ڈیبٹ ہوگا",
+    "balanced": "✓ متوازن",
+    "outOfBalanceBy": "{{amount}} سے غیر متوازن",
+    "postAnyway": "پھر بھی پوسٹ کریں؟",
+    "largeVoucherConfirm": "یہ واؤچر بڑا ہے ({{amount}})۔ پوسٹ کریں؟",
+    "largeEntryConfirm": "یہ اندراج بڑا ہے ({{amount}})۔ پوسٹ کریں؟"
+  },
+  "print": {
+    "printSavePdf": "پرنٹ / PDF محفوظ کریں",
+    "invoiceDoc": "انوائس",
+    "billDoc": "بل",
+    "billTo": "بل بنام",
+    "billFrom": "بل بطرف",
+    "balanceDue": "واجب الادا بیلنس",
+    "footer": "آپ کے کاروبار کا شکریہ۔ · FinBooks کی جانب سے تیار کردہ",
+    "yourCompany": "آپ کی کمپنی"
+  },
+  "company": {
+    "namePlaceholder": "میرا نیا کاروبار",
+    "createHint": "ایک نیا کھاتہ سیٹ (ڈیفالٹ چارٹ آف اکاؤنٹس کے ساتھ) بنایا جاتا ہے، اور آپ اس کے ایڈمن بن جاتے ہیں۔",
+    "createSwitch": "بنائیں اور سوئچ کریں"
   }
 }

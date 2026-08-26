@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { money, shortDate } from "../../lib/format";
 
 export interface PrintLine {
@@ -17,10 +18,8 @@ export interface PrintDocProps {
   logoDataUrl?: string | null;
   number: string;
   status: string;
-  issueLabel: string;
   issueDate: string;
   dueDate: string;
-  partyHeading: string;
   party: { name: string; email?: string | null; phone?: string | null; address?: string | null };
   lines: PrintLine[];
   subtotal: string;
@@ -34,6 +33,11 @@ export interface PrintDocProps {
 // A clean, printer-friendly invoice/bill on white "paper". The action bar is marked
 // .no-print so only the document prints (browser's Print dialog → Save as PDF).
 export function PrintableDocument(props: PrintDocProps) {
+  const { t } = useTranslation();
+  const isInvoice = props.kind === "INVOICE";
+  const kindLabel = isInvoice ? t("print.invoiceDoc") : t("print.billDoc");
+  const issueLabel = isInvoice ? t("fields.issueDate") : t("fields.billDate");
+  const partyHeading = isInvoice ? t("print.billTo") : t("print.billFrom");
   const balance = (Number(props.total) - Number(props.amountPaid)).toFixed(2);
 
   return (
@@ -44,13 +48,13 @@ export function PrintableDocument(props: PrintDocProps) {
           onClick={props.onBack}
           className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
-          ← Back
+          ← {t("view.back")}
         </button>
         <button
           onClick={() => window.print()}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
-          🖨 Print / Save as PDF
+          🖨 {t("print.printSavePdf")}
         </button>
       </div>
 
@@ -75,10 +79,10 @@ export function PrintableDocument(props: PrintDocProps) {
             </div>
           </div>
           <div className="text-right">
-            <h2 className="text-3xl font-bold uppercase tracking-tight text-slate-800">{props.kind}</h2>
+            <h2 className="text-3xl font-bold uppercase tracking-tight text-slate-800">{kindLabel}</h2>
             <p className="mt-1 text-sm text-slate-500">#{props.number}</p>
             <span className="mt-2 inline-block rounded-full border border-slate-300 px-3 py-0.5 text-xs font-medium uppercase tracking-wide text-slate-600">
-              {props.status}
+              {t(`status.${props.status}`, props.status)}
             </span>
           </div>
         </div>
@@ -87,7 +91,7 @@ export function PrintableDocument(props: PrintDocProps) {
         <div className="mt-6 flex justify-between gap-6">
           <div className="max-w-xs">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              {props.partyHeading}
+              {partyHeading}
             </p>
             <p className="mt-1 font-semibold text-slate-900">{props.party.name}</p>
             {props.party.address && (
@@ -98,11 +102,11 @@ export function PrintableDocument(props: PrintDocProps) {
           </div>
           <div className="text-right text-sm">
             <div className="flex justify-between gap-8">
-              <span className="text-slate-400">{props.issueLabel}</span>
+              <span className="text-slate-400">{issueLabel}</span>
               <span className="font-medium text-slate-700">{shortDate(props.issueDate)}</span>
             </div>
             <div className="mt-1 flex justify-between gap-8">
-              <span className="text-slate-400">Due date</span>
+              <span className="text-slate-400">{t("fields.dueDate")}</span>
               <span className="font-medium text-slate-700">{shortDate(props.dueDate)}</span>
             </div>
           </div>
@@ -112,11 +116,11 @@ export function PrintableDocument(props: PrintDocProps) {
         <table className="mt-8 w-full text-sm">
           <thead>
             <tr className="border-b-2 border-slate-300 text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="py-2 font-semibold">Description</th>
-              <th className="py-2 text-right font-semibold">Qty</th>
-              <th className="py-2 text-right font-semibold">Unit price</th>
-              <th className="py-2 text-right font-semibold">Tax %</th>
-              <th className="py-2 text-right font-semibold">Amount</th>
+              <th className="py-2 font-semibold">{t("fields.description")}</th>
+              <th className="py-2 text-right font-semibold">{t("fields.qty")}</th>
+              <th className="py-2 text-right font-semibold">{t("fields.unitPrice")}</th>
+              <th className="py-2 text-right font-semibold">{t("fields.taxPct")}</th>
+              <th className="py-2 text-right font-semibold">{t("fields.amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -135,14 +139,14 @@ export function PrintableDocument(props: PrintDocProps) {
         {/* Totals */}
         <div className="mt-6 flex justify-end">
           <div className="w-64 space-y-1.5 text-sm">
-            <Row label="Subtotal" value={money(props.subtotal)} />
-            <Row label="Tax" value={money(props.taxTotal)} />
+            <Row label={t("fields.subtotal")} value={money(props.subtotal)} />
+            <Row label={t("fields.tax")} value={money(props.taxTotal)} />
             <div className="border-t border-slate-200 pt-1.5">
-              <Row label="Total" value={money(props.total)} strong />
+              <Row label={t("fields.total")} value={money(props.total)} strong />
             </div>
-            <Row label="Paid" value={money(props.amountPaid)} />
+            <Row label={t("fields.paid")} value={money(props.amountPaid)} />
             <div className="rounded-lg bg-slate-900 px-3 py-2 text-white">
-              <Row label="Balance due" value={money(balance)} strong invert />
+              <Row label={t("print.balanceDue")} value={money(balance)} strong invert />
             </div>
           </div>
         </div>
@@ -150,13 +154,13 @@ export function PrintableDocument(props: PrintDocProps) {
         {/* Notes */}
         {props.notes && (
           <div className="mt-8 border-t border-slate-200 pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Notes</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{t("fields.notes")}</p>
             <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{props.notes}</p>
           </div>
         )}
 
         <p className="mt-10 text-center text-xs text-slate-400">
-          Thank you for your business. · Generated by FinBooks
+          {t("print.footer")}
         </p>
       </div>
     </div>

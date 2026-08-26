@@ -387,5 +387,49 @@
     "enterAtLeastOne": "أدخل رصيدًا افتتاحيًا واحدًا على الأقل.",
     "postButton": "ترحيل الأرصدة الافتتاحية",
     "hint": "المبالغ هي رصيد الجانب الطبيعي لكل حساب (مثل النقد في الصندوق، والمبالغ المستحقة لك)."
+  },
+  "voucher": {
+    "debitTitle": "سند صرف جديد",
+    "creditTitle": "سند قبض جديد",
+    "journalTitle": "سند قيد جديد",
+    "debitSub": "دفع — النقد/البنك يخرج",
+    "creditSub": "قبض — النقد/البنك يدخل",
+    "journalSub": "قيد تسوية غير نقدي — يجب أن يتساوى المدين والدائن",
+    "paidFrom": "الدفع من (نقد / بنك)",
+    "receivedIn": "القبض في (نقد / بنك)",
+    "debitLines": "الحسابات المدينة (مصروف / طرف)",
+    "creditLines": "الحسابات الدائنة (إيراد / طرف)",
+    "postPayment": "ترحيل الدفع",
+    "postReceipt": "ترحيل القبض",
+    "postEntry": "ترحيل القيد",
+    "memo": "مذكرة",
+    "costCenterOptional": "مركز التكلفة (اختياري)",
+    "projectOptional": "المشروع (اختياري)",
+    "none": "— لا شيء —",
+    "optional": "اختياري",
+    "totalPaid": "إجمالي المدفوع",
+    "totalReceived": "إجمالي المقبوض",
+    "cashCredited": "سيُجعل النقد/البنك دائنًا بمبلغ {{amount}}",
+    "cashDebited": "سيُجعل النقد/البنك مدينًا بمبلغ {{amount}}",
+    "balanced": "✓ متوازن",
+    "outOfBalanceBy": "غير متوازن بمقدار {{amount}}",
+    "postAnyway": "ترحيله على أي حال؟",
+    "largeVoucherConfirm": "هذا السند كبير ({{amount}}). هل تريد ترحيله؟",
+    "largeEntryConfirm": "هذا القيد كبير ({{amount}}). هل تريد ترحيله؟"
+  },
+  "print": {
+    "printSavePdf": "طباعة / حفظ PDF",
+    "invoiceDoc": "فاتورة",
+    "billDoc": "فاتورة مورد",
+    "billTo": "الفاتورة إلى",
+    "billFrom": "الفاتورة من",
+    "balanceDue": "الرصيد المستحق",
+    "footer": "شكرًا لتعاملكم معنا. · أُنشئت بواسطة FinBooks",
+    "yourCompany": "شركتك"
+  },
+  "company": {
+    "namePlaceholder": "عملي الجديد",
+    "createHint": "يُنشأ دفتر حسابات جديد (مع دليل حسابات افتراضي)، وتصبح أنت مسؤوله.",
+    "createSwitch": "إنشاء وتبديل"
   }
 }

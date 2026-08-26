@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { apiError } from "../../lib/api";
 import { Modal } from "../ui/Modal";
@@ -7,6 +8,7 @@ import { Button } from "../ui/Button";
 
 // Topbar dropdown to switch between the companies a user belongs to, and to create a new one.
 export function CompanySwitcher() {
+  const { t } = useTranslation();
   const { user, switchCompany, createCompany } = useAuth();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -37,7 +39,7 @@ export function CompanySwitcher() {
 
       {open && (
         <div className="absolute left-0 z-40 mt-1 w-64 rounded-xl border border-white/10 bg-aurora-bg2 p-1 shadow-2xl">
-          <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500">Your companies</p>
+          <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500">{t("common.yourCompanies")}</p>
           {user.companies.map((c) => {
             const isActive = c.orgId === user.orgId;
             return (
@@ -49,7 +51,7 @@ export function CompanySwitcher() {
                 }`}
               >
                 <span className="truncate">{c.name}</span>
-                <span className="shrink-0 text-[10px] text-slate-500">{isActive ? "✓ " : ""}{c.role}</span>
+                <span className="shrink-0 text-[10px] text-slate-500">{isActive ? "✓ " : ""}{t(`roles.${c.role}`, c.role)}</span>
               </button>
             );
           })}
@@ -61,7 +63,7 @@ export function CompanySwitcher() {
             }}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-aurora-mint transition hover:bg-white/10"
           >
-            ＋ New company
+            ＋ {t("common.newCompany")}
           </button>
         </div>
       )}
@@ -72,6 +74,7 @@ export function CompanySwitcher() {
 }
 
 function NewCompanyModal({ onClose, onCreate }: { onClose: () => void; onCreate: (name: string) => Promise<void> }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,23 +92,23 @@ function NewCompanyModal({ onClose, onCreate }: { onClose: () => void; onCreate:
   }
 
   return (
-    <Modal open onClose={onClose} title="New company">
+    <Modal open onClose={onClose} title={t("common.newCompany")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField
-          label="Company name"
+          label={t("settings.companyName")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          placeholder="My New Business"
+          placeholder={t("company.namePlaceholder")}
         />
-        <p className="text-xs text-slate-500">A fresh set of books (with a default chart of accounts) is created, and you become its admin.</p>
+        <p className="text-xs text-slate-500">{t("company.createHint")}</p>
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={busy}>
-            {busy ? "Creating…" : "Create & switch"}
+            {busy ? t("auth.creating") : t("company.createSwitch")}
           </Button>
         </div>
       </form>

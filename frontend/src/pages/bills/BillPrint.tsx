@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../../components/ui/Spinner";
@@ -22,12 +23,13 @@ interface BillDetail {
 }
 
 export function BillPrint() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, loading, error } = useFetch<{ bill: BillDetail }>(`/bills/${id}`);
 
-  if (loading) return <Spinner label="Preparing bill…" />;
+  if (loading) return <Spinner label={t("common.loading")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
@@ -35,17 +37,15 @@ export function BillPrint() {
   return (
     <PrintableDocument
       kind="BILL"
-      orgName={user?.organization?.name ?? "Your Company"}
+      orgName={user?.organization?.name ?? t("print.yourCompany")}
       orgAddress={user?.organization?.address}
       orgPhone={user?.organization?.phone}
       orgEmail={user?.organization?.email}
       logoDataUrl={user?.organization?.logoDataUrl}
       number={bill.number}
       status={bill.status}
-      issueLabel="Bill date"
       issueDate={bill.billDate}
       dueDate={bill.dueDate}
-      partyHeading="Bill from"
       party={bill.vendor}
       lines={bill.lines}
       subtotal={bill.subtotal}

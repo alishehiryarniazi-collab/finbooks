@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { api, apiError, apiErrorCode } from "../../lib/api";
 import { inputDate, money } from "../../lib/format";
@@ -20,6 +21,7 @@ interface LineRow {
 const emptyLine = (): LineRow => ({ accountId: "", debit: "", credit: "" });
 
 export function JournalEntryForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, loading } = useFetch<{ accounts: Account[] }>("/accounts");
   const ccReq = useFetch<{ costCenters: CostCenter[] }>("/cost-centers");
@@ -33,7 +35,7 @@ export function JournalEntryForm() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <Spinner label="Loading accounts…" />;
+  if (loading) return <Spinner label={t("coa.loading")} />;
   // Only postable (leaf), ACTIVE accounts can appear as line accounts.
   const accounts = (data?.accounts ?? []).filter((a) => a.isPostable && a.isActive);
   const costCenters = (ccReq.data?.costCenters ?? []).filter((c) => c.isActive);
@@ -85,12 +87,12 @@ export function JournalEntryForm() {
       const code = apiErrorCode(err);
       if (code === "NEGATIVE_CASH" && !overrides.allowNegativeCash) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\nProceed anyway?`)) return doPost({ ...overrides, allowNegativeCash: true });
+        if (window.confirm(`${apiError(err)}\n\n${t("actions.proceedAnyway")}`)) return doPost({ ...overrides, allowNegativeCash: true });
         return;
       }
       if (code === "DUPLICATE_REF" && !overrides.allowDuplicateRef) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\nPost it anyway?`)) return doPost({ ...overrides, allowDuplicateRef: true });
+        if (window.confirm(`${apiError(err)}\n\n${t("voucher.postAnyway")}`)) return doPost({ ...overrides, allowDuplicateRef: true });
         return;
       }
       setError(apiError(err));
@@ -100,53 +102,53 @@ export function JournalEntryForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (totalDebit > LARGE_AMOUNT && !window.confirm(`This entry is large (${money(totalDebit)}). Post it?`)) return;
+    if (totalDebit > LARGE_AMOUNT && !window.confirm(t("voucher.largeEntryConfirm", { amount: money(totalDebit) }))) return;
     await doPost({});
   }
 
   return (
     <div>
       <PageHeader
-        title="New Journal Voucher"
-        subtitle="Non-cash adjusting entry — debits must equal credits"
+        title={t("voucher.journalTitle")}
+        subtitle={t("voucher.journalSub")}
       />
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField
-              label="Date"
+              label={t("fields.date")}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
             <TextField
-              label="Reference"
+              label={t("fields.reference")}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               placeholder="JE-001"
             />
             <TextField
-              label="Memo"
+              label={t("voucher.memo")}
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              placeholder="Description"
+              placeholder={t("fields.description")}
             />
           </div>
 
           {(costCenters.length > 0 || projects.length > 0) && (
             <div className="grid gap-4 sm:grid-cols-2">
               {costCenters.length > 0 && (
-                <SelectField label="Cost center (optional)" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
-                  <option value="">— None —</option>
+                <SelectField label={t("voucher.costCenterOptional")} value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
+                  <option value="">{t("voucher.none")}</option>
                   {costCenters.map((c) => (
                     <option key={c.id} value={c.id}>{c.code ? `${c.code} · ` : ""}{c.name}</option>
                   ))}
                 </SelectField>
               )}
               {projects.length > 0 && (
-                <SelectField label="Project (optional)" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-                  <option value="">— None —</option>
+                <SelectField label={t("voucher.projectOptional")} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+                  <option value="">{t("voucher.none")}</option>
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>{p.code ? `${p.code} · ` : ""}{p.name}</option>
                   ))}
@@ -159,9 +161,9 @@ export function JournalEntryForm() {
             <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="text-left text-slate-400">
-                  <th className="px-2 py-1 font-medium">Account</th>
-                  <th className="px-2 py-1 text-right font-medium">Debit</th>
-                  <th className="px-2 py-1 text-right font-medium">Credit</th>
+                  <th className="px-2 py-1 font-medium">{t("fields.account")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.debit")}</th>
+                  <th className="px-2 py-1 text-right font-medium">{t("fields.credit")}</th>
                   <th />
                 </tr>
               </thead>
@@ -173,7 +175,7 @@ export function JournalEntryForm() {
                         value={line.accountId}
                         onChange={(e) => setLine(i, { accountId: e.target.value })}
                       >
-                        <option value="">Select account…</option>
+                        <option value="">{t("ledger.selectAccount")}</option>
                         {accounts.map((a) => (
                           <option key={a.id} value={a.id}>
                             {a.code} · {a.name}
@@ -217,7 +219,7 @@ export function JournalEntryForm() {
               </tbody>
               <tfoot>
                 <tr className="border-t border-white/10 font-medium text-white">
-                  <td className="px-2 py-2">Totals</td>
+                  <td className="px-2 py-2">{t("fields.totals")}</td>
                   <td className="px-2 py-2 text-right tabular-nums">{money(totalDebit)}</td>
                   <td className="px-2 py-2 text-right tabular-nums">{money(totalCredit)}</td>
                   <td />
@@ -233,16 +235,16 @@ export function JournalEntryForm() {
                 onClick={() => setLines([...lines, emptyLine()])}
                 className="btn-ghost text-sm"
               >
-                + Add line
+                {t("actions.addLine")}
               </button>
               {!balanced && totalDebit + totalCredit > 0 && (
                 <button type="button" onClick={autoBalance} className="btn-ghost text-sm">
-                  ⚖ Auto-balance
+                  ⚖ {t("actions.autoBalance")}
                 </button>
               )}
             </div>
             <span className={`text-sm ${balanced ? "text-emerald-300" : "text-amber-300"}`}>
-              {balanced ? "✓ Balanced" : `Out of balance by ${money(Math.abs(totalDebit - totalCredit))}`}
+              {balanced ? t("voucher.balanced") : t("voucher.outOfBalanceBy", { amount: money(Math.abs(totalDebit - totalCredit)) })}
             </span>
           </div>
 
@@ -250,10 +252,10 @@ export function JournalEntryForm() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => navigate("/journal")}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={busy || !balanced}>
-              {busy ? "Posting…" : "Post entry"}
+              {busy ? t("actions.posting") : t("voucher.postEntry")}
             </Button>
           </div>
         </form>

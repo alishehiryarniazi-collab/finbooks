@@ -85,7 +85,7 @@ export function Dashboard() {
             {data.recent.map((r) => (
               <div key={r.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm text-white">{r.memo ?? r.reference ?? "Journal entry"}</p>
+                  <p className="truncate text-sm text-white">{r.memo ?? r.reference ?? t("nav.journalVoucher")}</p>
                   <p className="text-xs text-slate-500">{shortDate(r.date)}</p>
                 </div>
                 <span className="tabular-nums text-sm text-slate-300">{money(r.amount)}</span>
