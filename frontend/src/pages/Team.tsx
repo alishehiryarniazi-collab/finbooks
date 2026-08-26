@@ -139,7 +139,7 @@ function InviteModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   }
 
   return (
-    <Modal open onClose={onClose} title={t("team.inviteTitle")}>
+    <Modal open onClose={onClose} title={t("team.inviteTitle")} icon="✉️" subtitle={t("team.subtitle")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField
           label={t("fields.name")}

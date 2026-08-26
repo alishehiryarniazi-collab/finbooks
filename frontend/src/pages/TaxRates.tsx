@@ -9,6 +9,7 @@ import { Spinner } from "../components/ui/Spinner";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { TextField } from "../components/ui/Field";
+import { EntityGrid, EntityCard, AddCard, EmptyState } from "../components/ui/EntityCard";
 import { ErrorNote } from "./Dashboard";
 
 export function TaxRates() {
@@ -31,31 +32,37 @@ export function TaxRates() {
         action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.taxNew")}</Button>}
       />
 
-      <div className="glass overflow-hidden rounded-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs uppercase tracking-wider text-slate-500">
-          <span>{t("fields.name")}</span>
-          <span>{t("crud.rate")}</span>
-        </div>
-        {rates.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">{t("crud.taxEmpty")}</p>
-        ) : (
-          <div className="flex flex-col divide-y divide-white/5">
-            {rates.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => canEdit && setEditing(r)}
-                className="flex items-center justify-between gap-3 px-4 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-default"
-                disabled={!canEdit}
-              >
-                <span className="text-sm text-white">
-                  {r.name} {!r.isActive && <span className="ml-1 text-[10px] uppercase text-amber-400">{t("crud.inactive")}</span>}
-                </span>
-                <span className="tabular-nums text-sm text-slate-300">{Number(r.ratePercent)}%</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {rates.length === 0 ? (
+        <EmptyState
+          icon="🧾"
+          message={t("crud.taxEmpty")}
+          action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.taxNew")}</Button>}
+        />
+      ) : (
+        <EntityGrid>
+          {rates.map((r) => (
+            <EntityCard
+              key={r.id}
+              icon="🧾"
+              title={r.name}
+              subtitle={t("crud.rate")}
+              badge={
+                !r.isActive && (
+                  <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-medium text-amber-300">
+                    {t("crud.inactive")}
+                  </span>
+                )
+              }
+              footer={
+                <p className="tabular-nums text-2xl font-semibold text-aurora-mint">{Number(r.ratePercent)}%</p>
+              }
+              disabled={!canEdit}
+              onClick={() => setEditing(r)}
+            />
+          ))}
+          {canEdit && <AddCard label={t("crud.taxNew")} onClick={() => setCreating(true)} />}
+        </EntityGrid>
+      )}
 
       {(creating || editing) && (
         <TaxRateModal
@@ -112,7 +119,13 @@ function TaxRateModal({ rate, onClose, onSaved }: { rate: TaxRate | null; onClos
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? t("crud.taxEdit") : t("crud.taxAdd")}>
+    <Modal
+      open
+      onClose={onClose}
+      icon="🧾"
+      title={isEdit ? t("crud.taxEdit") : t("crud.taxAdd")}
+      subtitle={t("crud.taxSubtitle")}
+    >
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField label={t("fields.name")} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t("crud.taxNamePlaceholder")} />
         <TextField

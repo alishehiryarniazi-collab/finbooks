@@ -9,6 +9,7 @@ import { Spinner } from "../components/ui/Spinner";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { TextField } from "../components/ui/Field";
+import { EntityGrid, EntityCard, AddCard, EmptyState } from "../components/ui/EntityCard";
 import { ErrorNote } from "./Dashboard";
 
 export function CostCenters() {
@@ -31,28 +32,34 @@ export function CostCenters() {
         action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.ccNew")}</Button>}
       />
 
-      <div className="glass overflow-hidden rounded-2xl">
-        {rows.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">{t("crud.ccEmpty")}</p>
-        ) : (
-          <div className="flex flex-col divide-y divide-white/5">
-            {rows.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => canEdit && setEditing(c)}
-                disabled={!canEdit}
-                className="flex items-center justify-between gap-3 px-4 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-default"
-              >
-                <span className="text-sm text-white">
-                  {c.code && <span className="mr-2 text-xs text-slate-500">{c.code}</span>}
-                  {c.name}
-                  {!c.isActive && <span className="ml-2 text-[10px] uppercase text-amber-400">{t("crud.inactive")}</span>}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {rows.length === 0 ? (
+        <EmptyState
+          icon="🏢"
+          message={t("crud.ccEmpty")}
+          action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.ccNew")}</Button>}
+        />
+      ) : (
+        <EntityGrid>
+          {rows.map((c) => (
+            <EntityCard
+              key={c.id}
+              icon="🏢"
+              title={c.name}
+              subtitle={c.code || undefined}
+              badge={
+                !c.isActive && (
+                  <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-medium text-amber-300">
+                    {t("crud.inactive")}
+                  </span>
+                )
+              }
+              disabled={!canEdit}
+              onClick={() => setEditing(c)}
+            />
+          ))}
+          {canEdit && <AddCard label={t("crud.ccNew")} onClick={() => setCreating(true)} />}
+        </EntityGrid>
+      )}
 
       {(creating || editing) && (
         <CostCenterModal
@@ -109,7 +116,13 @@ function CostCenterModal({ item, onClose, onSaved }: { item: CostCenter | null; 
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? t("crud.ccEdit") : t("crud.ccAdd")}>
+    <Modal
+      open
+      onClose={onClose}
+      icon="🏢"
+      title={isEdit ? t("crud.ccEdit") : t("crud.ccAdd")}
+      subtitle={t("crud.ccSubtitle")}
+    >
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField label={t("fields.name")} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t("crud.ccNamePlaceholder")} />
         <TextField label={t("crud.codeOptional")} value={code ?? ""} onChange={(e) => setCode(e.target.value)} placeholder="CC-SALES" />

@@ -92,7 +92,7 @@ function NewCompanyModal({ onClose, onCreate }: { onClose: () => void; onCreate:
   }
 
   return (
-    <Modal open onClose={onClose} title={t("common.newCompany")}>
+    <Modal open onClose={onClose} title={t("common.newCompany")} icon="🏢">
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField
           label={t("settings.companyName")}

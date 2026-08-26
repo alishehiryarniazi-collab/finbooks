@@ -188,7 +188,7 @@ function NewAccountModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={t("coa.newAccountTitle")}>
+    <Modal open onClose={onClose} title={t("coa.newAccountTitle")} icon="📒" subtitle={t("coa.subtitle")}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <SelectField
           label={t("coa.parentGroup")}

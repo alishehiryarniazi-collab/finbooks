@@ -9,9 +9,24 @@ import { Spinner } from "../components/ui/Spinner";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { TextField, SelectField } from "../components/ui/Field";
+import { EntityGrid, EntityCard, AddCard, EmptyState } from "../components/ui/EntityCard";
 import { ErrorNote } from "./Dashboard";
 
 const STATUSES = ["ACTIVE", "COMPLETED", "ON_HOLD"];
+
+// Colour per project status so the board reads at a glance.
+const STATUS_STYLE: Record<string, string> = {
+  ACTIVE: "border-emerald-500/30 bg-emerald-500/15 text-emerald-300",
+  COMPLETED: "border-sky-500/30 bg-sky-500/15 text-sky-300",
+  ON_HOLD: "border-amber-500/30 bg-amber-500/15 text-amber-300",
+};
+
+function StatusPill({ status, label }: { status: string; label: string }) {
+  const style = STATUS_STYLE[status] ?? STATUS_STYLE.ACTIVE;
+  return (
+    <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${style}`}>{label}</span>
+  );
+}
 
 export function Projects() {
   const { t } = useTranslation();
@@ -33,30 +48,28 @@ export function Projects() {
         action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.projNew")}</Button>}
       />
 
-      <div className="glass overflow-hidden rounded-2xl">
-        {rows.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">{t("crud.projEmpty")}</p>
-        ) : (
-          <div className="flex flex-col divide-y divide-white/5">
-            {rows.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => canEdit && setEditing(p)}
-                disabled={!canEdit}
-                className="flex items-center justify-between gap-3 px-4 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-default"
-              >
-                <span className="text-sm text-white">
-                  {p.code && <span className="mr-2 text-xs text-slate-500">{p.code}</span>}
-                  {p.name}
-                </span>
-                <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-                  {t(`status.${p.status}`, p.status.replace("_", " "))}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {rows.length === 0 ? (
+        <EmptyState
+          icon="🚀"
+          message={t("crud.projEmpty")}
+          action={canEdit && <Button onClick={() => setCreating(true)}>{t("crud.projNew")}</Button>}
+        />
+      ) : (
+        <EntityGrid>
+          {rows.map((p) => (
+            <EntityCard
+              key={p.id}
+              icon="🚀"
+              title={p.name}
+              subtitle={p.code || undefined}
+              badge={<StatusPill status={p.status} label={t(`status.${p.status}`, p.status.replace("_", " "))} />}
+              disabled={!canEdit}
+              onClick={() => setEditing(p)}
+            />
+          ))}
+          {canEdit && <AddCard label={t("crud.projNew")} onClick={() => setCreating(true)} />}
+        </EntityGrid>
+      )}
 
       {(creating || editing) && (
         <ProjectModal
@@ -114,7 +127,13 @@ function ProjectModal({ item, onClose, onSaved }: { item: Project | null; onClos
   }
 
   return (
-    <Modal open onClose={onClose} title={isEdit ? t("crud.projEdit") : t("crud.projAdd")}>
+    <Modal
+      open
+      onClose={onClose}
+      icon="🚀"
+      title={isEdit ? t("crud.projEdit") : t("crud.projAdd")}
+      subtitle={t("crud.projSubtitle")}
+    >
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField label={t("fields.name")} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t("crud.projNamePlaceholder")} />
         <div className="grid grid-cols-2 gap-4">

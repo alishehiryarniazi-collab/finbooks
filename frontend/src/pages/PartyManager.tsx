@@ -163,7 +163,13 @@ function PartyModal({
     : t(isCustomer ? "pages.addCustomer" : "pages.addVendor");
 
   return (
-    <Modal open onClose={onClose} title={title}>
+    <Modal
+      open
+      onClose={onClose}
+      title={title}
+      icon={isCustomer ? "👤" : "🏭"}
+      subtitle={t(isCustomer ? "pages.customersSubtitle" : "pages.vendorsSubtitle")}
+    >
       <form onSubmit={save} className="flex flex-col gap-4">
         <TextField label={t("fields.name")} value={form.name} onChange={set("name")} required />
         <div className="grid grid-cols-2 gap-4">

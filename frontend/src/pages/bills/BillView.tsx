@@ -215,7 +215,7 @@ function PayModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={t("view.payBill")}>
+    <Modal open onClose={onClose} title={t("view.payBill")} icon="💳">
       <form onSubmit={save} className="flex flex-col gap-4">
         <SelectField
           label={t("view.payFrom")}
