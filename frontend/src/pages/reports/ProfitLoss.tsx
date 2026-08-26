@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
 import { toCsv, downloadCsv } from "../../lib/csv";
@@ -16,8 +17,9 @@ interface PL {
 }
 
 export function ProfitLoss() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<PL>("/reports/profit-loss");
-  if (loading) return <Spinner label="Building P&L…" />;
+  if (loading) return <Spinner label={t("reports.building")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
@@ -26,15 +28,15 @@ export function ProfitLoss() {
   function exportCsv() {
     const d = data!;
     const csv = toCsv(
-      ["Code", "Account", "Amount"],
+      [t("fields.code"), t("fields.account"), t("fields.amount")],
       [
-        ["", "INCOME", ""],
+        ["", t("reports.income"), ""],
         ...d.income.map((r) => [r.code, r.name, r.amount]),
-        ["", "Total Income", d.totalIncome],
-        ["", "EXPENSES", ""],
+        ["", `${t("reports.totalPrefix")} ${t("reports.income")}`, d.totalIncome],
+        ["", t("reports.expenses"), ""],
         ...d.expenses.map((r) => [r.code, r.name, r.amount]),
-        ["", "Total Expenses", d.totalExpense],
-        ["", "Net Profit", d.netProfit],
+        ["", `${t("reports.totalPrefix")} ${t("reports.expenses")}`, d.totalExpense],
+        ["", t("reports.netProfit"), d.netProfit],
       ],
     );
     downloadCsv("profit-and-loss", csv);
@@ -43,21 +45,21 @@ export function ProfitLoss() {
   return (
     <div>
       <PageHeader
-        title="Profit & Loss"
-        subtitle="Income minus expenses (all time)"
+        title={t("nav.profitLoss")}
+        subtitle={t("reports.plSubtitle")}
         action={
           <Button variant="ghost" onClick={exportCsv}>
-            Export CSV
+            {t("common.exportCsv")}
           </Button>
         }
       />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Income" rows={data.income} total={data.totalIncome} />
-        <Section title="Expenses" rows={data.expenses} total={data.totalExpense} />
+        <Section title={t("reports.income")} rows={data.income} total={data.totalIncome} />
+        <Section title={t("reports.expenses")} rows={data.expenses} total={data.totalExpense} />
       </div>
       <Card className="mt-6">
         <div className="flex items-center justify-between">
-          <span className="text-lg font-semibold text-white">Net {profit ? "Profit" : "Loss"}</span>
+          <span className="text-lg font-semibold text-white">{profit ? t("reports.netProfit") : t("reports.netLoss")}</span>
           <span
             className={`text-2xl font-semibold tabular-nums ${profit ? "text-emerald-300" : "text-rose-300"}`}
           >
@@ -78,11 +80,12 @@ function Section({
   rows: { code: string; name: string; amount: string }[];
   total: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <h3 className="mb-3 text-lg font-semibold text-white">{title}</h3>
       <div className="flex flex-col divide-y divide-white/5">
-        {rows.length === 0 && <p className="py-4 text-sm text-slate-500">Nothing recorded yet.</p>}
+        {rows.length === 0 && <p className="py-4 text-sm text-slate-500">{t("reports.nothingRecorded")}</p>}
         {rows.map((r) => (
           <div key={r.code} className="flex justify-between py-2 text-sm">
             <span className="text-slate-300">
@@ -93,7 +96,7 @@ function Section({
         ))}
       </div>
       <div className="mt-3 flex justify-between border-t border-white/10 pt-3 font-semibold text-white">
-        <span>Total {title}</span>
+        <span>{t("reports.totalPrefix")} {title}</span>
         <span className="tabular-nums">{money(total)}</span>
       </div>
     </Card>

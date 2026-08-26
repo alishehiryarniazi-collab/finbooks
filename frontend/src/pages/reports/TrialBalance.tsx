@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
 import { toCsv, downloadCsv } from "../../lib/csv";
@@ -15,18 +16,19 @@ interface TB {
 }
 
 export function TrialBalance() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<TB>("/reports/trial-balance");
-  if (loading) return <Spinner label="Building trial balance…" />;
+  if (loading) return <Spinner label={t("reports.building")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
   function exportCsv() {
     const d = data!;
     const csv = toCsv(
-      ["Code", "Account", "Type", "Debit", "Credit"],
+      [t("fields.code"), t("fields.account"), t("fields.type"), t("fields.debit"), t("fields.credit")],
       [
         ...d.rows.map((r) => [r.code, r.name, r.type, r.debit, r.credit]),
-        ["", "Totals", "", d.totalDebit, d.totalCredit],
+        ["", t("fields.totals"), "", d.totalDebit, d.totalCredit],
       ],
     );
     downloadCsv("trial-balance", csv);
@@ -35,17 +37,17 @@ export function TrialBalance() {
   return (
     <div>
       <PageHeader
-        title="Trial Balance"
-        subtitle="Every account's balance — debits must equal credits"
+        title={t("nav.trialBalance")}
+        subtitle={t("reports.trialBalanceSubtitle")}
         action={
           <div className="flex items-center gap-2">
             <span
               className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}
             >
-              {data.balanced ? "✓ Balanced" : "✗ Not balanced"}
+              {data.balanced ? `✓ ${t("reports.balanced")}` : `✗ ${t("reports.notBalanced")}`}
             </span>
             <Button variant="ghost" onClick={exportCsv}>
-              Export CSV
+              {t("common.exportCsv")}
             </Button>
           </div>
         }
@@ -55,10 +57,10 @@ export function TrialBalance() {
           <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b border-white/10 text-left text-slate-400">
-                <th className="px-3 py-2 font-medium">Code</th>
-                <th className="px-3 py-2 font-medium">Account</th>
-                <th className="px-3 py-2 text-right font-medium">Debit</th>
-                <th className="px-3 py-2 text-right font-medium">Credit</th>
+                <th className="px-3 py-2 font-medium">{t("fields.code")}</th>
+                <th className="px-3 py-2 font-medium">{t("fields.account")}</th>
+                <th className="px-3 py-2 text-right font-medium">{t("fields.debit")}</th>
+                <th className="px-3 py-2 text-right font-medium">{t("fields.credit")}</th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +80,7 @@ export function TrialBalance() {
             <tfoot>
               <tr className="border-t border-white/10 font-semibold text-white">
                 <td className="px-3 py-2" colSpan={2}>
-                  Totals
+                  {t("fields.totals")}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">{money(data.totalDebit)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{money(data.totalCredit)}</td>

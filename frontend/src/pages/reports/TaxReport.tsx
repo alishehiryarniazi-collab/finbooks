@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
 import { toCsv, downloadCsv } from "../../lib/csv";
@@ -16,6 +17,7 @@ interface TaxData {
 }
 
 export function TaxReport() {
+  const { t } = useTranslation();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const qs = new URLSearchParams();
@@ -29,11 +31,11 @@ export function TaxReport() {
   function exportCsv() {
     if (!data) return;
     const csv = toCsv(
-      ["Line", "Amount"],
+      ["", t("fields.amount")],
       [
-        ["Output tax (collected on sales)", data.outputTax],
-        ["Input tax (paid on purchases)", data.inputTax],
-        ["Net tax payable", data.netPayable],
+        [t("reports.outputTax"), data.outputTax],
+        [t("reports.inputTax"), data.inputTax],
+        [t("reports.netPayable"), data.netPayable],
       ],
     );
     downloadCsv("tax-summary", csv);
@@ -42,32 +44,32 @@ export function TaxReport() {
   return (
     <div>
       <PageHeader
-        title="Tax Report"
-        subtitle="Output tax (sales) minus input tax (purchases) = net payable"
-        action={data && <Button variant="ghost" onClick={exportCsv}>Export CSV</Button>}
+        title={t("nav.taxReport")}
+        subtitle={t("reports.taxSubtitle")}
+        action={data && <Button variant="ghost" onClick={exportCsv}>{t("common.exportCsv")}</Button>}
       />
 
       <Card className="mb-4">
         <div className="flex flex-wrap items-end gap-4">
-          <div className="w-44"><TextField label="From" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-          <div className="w-44"><TextField label="To" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+          <div className="w-44"><TextField label={t("fields.from")} type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+          <div className="w-44"><TextField label={t("fields.to")} type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
           {(from || to) && (
-            <button onClick={() => { setFrom(""); setTo(""); }} className="btn-ghost text-xs">Clear</button>
+            <button onClick={() => { setFrom(""); setTo(""); }} className="btn-ghost text-xs">{t("fields.clear")}</button>
           )}
         </div>
       </Card>
 
-      {loading && <Spinner label="Building tax report…" />}
+      {loading && <Spinner label={t("reports.building")} />}
       {error && !loading && <ErrorNote message={error} />}
 
       {!loading && !error && data && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Output tax (on sales)" value={money(data.outputTax)} hint="You collected this from customers" />
-          <StatCard label="Input tax (on purchases)" value={money(data.inputTax)} hint="You paid this to vendors (recoverable)" />
+          <StatCard label={t("reports.outputTax")} value={money(data.outputTax)} hint={t("reports.outputHint")} />
+          <StatCard label={t("reports.inputTax")} value={money(data.inputTax)} hint={t("reports.inputHint")} />
           <StatCard
-            label="Net tax payable"
+            label={t("reports.netPayable")}
             value={money(data.netPayable)}
-            hint={net >= 0 ? "Owed to the tax authority" : "Refundable / carried forward"}
+            hint={net >= 0 ? t("reports.netHintOwed") : t("reports.netHintRefund")}
             strong
           />
         </div>

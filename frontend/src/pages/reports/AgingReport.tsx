@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
 import { toCsv, downloadCsv } from "../../lib/csv";
@@ -22,43 +23,36 @@ interface Aging {
   totals: Omit<AgingRow, "customer" | "vendor">;
 }
 
-const BUCKETS: { key: keyof AgingRow; label: string }[] = [
-  { key: "current", label: "Current" },
-  { key: "d1_30", label: "1–30" },
-  { key: "d31_60", label: "31–60" },
-  { key: "d61_90", label: "61–90" },
-  { key: "d90_plus", label: "90+" },
+const BUCKETS: { key: keyof AgingRow; labelKey: string }[] = [
+  { key: "current", labelKey: "reports.agingCurrent" },
+  { key: "d1_30", labelKey: "reports.aging1_30" },
+  { key: "d31_60", labelKey: "reports.aging31_60" },
+  { key: "d61_90", labelKey: "reports.aging61_90" },
+  { key: "d90_plus", labelKey: "reports.aging90" },
 ];
 
 // Shared aging table for AR (by customer) and AP (by vendor).
-export function AgingReport({
-  endpoint,
-  title,
-  subtitle,
-  partyKey,
-  partyHeader,
-}: {
-  endpoint: string;
-  title: string;
-  subtitle: string;
-  partyKey: "customer" | "vendor";
-  partyHeader: string;
-}) {
+export function AgingReport({ endpoint, party }: { endpoint: string; party: "customer" | "vendor" }) {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<Aging>(endpoint);
-  if (loading) return <Spinner label="Building aging report…" />;
+  if (loading) return <Spinner label={t("reports.building")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
+
+  const title = t(party === "customer" ? "nav.arAging" : "nav.apAging");
+  const subtitle = t(party === "customer" ? "reports.arAgingSubtitle" : "reports.apAgingSubtitle");
+  const partyHeader = t(party === "customer" ? "reports.customer" : "reports.vendor");
 
   function exportCsv() {
     const d = data!;
     const csv = toCsv(
-      [partyHeader, ...BUCKETS.map((b) => b.label), "Total"],
+      [partyHeader, ...BUCKETS.map((b) => t(b.labelKey)), t("fields.total")],
       [
-        ...d.rows.map((r) => [r[partyKey], ...BUCKETS.map((b) => r[b.key]), r.total]),
-        ["Totals", ...BUCKETS.map((b) => d.totals[b.key]), d.totals.total],
+        ...d.rows.map((r) => [r[party], ...BUCKETS.map((b) => r[b.key]), r.total]),
+        [t("fields.totals"), ...BUCKETS.map((b) => d.totals[b.key]), d.totals.total],
       ],
     );
-    downloadCsv(title.toLowerCase().replace(/\s+/g, "-"), csv);
+    downloadCsv(party === "customer" ? "ar-aging" : "ap-aging", csv);
   }
 
   return (
@@ -69,14 +63,14 @@ export function AgingReport({
         action={
           data.rows.length > 0 && (
             <Button variant="ghost" onClick={exportCsv}>
-              Export CSV
+              {t("common.exportCsv")}
             </Button>
           )
         }
       />
       <Card>
         {data.rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-500">Nothing outstanding. 🎉</p>
+          <p className="py-8 text-center text-sm text-slate-500">{t("reports.nothingOutstanding")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
@@ -85,16 +79,16 @@ export function AgingReport({
                   <th className="px-3 py-2 font-medium">{partyHeader}</th>
                   {BUCKETS.map((b) => (
                     <th key={b.key} className="px-3 py-2 text-right font-medium">
-                      {b.label}
+                      {t(b.labelKey)}
                     </th>
                   ))}
-                  <th className="px-3 py-2 text-right font-medium">Total</th>
+                  <th className="px-3 py-2 text-right font-medium">{t("fields.total")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.rows.map((r, i) => (
                   <tr key={i} className="border-b border-white/5">
-                    <td className="px-3 py-2 text-white">{r[partyKey]}</td>
+                    <td className="px-3 py-2 text-white">{r[party]}</td>
                     {BUCKETS.map((b) => (
                       <td key={b.key} className="px-3 py-2 text-right tabular-nums text-slate-300">
                         {Number(r[b.key]) ? money(r[b.key]) : ""}
@@ -108,7 +102,7 @@ export function AgingReport({
               </tbody>
               <tfoot>
                 <tr className="border-t border-white/10 font-semibold text-white">
-                  <td className="px-3 py-2">Totals</td>
+                  <td className="px-3 py-2">{t("fields.totals")}</td>
                   {BUCKETS.map((b) => (
                     <td key={b.key} className="px-3 py-2 text-right tabular-nums">
                       {money(data.totals[b.key])}

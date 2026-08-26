@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../../hooks/useFetch";
 import { money } from "../../lib/format";
 import { toCsv, downloadCsv } from "../../lib/csv";
@@ -19,23 +20,24 @@ interface BS {
 }
 
 export function BalanceSheet() {
+  const { t } = useTranslation();
   const { data, loading, error } = useFetch<BS>("/reports/balance-sheet");
-  if (loading) return <Spinner label="Building balance sheet…" />;
+  if (loading) return <Spinner label={t("reports.building")} />;
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
 
   function exportCsv() {
     const d = data!;
     const csv = toCsv(
-      ["Section", "Code", "Account", "Amount"],
+      [t("fields.type"), t("fields.code"), t("fields.account"), t("fields.amount")],
       [
-        ...d.assets.map((r) => ["Assets", r.code, r.name, r.amount]),
-        ["", "", "Total Assets", d.totalAssets],
-        ...d.liabilities.map((r) => ["Liabilities", r.code, r.name, r.amount]),
-        ["", "", "Total Liabilities", d.totalLiabilities],
-        ...d.equity.map((r) => ["Equity", r.code, r.name, r.amount]),
-        ["Equity", "", "Current Year Earnings", d.currentEarnings],
-        ["", "", "Total Equity", d.totalEquity],
+        ...d.assets.map((r) => [t("reports.assets"), r.code, r.name, r.amount]),
+        ["", "", `${t("reports.totalPrefix")} ${t("reports.assets")}`, d.totalAssets],
+        ...d.liabilities.map((r) => [t("reports.liabilities"), r.code, r.name, r.amount]),
+        ["", "", `${t("reports.totalPrefix")} ${t("reports.liabilities")}`, d.totalLiabilities],
+        ...d.equity.map((r) => [t("reports.equity"), r.code, r.name, r.amount]),
+        [t("reports.equity"), "", t("reports.currentYearEarnings"), d.currentEarnings],
+        ["", "", `${t("reports.totalPrefix")} ${t("reports.equity")}`, d.totalEquity],
       ],
     );
     downloadCsv("balance-sheet", csv);
@@ -44,28 +46,28 @@ export function BalanceSheet() {
   return (
     <div>
       <PageHeader
-        title="Balance Sheet"
-        subtitle="What you own vs what you owe"
+        title={t("nav.balanceSheet")}
+        subtitle={t("reports.bsSubtitle")}
         action={
           <div className="flex items-center gap-2">
             <span
               className={`rounded-full border px-3 py-1 text-sm ${data.balanced ? "border-emerald-500/30 text-emerald-300" : "border-rose-500/30 text-rose-300"}`}
             >
-              {data.balanced ? "✓ Assets = Liabilities + Equity" : "✗ Out of balance"}
+              {data.balanced ? `✓ ${t("reports.assetsEq")}` : `✗ ${t("reports.outOfBalance")}`}
             </span>
             <Button variant="ghost" onClick={exportCsv}>
-              Export CSV
+              {t("common.exportCsv")}
             </Button>
           </div>
         }
       />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Assets" rows={data.assets} total={data.totalAssets} />
+        <Section title={t("reports.assets")} rows={data.assets} total={data.totalAssets} />
         <div className="flex flex-col gap-6">
-          <Section title="Liabilities" rows={data.liabilities} total={data.totalLiabilities} />
+          <Section title={t("reports.liabilities")} rows={data.liabilities} total={data.totalLiabilities} />
           <Section
-            title="Equity"
-            rows={[...data.equity, { code: "", name: "Current Year Earnings", amount: data.currentEarnings }]}
+            title={t("reports.equity")}
+            rows={[...data.equity, { code: "", name: t("reports.currentYearEarnings"), amount: data.currentEarnings }]}
             total={data.totalEquity}
           />
         </div>
@@ -83,6 +85,7 @@ function Section({
   rows: { code: string; name: string; amount: string }[];
   total: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <h3 className="mb-3 text-lg font-semibold text-white">{title}</h3>
@@ -98,7 +101,7 @@ function Section({
         ))}
       </div>
       <div className="mt-3 flex justify-between border-t border-white/10 pt-3 font-semibold text-white">
-        <span>Total {title}</span>
+        <span>{t("reports.totalPrefix")} {title}</span>
         <span className="tabular-nums">{money(total)}</span>
       </div>
     </Card>
