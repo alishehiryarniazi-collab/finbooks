@@ -446,5 +446,25 @@
     "namePlaceholder": "My New Business",
     "createHint": "A fresh set of books (with a default chart of accounts) is created, and you become its admin.",
     "createSwitch": "Create & switch"
+  },
+  "party": {
+    "paymentDetails": "Payment details",
+    "method": "Payment method",
+    "methodNone": "— Not set —",
+    "bank": "Bank transfer",
+    "jazzcash": "JazzCash",
+    "easypaisa": "Easypaisa",
+    "cash": "Cash",
+    "cheque": "Cheque",
+    "bankName": "Bank name",
+    "accountTitle": "Account title",
+    "accountNumber": "Account number",
+    "mobileNumber": "Mobile number",
+    "iban": "IBAN",
+    "raastId": "Raast ID",
+    "payTo": "Where to pay",
+    "copy": "Copy",
+    "copied": "Copied",
+    "noDetails": "No payment details saved."
   }
 }

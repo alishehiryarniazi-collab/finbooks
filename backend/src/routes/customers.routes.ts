@@ -13,6 +13,13 @@ const upsertSchema = z.object({
   phone: z.string().max(40).optional(),
   address: z.string().max(300).optional(),
   notes: z.string().max(500).optional(),
+  // Payment / beneficiary details (all optional) — used for refunds.
+  paymentMethod: z.string().max(20).optional(),
+  bankName: z.string().max(120).optional(),
+  accountTitle: z.string().max(120).optional(),
+  accountNumber: z.string().max(50).optional(),
+  iban: z.string().max(50).optional(),
+  raastId: z.string().max(50).optional(),
 });
 
 customersRouter.get("/", async (req, res) => {

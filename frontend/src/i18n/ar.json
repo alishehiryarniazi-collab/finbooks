@@ -446,5 +446,25 @@
     "namePlaceholder": "عملي الجديد",
     "createHint": "يُنشأ دفتر حسابات جديد (مع دليل حسابات افتراضي)، وتصبح أنت مسؤوله.",
     "createSwitch": "إنشاء وتبديل"
+  },
+  "party": {
+    "paymentDetails": "تفاصيل الدفع",
+    "method": "طريقة الدفع",
+    "methodNone": "— غير محدد —",
+    "bank": "تحويل بنكي",
+    "jazzcash": "JazzCash",
+    "easypaisa": "Easypaisa",
+    "cash": "نقدًا",
+    "cheque": "شيك",
+    "bankName": "اسم البنك",
+    "accountTitle": "اسم صاحب الحساب",
+    "accountNumber": "رقم الحساب",
+    "mobileNumber": "رقم الجوال",
+    "iban": "IBAN",
+    "raastId": "معرّف Raast",
+    "payTo": "أين تدفع",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "noDetails": "لا توجد تفاصيل دفع محفوظة."
   }
 }

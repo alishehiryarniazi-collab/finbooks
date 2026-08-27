@@ -9,7 +9,7 @@ import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
-import { TextField } from "../components/ui/Field";
+import { TextField, SelectField } from "../components/ui/Field";
 import { DataTable } from "../components/ui/DataTable";
 import { ListControls } from "../components/ui/ListControls";
 import { ErrorNote } from "./Dashboard";
@@ -124,18 +124,33 @@ function PartyModal({
     email: party?.email ?? "",
     phone: party?.phone ?? "",
     address: party?.address ?? "",
+    paymentMethod: party?.paymentMethod ?? "",
+    bankName: party?.bankName ?? "",
+    accountTitle: party?.accountTitle ?? "",
+    accountNumber: party?.accountNumber ?? "",
+    iban: party?.iban ?? "",
+    raastId: party?.raastId ?? "",
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  // Works for both text inputs and the themed SelectField (both give {target:{value}}).
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm({ ...form, [k]: e.target.value });
+
+  const method = form.paymentMethod;
+  const isBank = method === "BANK";
+  const isWallet = method === "JAZZCASH" || method === "EASYPAISA";
+  const needsAccount = isBank || isWallet || method === "CHEQUE";
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      const payload = { ...form, email: form.email || undefined };
+      // Send empty fields as undefined so we don't store blank strings.
+      const payload: Record<string, string | undefined> = {};
+      for (const [k, v] of Object.entries(form)) payload[k] = v === "" ? undefined : v;
+      payload.name = form.name;
       if (isEdit) await api.patch(`/${resource}/${party!.id}`, payload);
       else await api.post(`/${resource}`, payload);
       onSaved();
@@ -177,6 +192,43 @@ function PartyModal({
           <TextField label={t("fields.phone")} value={form.phone} onChange={set("phone")} />
         </div>
         <TextField label={t("fields.address")} value={form.address} onChange={set("address")} />
+
+        {/* Payment / beneficiary details — where money goes at pay-time. */}
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="mb-3 text-sm font-medium text-slate-300">{t("party.paymentDetails")}</p>
+          <div className="flex flex-col gap-4">
+            <SelectField label={t("party.method")} value={form.paymentMethod} onChange={set("paymentMethod")}>
+              <option value="">{t("party.methodNone")}</option>
+              <option value="BANK">{t("party.bank")}</option>
+              <option value="JAZZCASH">{t("party.jazzcash")}</option>
+              <option value="EASYPAISA">{t("party.easypaisa")}</option>
+              <option value="CASH">{t("party.cash")}</option>
+              <option value="CHEQUE">{t("party.cheque")}</option>
+            </SelectField>
+
+            {isBank && (
+              <TextField label={t("party.bankName")} value={form.bankName} onChange={set("bankName")} placeholder="Meezan Bank" />
+            )}
+            {needsAccount && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <TextField label={t("party.accountTitle")} value={form.accountTitle} onChange={set("accountTitle")} />
+                <TextField
+                  label={isWallet ? t("party.mobileNumber") : t("party.accountNumber")}
+                  value={form.accountNumber}
+                  onChange={set("accountNumber")}
+                  placeholder={isWallet ? "03001234567" : ""}
+                />
+              </div>
+            )}
+            {isBank && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <TextField label={t("party.iban")} value={form.iban} onChange={set("iban")} placeholder="PK00MEZN0000000000000000" />
+                <TextField label={t("party.raastId")} value={form.raastId} onChange={set("raastId")} placeholder="03001234567" />
+              </div>
+            )}
+          </div>
+        </div>
+
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <div className="flex items-center justify-between gap-2">
           {isEdit && canDelete ? (

@@ -98,6 +98,13 @@ export interface Customer {
   phone: string | null;
   address: string | null;
   notes: string | null;
+  // Payment / beneficiary details (optional).
+  paymentMethod: string | null;
+  bankName: string | null;
+  accountTitle: string | null;
+  accountNumber: string | null;
+  iban: string | null;
+  raastId: string | null;
 }
 
 export type Vendor = Customer;
@@ -132,7 +139,7 @@ export interface Bill {
   total: string;
   amountPaid: string;
   notes: string | null;
-  vendor?: { name: string };
+  vendor?: Vendor;
   vendorId: string;
   lines?: DocumentLine[];
 }

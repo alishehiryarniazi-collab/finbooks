@@ -5,7 +5,7 @@ import { useFetch } from "../../hooks/useFetch";
 import { api, apiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { inputDate, money, shortDate } from "../../lib/format";
-import type { Account, Bill } from "../../lib/types";
+import type { Account, Bill, Vendor } from "../../lib/types";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
@@ -13,6 +13,7 @@ import { Button } from "../../components/ui/Button";
 import { StatusBadge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Modal";
 import { TextField, SelectField } from "../../components/ui/Field";
+import { BeneficiaryPanel } from "../../components/ui/BeneficiaryPanel";
 import { ErrorNote } from "../Dashboard";
 
 export function BillView() {
@@ -158,6 +159,7 @@ export function BillView() {
       {payOpen && (
         <PayModal
           billId={bill.id}
+          vendor={bill.vendor}
           outstanding={outstanding}
           bankAccounts={(accountsReq.data?.accounts ?? []).filter((a) => a.type === "ASSET" && a.isPostable)}
           onClose={() => setPayOpen(false)}
@@ -182,12 +184,14 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 
 function PayModal({
   billId,
+  vendor,
   outstanding,
   bankAccounts,
   onClose,
   onSaved,
 }: {
   billId: string;
+  vendor?: Vendor;
   outstanding: number;
   bankAccounts: Account[];
   onClose: () => void;
@@ -217,6 +221,7 @@ function PayModal({
   return (
     <Modal open onClose={onClose} title={t("view.payBill")} icon="💳">
       <form onSubmit={save} className="flex flex-col gap-4">
+        <BeneficiaryPanel party={vendor} />
         <SelectField
           label={t("view.payFrom")}
           value={bankAccountId}
