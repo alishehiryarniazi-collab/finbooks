@@ -18,8 +18,10 @@ export function money(value: string | number): string {
   }
 }
 
-export function shortDate(value: string | Date): string {
+export function shortDate(value?: string | Date | null): string {
+  if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "—"; // guard invalid/missing dates so a page never crashes
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 

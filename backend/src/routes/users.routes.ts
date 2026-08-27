@@ -21,6 +21,7 @@ usersRouter.get("/", async (req, res) => {
     email: m.user.email,
     role: m.role,
     isActive: m.isActive,
+    createdAt: m.createdAt, // when they joined this company
   }));
   res.json({ users });
 });
