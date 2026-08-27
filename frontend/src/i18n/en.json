@@ -35,6 +35,7 @@
     "bills": "Bills",
     "money": "Money",
     "payments": "Payments",
+    "paymentsDue": "Payments Due",
     "reports": "Reports",
     "trialBalance": "Trial Balance",
     "profitLoss": "Profit & Loss",
@@ -466,5 +467,16 @@
     "copy": "Copy",
     "copied": "Copied",
     "noDetails": "No payment details saved."
+  },
+  "due": {
+    "subtitle": "Bills you still owe, by when they're due",
+    "overdue": "Overdue",
+    "dueSoon": "Due this week",
+    "upcoming": "Upcoming",
+    "nothingDue": "Nothing due right now. 🎉",
+    "daysOverdue": "{{n}}d overdue",
+    "dueToday": "Due today",
+    "inDays": "in {{n}}d",
+    "totalDue": "Total due"
   }
 }

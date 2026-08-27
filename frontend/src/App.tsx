@@ -21,6 +21,7 @@ import { BillForm } from "./pages/bills/BillForm";
 import { BillView } from "./pages/bills/BillView";
 import { BillPrint } from "./pages/bills/BillPrint";
 import { Payments } from "./pages/payments/Payments";
+import { PaymentsDue } from "./pages/payments/PaymentsDue";
 import { TrialBalance } from "./pages/reports/TrialBalance";
 import { ProfitLoss } from "./pages/reports/ProfitLoss";
 import { BalanceSheet } from "./pages/reports/BalanceSheet";
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="bills/:id/edit" element={<BillForm />} />
         <Route path="bills/:id" element={<BillView />} />
         <Route path="payments" element={<Payments />} />
+        <Route path="payments-due" element={<PaymentsDue />} />
         <Route path="reports/trial-balance" element={<TrialBalance />} />
         <Route path="reports/profit-loss" element={<ProfitLoss />} />
         <Route path="reports/balance-sheet" element={<BalanceSheet />} />

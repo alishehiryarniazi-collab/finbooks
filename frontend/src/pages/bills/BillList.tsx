@@ -70,7 +70,25 @@ export function BillList() {
             { header: t("fields.due"), cell: (r) => shortDate(r.dueDate) },
             { header: t("fields.total"), align: "right", cell: (r) => money(r.total) },
             { header: t("fields.paid"), align: "right", cell: (r) => money(r.amountPaid) },
-            { header: t("fields.status"), cell: (r) => <StatusBadge status={r.status} /> },
+            {
+              header: t("fields.status"),
+              cell: (r) => {
+                const overdue =
+                  (r.status === "OPEN" || r.status === "PARTIAL") &&
+                  Number(r.total) - Number(r.amountPaid) > 0.005 &&
+                  new Date(r.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
+                return (
+                  <span className="flex items-center gap-2">
+                    <StatusBadge status={r.status} />
+                    {overdue && (
+                      <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[10px] font-medium text-rose-300">
+                        {t("due.overdue")}
+                      </span>
+                    )}
+                  </span>
+                );
+              },
+            },
           ]}
         />
       </Card>

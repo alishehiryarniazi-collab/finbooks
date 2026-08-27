@@ -39,7 +39,10 @@ const NAV = [
   },
   {
     sectionKey: "money",
-    items: [{ to: "/payments", labelKey: "payments", icon: "💸" }],
+    items: [
+      { to: "/payments-due", labelKey: "paymentsDue", icon: "📅" },
+      { to: "/payments", labelKey: "payments", icon: "💸" },
+    ],
   },
   {
     sectionKey: "costAccounting",
