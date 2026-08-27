@@ -218,7 +218,20 @@
     "insights": "الرؤى",
     "notEnough": "لا توجد بيانات كافية بعد.",
     "analysing": "جارٍ تحليل أموالك…",
-    "days": "أيام"
+    "days": "أيام",
+    "ins": {
+      "netMarginHealthy": "هامش ربح صافٍ صحي بنسبة {{pct}}%.",
+      "netMarginThin": "هامش الربح الصافي ضعيف عند {{pct}}% — راقب التكاليف.",
+      "netMarginLoss": "تعمل بخسارة (هامش صافٍ {{pct}}%).",
+      "liquidityStrong": "سيولة قوية — النسبة الجارية {{ratio}}.",
+      "liquidityAdequate": "سيولة كافية — النسبة الجارية {{ratio}}.",
+      "liquidityTight": "سيولة ضيقة — النسبة الجارية {{ratio}} (أقل من 1).",
+      "receivablesHigh": "الذمم المدينة تمثل {{pct}}% من الإيرادات — شدّد التحصيل.",
+      "cashMonths": "النقد يغطي نحو {{months}} أشهر من المصروفات.",
+      "debtToEquity": "نسبة الدين إلى حقوق الملكية {{ratio}}.",
+      "netUp": "صافي هذا الشهر أعلى بمقدار {{amount}} عن الشهر الماضي.",
+      "netDown": "صافي هذا الشهر أقل بمقدار {{amount}} عن الشهر الماضي."
+    }
   },
   "pages": {
     "invoicesSubtitle": "الأموال التي يدين بها عملاؤك لك",
@@ -415,7 +428,9 @@
     "outOfBalanceBy": "غير متوازن بمقدار {{amount}}",
     "postAnyway": "ترحيله على أي حال؟",
     "largeVoucherConfirm": "هذا السند كبير ({{amount}}). هل تريد ترحيله؟",
-    "largeEntryConfirm": "هذا القيد كبير ({{amount}}). هل تريد ترحيله؟"
+    "largeEntryConfirm": "هذا القيد كبير ({{amount}}). هل تريد ترحيله؟",
+    "guardNegativeCash": "سيجعل هذا رصيد حساب نقد/بنك سالبًا.",
+    "guardDuplicateRef": "يوجد قيد مُرحَّل آخر يستخدم هذا المرجع بالفعل."
   },
   "print": {
     "printSavePdf": "طباعة / حفظ PDF",

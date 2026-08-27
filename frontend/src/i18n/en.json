@@ -218,7 +218,20 @@
     "insights": "Insights",
     "notEnough": "Not enough data yet.",
     "analysing": "Analysing your finances…",
-    "days": "days"
+    "days": "days",
+    "ins": {
+      "netMarginHealthy": "Healthy net margin of {{pct}}%.",
+      "netMarginThin": "Net margin is thin at {{pct}}% — watch costs.",
+      "netMarginLoss": "Operating at a loss (net margin {{pct}}%).",
+      "liquidityStrong": "Strong liquidity — current ratio {{ratio}}.",
+      "liquidityAdequate": "Adequate liquidity — current ratio {{ratio}}.",
+      "liquidityTight": "Tight liquidity — current ratio {{ratio}} (below 1).",
+      "receivablesHigh": "Receivables are {{pct}}% of revenue — consider tighter collections.",
+      "cashMonths": "Cash covers about {{months}} months of expenses.",
+      "debtToEquity": "Debt-to-equity is {{ratio}}.",
+      "netUp": "This month's net is up {{amount}} vs last month.",
+      "netDown": "This month's net is down {{amount}} vs last month."
+    }
   },
   "pages": {
     "invoicesSubtitle": "Money your customers owe you",
@@ -415,7 +428,9 @@
     "outOfBalanceBy": "Out of balance by {{amount}}",
     "postAnyway": "Post it anyway?",
     "largeVoucherConfirm": "This voucher is large ({{amount}}). Post it?",
-    "largeEntryConfirm": "This entry is large ({{amount}}). Post it?"
+    "largeEntryConfirm": "This entry is large ({{amount}}). Post it?",
+    "guardNegativeCash": "This will make a cash/bank account go negative.",
+    "guardDuplicateRef": "Another posted entry already uses this reference."
   },
   "print": {
     "printSavePdf": "Print / Save as PDF",

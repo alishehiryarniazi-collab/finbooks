@@ -78,35 +78,44 @@ export async function financialAnalysis(orgId: string) {
   if (ratios.quickRatio !== null && ratios.quickRatio >= 1) health += 20;
   health = Math.min(100, health);
 
-  // Auto-insights.
-  const insights: { text: string; tone: "good" | "warn" | "info" }[] = [];
+  // Auto-insights. We emit a translation KEY + params (not an English sentence) so the frontend
+  // renders each insight in the user's chosen language — nothing mixes.
+  type Tone = "good" | "warn" | "info";
+  const insights: { key: string; params: Record<string, string>; tone: Tone }[] = [];
   if (ratios.netMarginPct !== null) {
+    const p = { pct: ratios.netMarginPct.toFixed(1) };
     insights.push(
       ratios.netMarginPct >= 10
-        ? { text: `Healthy net margin of ${ratios.netMarginPct.toFixed(1)}%.`, tone: "good" }
+        ? { key: "analysis.ins.netMarginHealthy", params: p, tone: "good" }
         : ratios.netMarginPct >= 0
-          ? { text: `Net margin is thin at ${ratios.netMarginPct.toFixed(1)}% — watch costs.`, tone: "warn" }
-          : { text: `Operating at a loss (net margin ${ratios.netMarginPct.toFixed(1)}%).`, tone: "warn" },
+          ? { key: "analysis.ins.netMarginThin", params: p, tone: "warn" }
+          : { key: "analysis.ins.netMarginLoss", params: p, tone: "warn" },
     );
   }
   if (ratios.currentRatio !== null) {
+    const p = { ratio: ratios.currentRatio.toFixed(2) };
     insights.push(
       ratios.currentRatio >= 1.5
-        ? { text: `Strong liquidity — current ratio ${ratios.currentRatio.toFixed(2)}.`, tone: "good" }
+        ? { key: "analysis.ins.liquidityStrong", params: p, tone: "good" }
         : ratios.currentRatio >= 1
-          ? { text: `Adequate liquidity — current ratio ${ratios.currentRatio.toFixed(2)}.`, tone: "info" }
-          : { text: `Tight liquidity — current ratio ${ratios.currentRatio.toFixed(2)} (below 1).`, tone: "warn" },
+          ? { key: "analysis.ins.liquidityAdequate", params: p, tone: "info" }
+          : { key: "analysis.ins.liquidityTight", params: p, tone: "warn" },
     );
   }
   if (revenue > 0 && ar / revenue > 0.25) {
-    insights.push({ text: `Receivables are ${((ar / revenue) * 100).toFixed(0)}% of revenue — consider tighter collections.`, tone: "warn" });
+    insights.push({ key: "analysis.ins.receivablesHigh", params: { pct: ((ar / revenue) * 100).toFixed(0) }, tone: "warn" });
   }
   if (monthsCovered !== null) {
-    insights.push({ text: `Cash covers about ${monthsCovered.toFixed(1)} months of expenses.`, tone: monthsCovered >= 3 ? "good" : "warn" });
+    insights.push({
+      key: "analysis.ins.cashMonths",
+      params: { months: monthsCovered.toFixed(1) },
+      tone: monthsCovered >= 3 ? "good" : "warn",
+    });
   }
   if (ratios.debtToEquity !== null) {
     insights.push({
-      text: `Debt-to-equity is ${ratios.debtToEquity.toFixed(2)}.`,
+      key: "analysis.ins.debtToEquity",
+      params: { ratio: ratios.debtToEquity.toFixed(2) },
       tone: ratios.debtToEquity <= 1 ? "good" : ratios.debtToEquity <= 2 ? "info" : "warn",
     });
   }
@@ -116,7 +125,8 @@ export async function financialAnalysis(orgId: string) {
     if (prev !== 0) {
       const change = last - prev;
       insights.push({
-        text: `This month's net is ${change >= 0 ? "up" : "down"} ${Math.abs(change).toLocaleString()} vs last month.`,
+        key: change >= 0 ? "analysis.ins.netUp" : "analysis.ins.netDown",
+        params: { amount: Math.round(Math.abs(change)).toLocaleString("en-US") },
         tone: change >= 0 ? "good" : "warn",
       });
     }

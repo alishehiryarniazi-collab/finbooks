@@ -14,7 +14,7 @@ interface Analysis {
   ratios: Record<string, number | null>;
   healthScore: number;
   trend: { month: string; income: string; expense: string; net: string }[];
-  insights: { text: string; tone: "good" | "warn" | "info" }[];
+  insights: { key: string; params?: Record<string, string>; tone: "good" | "warn" | "info" }[];
 }
 
 const TONE = { good: "text-emerald-300", warn: "text-amber-300", info: "text-sky-300" };
@@ -132,7 +132,7 @@ export function FinancialAnalysis() {
             {data.insights.map((i, idx) => (
               <li key={idx} className="flex gap-2 text-sm">
                 <span className={TONE[i.tone]}>●</span>
-                <span className="text-slate-300">{i.text}</span>
+                <span className="text-slate-300">{t(i.key, i.params)}</span>
               </li>
             ))}
           </ul>

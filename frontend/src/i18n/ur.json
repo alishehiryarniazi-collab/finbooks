@@ -218,7 +218,20 @@
     "insights": "بصیرت",
     "notEnough": "ابھی کافی ڈیٹا نہیں۔",
     "analysing": "آپ کے مالیات کا تجزیہ ہو رہا ہے…",
-    "days": "دن"
+    "days": "دن",
+    "ins": {
+      "netMarginHealthy": "صحت مند خالص مارجن {{pct}}%۔",
+      "netMarginThin": "خالص مارجن کم ہے {{pct}}% — اخراجات پر نظر رکھیں۔",
+      "netMarginLoss": "خسارے میں کام ہو رہا ہے (خالص مارجن {{pct}}%)۔",
+      "liquidityStrong": "مضبوط لیکویڈیٹی — کرنٹ ریشو {{ratio}}۔",
+      "liquidityAdequate": "مناسب لیکویڈیٹی — کرنٹ ریشو {{ratio}}۔",
+      "liquidityTight": "تنگ لیکویڈیٹی — کرنٹ ریشو {{ratio}} (1 سے کم)۔",
+      "receivablesHigh": "قابلِ وصول رقم آمدن کا {{pct}}% ہے — وصولی سخت کریں۔",
+      "cashMonths": "نقد تقریباً {{months}} ماہ کے اخراجات پورے کرتا ہے۔",
+      "debtToEquity": "قرض بمقابلہ ایکویٹی {{ratio}} ہے۔",
+      "netUp": "اس ماہ کا خالص پچھلے ماہ سے {{amount}} زیادہ ہے۔",
+      "netDown": "اس ماہ کا خالص پچھلے ماہ سے {{amount}} کم ہے۔"
+    }
   },
   "pages": {
     "invoicesSubtitle": "وہ رقم جو آپ کے گاہکوں پر واجب ہے",
@@ -415,7 +428,9 @@
     "outOfBalanceBy": "{{amount}} سے غیر متوازن",
     "postAnyway": "پھر بھی پوسٹ کریں؟",
     "largeVoucherConfirm": "یہ واؤچر بڑا ہے ({{amount}})۔ پوسٹ کریں؟",
-    "largeEntryConfirm": "یہ اندراج بڑا ہے ({{amount}})۔ پوسٹ کریں؟"
+    "largeEntryConfirm": "یہ اندراج بڑا ہے ({{amount}})۔ پوسٹ کریں؟",
+    "guardNegativeCash": "اس سے نقد/بینک اکاؤنٹ منفی ہو جائے گا۔",
+    "guardDuplicateRef": "اسی حوالے سے پہلے ہی ایک پوسٹ شدہ اندراج موجود ہے۔"
   },
   "print": {
     "printSavePdf": "پرنٹ / PDF محفوظ کریں",

@@ -97,12 +97,12 @@ export function VoucherForm({ kind }: { kind: "DEBIT" | "CREDIT" }) {
       const code = apiErrorCode(err);
       if (code === "NEGATIVE_CASH" && !overrides.allowNegativeCash) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\n${t("actions.proceedAnyway")}`)) return doPost({ ...overrides, allowNegativeCash: true });
+        if (window.confirm(`${t("voucher.guardNegativeCash")}\n\n${t("actions.proceedAnyway")}`)) return doPost({ ...overrides, allowNegativeCash: true });
         return;
       }
       if (code === "DUPLICATE_REF" && !overrides.allowDuplicateRef) {
         setBusy(false);
-        if (window.confirm(`${apiError(err)}\n\n${t("voucher.postAnyway")}`)) return doPost({ ...overrides, allowDuplicateRef: true });
+        if (window.confirm(`${t("voucher.guardDuplicateRef")}\n\n${t("voucher.postAnyway")}`)) return doPost({ ...overrides, allowDuplicateRef: true });
         return;
       }
       setError(apiError(err));
