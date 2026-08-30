@@ -32,7 +32,13 @@ export function Login() {
   return (
     <AuthShell title={t("auth.welcomeBack")} subtitle={t("auth.signInSubtitle")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <TextField label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <TextField
+          label={t("auth.email")}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
         <TextField
           label={t("auth.password")}
           type="password"
@@ -40,6 +46,11 @@ export function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <div className="-mt-2 flex justify-end">
+          <Link to="/forgot-password" className="text-xs text-slate-400 hover:text-aurora-mint">
+            {t("auth.forgot")}
+          </Link>
+        </div>
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <Button type="submit" disabled={busy}>
           {busy ? t("auth.signingIn") : t("auth.signIn")}

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../prisma";
@@ -6,6 +7,10 @@ import { HttpError } from "../middleware/error";
 import { requireAuth } from "../middleware/auth";
 import { signToken } from "../utils/jwt";
 import { seedDefaultAccounts } from "../services/chartOfAccounts";
+import { sendPasswordResetEmail } from "../utils/mailer";
+
+// Where the reset link points (the frontend). Configurable for a deployed URL.
+const APP_URL = process.env.APP_URL ?? "http://localhost:5173";
 
 export const authRouter = Router();
 
@@ -106,6 +111,58 @@ authRouter.post("/login", async (req, res) => {
 // Returns the currently authenticated user for the active company (used on app load).
 authRouter.get("/me", requireAuth, async (req, res) => {
   res.json({ user: await buildAuthUser(req.auth!.userId, req.auth!.orgId) });
+});
+
+// --- Forgot / reset password -------------------------------------------------
+
+const forgotSchema = z.object({ email: z.string().email() });
+
+// Step 1: user enters their email. If it belongs to an active account, we create a one-time
+// token and email a reset link. We ALWAYS return the same response so this can't be used to
+// discover which emails are registered.
+authRouter.post("/forgot-password", async (req, res) => {
+  const { email } = forgotSchema.parse(req.body);
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (user && user.isActive) {
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Any older unused tokens for this user are invalidated, so only the latest link works.
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
+    await prisma.passwordResetToken.create({ data: { userId: user.id, tokenHash, expiresAt } });
+
+    const link = `${APP_URL}/reset-password?token=${rawToken}`;
+    await sendPasswordResetEmail(user.email, user.name, link);
+  }
+
+  res.json({ ok: true });
+});
+
+const resetSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+// Step 2: user opens the emailed link and sets a new password. The raw token from the URL is
+// hashed and matched against a stored, unexpired, unused token.
+authRouter.post("/reset-password", async (req, res) => {
+  const { token, password } = resetSchema.parse(req.body);
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  const record = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+  if (!record || record.usedAt || record.expiresAt < new Date()) {
+    throw new HttpError(400, "This reset link is invalid or has expired. Please request a new one.");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+    prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
+  ]);
+
+  res.json({ ok: true });
 });
 
 const switchSchema = z.object({ orgId: z.string().min(1) });

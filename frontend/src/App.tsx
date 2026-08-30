@@ -3,6 +3,8 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 import { Dashboard } from "./pages/Dashboard";
 import { ChartOfAccounts } from "./pages/accounts/ChartOfAccounts";
 import { OpeningBalances } from "./pages/accounts/OpeningBalances";
@@ -41,6 +43,8 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route
         element={

@@ -134,6 +134,21 @@ model User {
 
   memberships    Membership[]
   journalEntries JournalEntry[]
+  passwordResets PasswordResetToken[]
+}
+
+// One-time, time-limited token for the "forgot password" flow. We store only a HASH of the
+// token (never the raw value), so a leaked DB can't be used to reset anyone's password.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // Join between a user and a company, carrying that user's role in that company.
