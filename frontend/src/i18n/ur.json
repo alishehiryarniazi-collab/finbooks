@@ -1,5 +1,8 @@
 {
-  "app": { "name": "FinBooks", "tagline": "FinBooks کی جانب سے اکاؤنٹنگ" },
+  "app": {
+    "name": "FinBooks",
+    "tagline": "FinBooks کی جانب سے اکاؤنٹنگ"
+  },
   "common": {
     "save": "محفوظ کریں",
     "cancel": "منسوخ کریں",
@@ -14,7 +17,9 @@
     "exportCsv": "CSV برآمد کریں",
     "newCompany": "نئی کمپنی",
     "yourCompanies": "آپ کی کمپنیاں",
-    "language": "زبان"
+    "language": "زبان",
+    "logoutTitle": "لاگ آؤٹ کریں؟",
+    "logoutConfirm": "جاری رکھنے کے لیے آپ کو دوبارہ سائن ان کرنا ہوگا۔"
   },
   "nav": {
     "overview": "جائزہ",

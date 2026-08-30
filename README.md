@@ -11,18 +11,23 @@ faked.
 
 ## What it does
 
-- **Chart of accounts** — assets, liabilities, equity, income, expenses, each with a normal balance.
-- **Journal entries** — manual balanced entries; the API rejects anything that doesn't balance.
+- **Chart of accounts** — a 3-level tree (assets, liabilities, equity, income, expenses), each account with a normal balance; only the leaf accounts are postable.
+- **Vouchers & journal entries** — Journal, Debit (payment) and Credit (receipt) vouchers. There are guardrails so you can't post bad data: entries have to balance, you can't overdraw cash/bank without confirming, duplicate reference numbers are flagged, and you can lock the books before a date.
 - **Invoices (AR)** — create, post to the ledger, record customer payments, track what's owed.
-- **Bills (AP)** — same idea on the money-out side with vendors.
-- **Reports** — Trial Balance, Profit & Loss, Balance Sheet, and AR/AP aging, all built from the ledger.
+- **Bills (AP)** — same idea on the money-out side with vendors, plus a **Payments Due** view that groups what you owe into overdue / this week / upcoming.
+- **Payment details** — save a vendor's or customer's bank / JazzCash / Easypaisa details on their record; at pay-time they show up (account number masked) with a copy button.
+- **Reports** — Trial Balance, Profit & Loss, Balance Sheet, AR/AP aging, a tax summary, and a **Financial Analysis** page with liquidity/profitability ratios, a health score and plain-English insights — all built from the ledger.
+- **Cost accounting** — tag transactions to cost centers and projects to see profit per department and per project.
+- **Multi-company** — one login can belong to several organizations and switch between them; each has its own books, roles and settings.
 - **Dashboard** — cash, receivables, payables, this month's profit, and a 6-month income vs expense chart.
-- **Users & roles** — an organization with Admin / Accountant / Viewer access.
+- **Users & roles** — Admin / Accountant / Viewer access per company.
+- **Languages** — the whole UI is available in English, Urdu and Arabic (with right-to-left layout), chosen per user so nothing mixes.
+- **Print / PDF** — clean printable invoices and bills.
 
 ## Tech
 
 - **Backend:** Node.js, Express, TypeScript, Prisma, MySQL, JWT.
-- **Frontend:** React, Vite, TypeScript, Tailwind CSS, Recharts.
+- **Frontend:** React, Vite, TypeScript, Tailwind CSS, Recharts, i18next.
 
 The one rule I kept coming back to: the general ledger is the source of truth. Invoices, bills
 and payments don't store their own "truth" — they post balanced journal entries, and every report

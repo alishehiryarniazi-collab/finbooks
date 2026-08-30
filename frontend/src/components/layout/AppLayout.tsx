@@ -5,12 +5,15 @@ import { Sidebar } from "./Sidebar";
 import { CompanySwitcher } from "./CompanySwitcher";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useAuth } from "../../context/AuthContext";
+import { Modal } from "../ui/Modal";
+import { Button } from "../ui/Button";
 
 // Shell around every authenticated page: fixed sidebar + top bar + routed content.
 export function AppLayout() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -47,7 +50,7 @@ export function AppLayout() {
               <p className="text-sm font-medium text-white">{user?.name}</p>
               <p className="text-xs text-slate-400">{user?.role}</p>
             </div>
-            <button onClick={logout} className="btn-ghost text-sm">
+            <button onClick={() => setConfirmingLogout(true)} className="btn-ghost text-sm">
               {t("common.logout")}
             </button>
           </div>
@@ -57,6 +60,24 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Ask before logging out so an accidental click doesn't drop the session. */}
+      {confirmingLogout && (
+        <Modal
+          open
+          onClose={() => setConfirmingLogout(false)}
+          icon="🚪"
+          title={t("common.logoutTitle")}
+          subtitle={t("common.logoutConfirm")}
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setConfirmingLogout(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={logout}>{t("common.logout")}</Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

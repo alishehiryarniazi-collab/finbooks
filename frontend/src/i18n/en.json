@@ -1,5 +1,8 @@
 {
-  "app": { "name": "FinBooks", "tagline": "Accounting by FinBooks" },
+  "app": {
+    "name": "FinBooks",
+    "tagline": "Accounting by FinBooks"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -14,7 +17,9 @@
     "exportCsv": "Export CSV",
     "newCompany": "New company",
     "yourCompanies": "Your companies",
-    "language": "Language"
+    "language": "Language",
+    "logoutTitle": "Log out?",
+    "logoutConfirm": "You'll need to sign in again to continue."
   },
   "nav": {
     "overview": "Overview",
