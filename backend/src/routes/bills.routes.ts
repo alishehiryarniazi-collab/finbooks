@@ -4,6 +4,7 @@ import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { createBill, updateBill, deleteBill, postBill, recordBillPayment, voidBill } from "../services/bills";
+import { notifyOrg } from "../services/push";
 
 export const billsRouter = Router();
 billsRouter.use(requireAuth);
@@ -80,6 +81,12 @@ const paymentSchema = z.object({
 billsRouter.post("/:id/payments", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const data = paymentSchema.parse(req.body);
   const result = await recordBillPayment(req.auth!.orgId, req.auth!.userId, req.params.id, data);
+  // Notify the team (except the person who recorded it). Fire-and-forget.
+  void notifyOrg(
+    req.auth!.orgId,
+    { title: "Payment made", body: `Payment on bill ${result.bill.number}`, data: { billId: result.bill.id } },
+    req.auth!.userId,
+  );
   res.status(201).json(result);
 });
 

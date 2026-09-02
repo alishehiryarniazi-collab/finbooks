@@ -135,6 +135,21 @@ model User {
   memberships    Membership[]
   journalEntries JournalEntry[]
   passwordResets PasswordResetToken[]
+  pushTokens     PushToken[]
+}
+
+// A device's Expo push token. One user can have several (multiple devices).
+// The server sends push notifications to these tokens.
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String? // "android" | "ios"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // One-time, time-limited token for the "forgot password" flow. We store only a HASH of the

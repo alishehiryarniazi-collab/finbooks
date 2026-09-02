@@ -11,6 +11,7 @@ import {
   recordInvoicePayment,
   voidInvoice,
 } from "../services/invoices";
+import { notifyOrg } from "../services/push";
 
 export const invoicesRouter = Router();
 invoicesRouter.use(requireAuth);
@@ -90,6 +91,12 @@ const paymentSchema = z.object({
 invoicesRouter.post("/:id/payments", requireRole("ADMIN", "ACCOUNTANT"), async (req, res) => {
   const data = paymentSchema.parse(req.body);
   const result = await recordInvoicePayment(req.auth!.orgId, req.auth!.userId, req.params.id, data);
+  // Notify the team (except the person who recorded it). Fire-and-forget.
+  void notifyOrg(
+    req.auth!.orgId,
+    { title: "Payment received", body: `Payment on invoice ${result.invoice.number}`, data: { invoiceId: result.invoice.id } },
+    req.auth!.userId,
+  );
   res.status(201).json(result);
 });
 
