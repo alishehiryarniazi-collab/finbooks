@@ -146,6 +146,25 @@ export interface Estimate {
   lines?: DocumentLine[];
 }
 
+export type RecurringFrequency = "WEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY";
+export type RecurringStatus = "ACTIVE" | "PAUSED";
+
+export interface RecurringInvoice {
+  id: string;
+  customerId: string;
+  customer?: { name: string };
+  frequency: RecurringFrequency;
+  interval: number;
+  startDate: string;
+  nextRunDate: string;
+  endDate: string | null;
+  status: RecurringStatus;
+  autoPost: boolean;
+  notes: string | null;
+  lastRunAt: string | null;
+  lines?: DocumentLine[];
+}
+
 export interface Bill {
   id: string;
   number: string;

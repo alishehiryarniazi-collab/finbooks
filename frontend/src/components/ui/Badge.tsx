@@ -14,6 +14,8 @@ const STYLES: Record<string, string> = {
   DECLINED: "bg-rose-500/15 text-rose-300 border-rose-500/30",
   EXPIRED: "bg-slate-500/15 text-slate-400 border-slate-500/30",
   CONVERTED: "bg-violet-500/15 text-violet-300 border-violet-500/30",
+  // Recurring statuses
+  PAUSED: "bg-amber-500/15 text-amber-300 border-amber-500/30",
 };
 
 export function StatusBadge({ status }: { status: string }) {

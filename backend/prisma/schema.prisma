@@ -115,6 +115,7 @@ model Organization {
   vendors      Vendor[]
   invoices     Invoice[]
   estimates    Estimate[]
+  recurringInvoices RecurringInvoice[]
   bills        Bill[]
   payments     Payment[]
   taxRates     TaxRate[]
@@ -205,12 +206,13 @@ model Account {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  journalLines  JournalLine[]
-  invoiceLines  InvoiceLine[]
-  estimateLines EstimateLine[]
-  billLines     BillLine[]
-  taxRates      TaxRate[]
-  paymentsBank  Payment[]      @relation("PaymentBankAccount")
+  journalLines   JournalLine[]
+  invoiceLines   InvoiceLine[]
+  estimateLines  EstimateLine[]
+  recurringLines RecurringInvoiceLine[]
+  billLines      BillLine[]
+  taxRates       TaxRate[]
+  paymentsBank   Payment[]      @relation("PaymentBankAccount")
 
   @@unique([orgId, code])
   @@index([orgId])
@@ -323,8 +325,9 @@ model Customer {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  invoices  Invoice[]
-  estimates Estimate[]
+  invoices          Invoice[]
+  estimates         Estimate[]
+  recurringInvoices RecurringInvoice[]
 
   @@index([orgId])
 }
@@ -428,6 +431,62 @@ model EstimateLine {
   incomeAccount   Account  @relation(fields: [incomeAccountId], references: [id])
 
   @@index([estimateId])
+}
+
+// ---------------------------------------------------------------------------
+// Recurring invoices — a template that auto-generates an invoice on a schedule
+// (e.g. monthly rent). A daily job creates the invoice on/after its next run date.
+// ---------------------------------------------------------------------------
+
+enum RecurringFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  PAUSED
+}
+
+model RecurringInvoice {
+  id              String             @id @default(cuid())
+  orgId           String
+  organization    Organization       @relation(fields: [orgId], references: [id])
+  customerId      String
+  customer        Customer           @relation(fields: [customerId], references: [id])
+  createdByUserId String // whose name the generated invoices post under (if auto-posted)
+  frequency       RecurringFrequency @default(MONTHLY)
+  interval        Int                @default(1) // every N periods (e.g. every 2 weeks)
+  startDate       DateTime
+  nextRunDate     DateTime // when the next invoice is due to be generated
+  endDate         DateTime? // stop after this date (optional)
+  status          RecurringStatus    @default(ACTIVE)
+  autoPost        Boolean            @default(false) // post to the ledger automatically vs leave a draft
+  notes           String?
+  lastRunAt       DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  lines RecurringInvoiceLine[]
+
+  @@index([orgId, status])
+  @@index([customerId])
+}
+
+model RecurringInvoiceLine {
+  id                 String           @id @default(cuid())
+  recurringInvoiceId String
+  recurringInvoice   RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+  description        String
+  quantity           Decimal          @default(1) @db.Decimal(18, 2)
+  unitPrice          Decimal          @default(0) @db.Decimal(18, 2)
+  taxRatePercent     Decimal          @default(0) @db.Decimal(9, 4)
+  incomeAccountId    String
+  incomeAccount      Account          @relation(fields: [incomeAccountId], references: [id])
+
+  @@index([recurringInvoiceId])
 }
 
 // ---------------------------------------------------------------------------

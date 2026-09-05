@@ -19,7 +19,9 @@
     "yourCompanies": "شركاتك",
     "language": "اللغة",
     "logoutTitle": "تسجيل الخروج؟",
-    "logoutConfirm": "ستحتاج إلى تسجيل الدخول مرة أخرى للمتابعة."
+    "logoutConfirm": "ستحتاج إلى تسجيل الدخول مرة أخرى للمتابعة.",
+    "yes": "نعم",
+    "no": "لا"
   },
   "nav": {
     "overview": "نظرة عامة",
@@ -58,7 +60,8 @@
     "projects": "المشاريع",
     "costCenterReport": "الربح حسب مركز التكلفة",
     "projectReport": "أرباح وخسائر المشروع",
-    "estimates": "عروض الأسعار"
+    "estimates": "عروض الأسعار",
+    "recurring": "المتكررة"
   },
   "auth": {
     "welcomeBack": "مرحبًا بعودتك",
@@ -181,7 +184,8 @@
     "ACCEPTED": "مقبول",
     "DECLINED": "مرفوض",
     "EXPIRED": "منتهي",
-    "CONVERTED": "محوّل"
+    "CONVERTED": "محوّل",
+    "PAUSED": "متوقف"
   },
   "reports": {
     "trialBalanceSubtitle": "رصيد كل حساب — يجب أن يتساوى المدين والدائن",
@@ -298,7 +302,11 @@
     "estimatesSubtitle": "عروض ترسلها للعميل قبل البيع",
     "newEstimate": "+ عرض سعر جديد",
     "searchEstimateCustomer": "ابحث بالرقم أو العميل…",
-    "noEstimates": "لا توجد عروض بعد."
+    "noEstimates": "لا توجد عروض بعد.",
+    "recurringSubtitle": "قوالب تنشئ فواتير وفق جدول",
+    "newRecurring": "+ فاتورة متكررة جديدة",
+    "searchRecurringCustomer": "ابحث عن العميل…",
+    "noRecurring": "لا توجد فواتير متكررة بعد."
   },
   "crud": {
     "codeOptional": "الرمز (اختياري)",
@@ -528,5 +536,37 @@
     "convert": "تحويل إلى فاتورة",
     "viewInvoice": "عرض الفاتورة",
     "expires": "ينتهي {{date}}"
+  },
+  "recur": {
+    "frequency": "التكرار",
+    "nextRun": "الفاتورة القادمة",
+    "autoPost": "ترحيل تلقائي",
+    "autoPostHint": "عند التفعيل، تُرحَّل كل فاتورة تلقائيًا. عند الإيقاف = مسودة تراجعها أولاً.",
+    "editTitle": "تعديل الفاتورة المتكررة",
+    "newTitle": "فاتورة متكررة جديدة",
+    "subtitle": "قالب ينشئ فاتورة وفق جدول",
+    "interval": "كرر كل",
+    "startDate": "تاريخ البدء",
+    "endDate": "تاريخ الانتهاء (اختياري)",
+    "schedule": "الجدول",
+    "noEnd": "بلا نهاية",
+    "lastRun": "آخر إنشاء",
+    "pause": "إيقاف",
+    "resume": "استئناف",
+    "runNow": "إنشاء الآن",
+    "deleteConfirm": "هل تريد حذف هذه الفاتورة المتكررة؟",
+    "everyN": "كل {{n}} {{unit}}",
+    "simple": {
+      "WEEKLY": "أسبوعي",
+      "MONTHLY": "شهري",
+      "QUARTERLY": "ربع سنوي",
+      "YEARLY": "سنوي"
+    },
+    "unit": {
+      "WEEKLY": "أسابيع",
+      "MONTHLY": "أشهر",
+      "QUARTERLY": "أرباع",
+      "YEARLY": "سنوات"
+    }
   }
 }

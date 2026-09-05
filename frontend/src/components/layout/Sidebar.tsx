@@ -29,6 +29,7 @@ const NAV = [
       { to: "/customers", labelKey: "customers", icon: "🧑‍💼" },
       { to: "/estimates", labelKey: "estimates", icon: "📄" },
       { to: "/invoices", labelKey: "invoices", icon: "🧾" },
+      { to: "/recurring", labelKey: "recurring", icon: "🔁" },
     ],
   },
   {

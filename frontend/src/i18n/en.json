@@ -19,7 +19,9 @@
     "yourCompanies": "Your companies",
     "language": "Language",
     "logoutTitle": "Log out?",
-    "logoutConfirm": "You'll need to sign in again to continue."
+    "logoutConfirm": "You'll need to sign in again to continue.",
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "overview": "Overview",
@@ -58,7 +60,8 @@
     "projects": "Projects",
     "costCenterReport": "Profit by Cost Center",
     "projectReport": "Project P&L",
-    "estimates": "Estimates"
+    "estimates": "Estimates",
+    "recurring": "Recurring"
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -181,7 +184,8 @@
     "ACCEPTED": "Accepted",
     "DECLINED": "Declined",
     "EXPIRED": "Expired",
-    "CONVERTED": "Converted"
+    "CONVERTED": "Converted",
+    "PAUSED": "Paused"
   },
   "reports": {
     "trialBalanceSubtitle": "Every account's balance — debits must equal credits",
@@ -298,7 +302,11 @@
     "estimatesSubtitle": "Quotes you send before the sale",
     "newEstimate": "+ New estimate",
     "searchEstimateCustomer": "Search number or customer…",
-    "noEstimates": "No estimates yet."
+    "noEstimates": "No estimates yet.",
+    "recurringSubtitle": "Templates that create invoices on a schedule",
+    "newRecurring": "+ New recurring",
+    "searchRecurringCustomer": "Search customer…",
+    "noRecurring": "No recurring invoices yet."
   },
   "crud": {
     "codeOptional": "Code (optional)",
@@ -528,5 +536,37 @@
     "convert": "Convert to invoice",
     "viewInvoice": "View invoice",
     "expires": "Expires {{date}}"
+  },
+  "recur": {
+    "frequency": "Frequency",
+    "nextRun": "Next invoice",
+    "autoPost": "Auto-post",
+    "autoPostHint": "When on, each invoice is posted to the ledger automatically. Off = a draft you review first.",
+    "editTitle": "Edit recurring invoice",
+    "newTitle": "New recurring invoice",
+    "subtitle": "A template that creates an invoice on a schedule",
+    "interval": "Repeat every",
+    "startDate": "Start date",
+    "endDate": "End date (optional)",
+    "schedule": "Schedule",
+    "noEnd": "No end",
+    "lastRun": "Last generated",
+    "pause": "Pause",
+    "resume": "Resume",
+    "runNow": "Generate now",
+    "deleteConfirm": "Delete this recurring invoice?",
+    "everyN": "Every {{n}} {{unit}}",
+    "simple": {
+      "WEEKLY": "Weekly",
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Quarterly",
+      "YEARLY": "Yearly"
+    },
+    "unit": {
+      "WEEKLY": "weeks",
+      "MONTHLY": "months",
+      "QUARTERLY": "quarters",
+      "YEARLY": "years"
+    }
   }
 }

@@ -19,7 +19,9 @@
     "yourCompanies": "آپ کی کمپنیاں",
     "language": "زبان",
     "logoutTitle": "لاگ آؤٹ کریں؟",
-    "logoutConfirm": "جاری رکھنے کے لیے آپ کو دوبارہ سائن ان کرنا ہوگا۔"
+    "logoutConfirm": "جاری رکھنے کے لیے آپ کو دوبارہ سائن ان کرنا ہوگا۔",
+    "yes": "ہاں",
+    "no": "نہیں"
   },
   "nav": {
     "overview": "جائزہ",
@@ -58,7 +60,8 @@
     "projects": "پروجیکٹس",
     "costCenterReport": "کاسٹ سینٹر منافع",
     "projectReport": "پروجیکٹ نفع و نقصان",
-    "estimates": "تخمینے"
+    "estimates": "تخمینے",
+    "recurring": "ریکرنگ"
   },
   "auth": {
     "welcomeBack": "خوش آمدید",
@@ -181,7 +184,8 @@
     "ACCEPTED": "قبول شدہ",
     "DECLINED": "مسترد",
     "EXPIRED": "میعاد ختم",
-    "CONVERTED": "تبدیل شدہ"
+    "CONVERTED": "تبدیل شدہ",
+    "PAUSED": "روکی گئی"
   },
   "reports": {
     "trialBalanceSubtitle": "ہر اکاؤنٹ کا بیلنس — ڈیبٹ اور کریڈٹ برابر ہونے چاہئیں",
@@ -298,7 +302,11 @@
     "estimatesSubtitle": "فروخت سے پہلے بھیجے جانے والے کوٹیشن",
     "newEstimate": "+ نیا تخمینہ",
     "searchEstimateCustomer": "نمبر یا گاہک تلاش کریں…",
-    "noEstimates": "ابھی کوئی تخمینہ نہیں۔"
+    "noEstimates": "ابھی کوئی تخمینہ نہیں۔",
+    "recurringSubtitle": "شیڈول پر انوائس بنانے والے ٹیمپلیٹس",
+    "newRecurring": "+ نئی ریکرنگ",
+    "searchRecurringCustomer": "گاہک تلاش کریں…",
+    "noRecurring": "ابھی کوئی ریکرنگ انوائس نہیں۔"
   },
   "crud": {
     "codeOptional": "کوڈ (اختیاری)",
@@ -528,5 +536,37 @@
     "convert": "انوائس میں تبدیل کریں",
     "viewInvoice": "انوائس دیکھیں",
     "expires": "میعاد {{date}}"
+  },
+  "recur": {
+    "frequency": "تعدد",
+    "nextRun": "اگلی انوائس",
+    "autoPost": "خودکار پوسٹ",
+    "autoPostHint": "آن ہونے پر ہر انوائس خودکار طور پر لیجر میں پوسٹ ہوتی ہے۔ آف = پہلے آپ جائزہ لیں۔",
+    "editTitle": "ریکرنگ انوائس میں ترمیم",
+    "newTitle": "نئی ریکرنگ انوائس",
+    "subtitle": "ایک ٹیمپلیٹ جو شیڈول پر انوائس بناتا ہے",
+    "interval": "ہر بار وقفہ",
+    "startDate": "آغاز کی تاریخ",
+    "endDate": "اختتام کی تاریخ (اختیاری)",
+    "schedule": "شیڈول",
+    "noEnd": "کوئی اختتام نہیں",
+    "lastRun": "آخری بار بنی",
+    "pause": "روکیں",
+    "resume": "دوبارہ شروع",
+    "runNow": "ابھی بنائیں",
+    "deleteConfirm": "کیا یہ ریکرنگ انوائس حذف کریں؟",
+    "everyN": "ہر {{n}} {{unit}}",
+    "simple": {
+      "WEEKLY": "ہفتہ وار",
+      "MONTHLY": "ماہانہ",
+      "QUARTERLY": "سہ ماہی",
+      "YEARLY": "سالانہ"
+    },
+    "unit": {
+      "WEEKLY": "ہفتے",
+      "MONTHLY": "مہینے",
+      "QUARTERLY": "سہ ماہی",
+      "YEARLY": "سال"
+    }
   }
 }

@@ -21,6 +21,9 @@ import { EstimateList } from "./pages/estimates/EstimateList";
 import { EstimateForm } from "./pages/estimates/EstimateForm";
 import { EstimateView } from "./pages/estimates/EstimateView";
 import { EstimatePrint } from "./pages/estimates/EstimatePrint";
+import { RecurringList } from "./pages/recurring/RecurringList";
+import { RecurringForm } from "./pages/recurring/RecurringForm";
+import { RecurringView } from "./pages/recurring/RecurringView";
 import { InvoicePrint } from "./pages/invoices/InvoicePrint";
 import { BillList } from "./pages/bills/BillList";
 import { BillForm } from "./pages/bills/BillForm";
@@ -75,6 +78,10 @@ export default function App() {
         <Route path="estimates/new" element={<EstimateForm />} />
         <Route path="estimates/:id/edit" element={<EstimateForm />} />
         <Route path="estimates/:id" element={<EstimateView />} />
+        <Route path="recurring" element={<RecurringList />} />
+        <Route path="recurring/new" element={<RecurringForm />} />
+        <Route path="recurring/:id/edit" element={<RecurringForm />} />
+        <Route path="recurring/:id" element={<RecurringView />} />
         <Route path="vendors" element={<Vendors />} />
         <Route path="bills" element={<BillList />} />
         <Route path="bills/new" element={<BillForm />} />
