@@ -97,3 +97,36 @@ local app already uses 4000, hence 4001).
 - Add a few screenshots / short GIF to the README now that it runs.
 - Later: CSV export of reports, invoice PDF, closing entries for fiscal year, edit/delete on
   customers & vendors from the UI.
+
+---
+
+## Update — 2026-09-06 (feature growth)
+
+A lot landed since the notes above. Current state of FinBooks:
+
+**Added since 08-25:**
+- Localization: full app in English / Urdu / Arabic (RTL), user-picked, no mixing. A
+  `frontend/scripts/check-i18n.mjs` guard keeps the three languages in perfect sync (parity now 508 keys).
+- Multi-company (switch orgs), cost accounting (cost centers + projects), tax rates + tax report,
+  Financial Analysis (ratios + insights), payment/beneficiary details on customers/vendors,
+  Payments Due (overdue tracking), voucher guardrails (period lock, negative-cash, duplicate-ref).
+- Logout confirmation dialog.
+- Forgot/reset password via email (nodemailer + Gmail; falls back to logging the reset link when
+  SMTP isn't configured).
+- **Estimates / quotes** — create → sent → accepted → convert to a draft invoice (never touches
+  the ledger until converted).
+- **Recurring invoices** — a template that auto-generates invoices on a schedule (node-cron:
+  catch-up on startup + daily). Draft by default; optional auto-post.
+
+**DB note:** local dev now runs on the **MySQL80 Windows service** (auto-starts) on port 3306.
+The real credentials live in `backend/.env` (gitignored — never committed). `.env.example` shows
+the shape.
+
+**GitHub:** public at github.com/alishehiryarniazi-collab/finbooks (main branch kept current).
+
+## Roadmap / next (from the "FinBooks for Pakistan" plan)
+- [ ] Bank/wallet **CSV import + reconciliation** (the headline "real accounting" feature; free — no Plaid).
+- [ ] **Audit trail** (who changed what — trust).
+- [ ] Deploy a live demo.
+- [ ] Later, Pakistan-specific: WhatsApp invoice sending, cash-first UX, FBR-ready tax.
+- Deliberately skipped: live bank feeds (no PK aggregator), payroll (compliance beast), app ecosystem.
