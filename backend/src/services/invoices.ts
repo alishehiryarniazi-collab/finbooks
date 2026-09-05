@@ -8,7 +8,7 @@ import { nextDocumentNumber } from "./numbering";
 
 type Db = Prisma.TransactionClient;
 
-interface LineInput {
+export interface LineInput {
   description: string;
   quantity: number;
   unitPrice: number;
@@ -18,8 +18,9 @@ interface LineInput {
   projectId?: string | null;
 }
 
-// Computes per-line totals plus invoice subtotal/tax/total, all exact Decimals.
-function computeTotals(lines: LineInput[]) {
+// Computes per-line totals plus document subtotal/tax/total, all exact Decimals.
+// Shared by invoices and estimates so the math is identical.
+export function computeTotals(lines: LineInput[]) {
   let subtotal = D(0);
   let taxTotal = D(0);
   const computed = lines.map((l) => {
@@ -181,7 +182,12 @@ export async function postInvoice(orgId: string, userId: string, invoiceId: stri
       { accountId: arId, debit: invoice.total, description: `Invoice ${invoice.number}` },
     ];
     for (const g of incomeGroups.values())
-      lines.push({ accountId: g.accountId, credit: g.amount, costCenterId: g.costCenterId, projectId: g.projectId });
+      lines.push({
+        accountId: g.accountId,
+        credit: g.amount,
+        costCenterId: g.costCenterId,
+        projectId: g.projectId,
+      });
     if (invoice.taxTotal.gt(0)) {
       const taxId = await getSystemAccountId(tx, orgId, SYSTEM_CODES.SALES_TAX_PAYABLE);
       lines.push({ accountId: taxId, credit: invoice.taxTotal });

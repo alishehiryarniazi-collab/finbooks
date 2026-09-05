@@ -128,6 +128,24 @@ export interface Invoice {
   lines?: DocumentLine[];
 }
 
+export type EstimateStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "CONVERTED";
+
+export interface Estimate {
+  id: string;
+  number: string;
+  issueDate: string;
+  expiryDate: string;
+  status: EstimateStatus;
+  subtotal: string;
+  taxTotal: string;
+  total: string;
+  notes: string | null;
+  convertedInvoiceId: string | null;
+  customer?: { name: string };
+  customerId: string;
+  lines?: DocumentLine[];
+}
+
 export interface Bill {
   id: string;
   number: string;

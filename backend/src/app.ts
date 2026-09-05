@@ -10,6 +10,7 @@ import { journalRouter } from "./routes/journal.routes";
 import { customersRouter } from "./routes/customers.routes";
 import { vendorsRouter } from "./routes/vendors.routes";
 import { invoicesRouter } from "./routes/invoices.routes";
+import { estimatesRouter } from "./routes/estimates.routes";
 import { billsRouter } from "./routes/bills.routes";
 import { paymentsRouter } from "./routes/payments.routes";
 import { reportsRouter } from "./routes/reports.routes";
@@ -36,6 +37,7 @@ export function createApp() {
   app.use("/api/customers", customersRouter);
   app.use("/api/vendors", vendorsRouter);
   app.use("/api/invoices", invoicesRouter);
+  app.use("/api/estimates", estimatesRouter);
   app.use("/api/bills", billsRouter);
   app.use("/api/payments", paymentsRouter);
   app.use("/api/reports", reportsRouter);

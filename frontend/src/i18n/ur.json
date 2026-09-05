@@ -57,7 +57,8 @@
     "costCenters": "کاسٹ سینٹرز",
     "projects": "پروجیکٹس",
     "costCenterReport": "کاسٹ سینٹر منافع",
-    "projectReport": "پروجیکٹ نفع و نقصان"
+    "projectReport": "پروجیکٹ نفع و نقصان",
+    "estimates": "تخمینے"
   },
   "auth": {
     "welcomeBack": "خوش آمدید",
@@ -146,7 +147,9 @@
     "billDate": "بل کی تاریخ",
     "document": "دستاویز",
     "incomeAccount": "آمدنی اکاؤنٹ",
-    "expenseAccount": "اخراجات اکاؤنٹ"
+    "expenseAccount": "اخراجات اکاؤنٹ",
+    "expiry": "میعاد",
+    "expiryDate": "میعاد کی تاریخ"
   },
   "actions": {
     "new": "نیا",
@@ -174,7 +177,11 @@
     "ACTIVE": "فعال",
     "COMPLETED": "مکمل",
     "ON_HOLD": "روکا گیا",
-    "inactive": "غیر فعال"
+    "inactive": "غیر فعال",
+    "ACCEPTED": "قبول شدہ",
+    "DECLINED": "مسترد",
+    "EXPIRED": "میعاد ختم",
+    "CONVERTED": "تبدیل شدہ"
   },
   "reports": {
     "trialBalanceSubtitle": "ہر اکاؤنٹ کا بیلنس — ڈیبٹ اور کریڈٹ برابر ہونے چاہئیں",
@@ -287,7 +294,11 @@
     "paymentsSubtitle": "موصول اور ادا کی گئی رقم",
     "noPayments": "ابھی کوئی ادائیگی نہیں۔",
     "received": "موصول",
-    "made": "ادا شدہ"
+    "made": "ادا شدہ",
+    "estimatesSubtitle": "فروخت سے پہلے بھیجے جانے والے کوٹیشن",
+    "newEstimate": "+ نیا تخمینہ",
+    "searchEstimateCustomer": "نمبر یا گاہک تلاش کریں…",
+    "noEstimates": "ابھی کوئی تخمینہ نہیں۔"
   },
   "crud": {
     "codeOptional": "کوڈ (اختیاری)",
@@ -398,7 +409,12 @@
     "autoInvoice": "خودکار (INV-0001)",
     "autoBill": "خودکار (BILL-0001)",
     "noTax": "کوئی ٹیکس نہیں",
-    "custom": "{{pct}}% (حسبِ ضرورت)"
+    "custom": "{{pct}}% (حسبِ ضرورت)",
+    "editEstimate": "تخمینہ میں ترمیم",
+    "newEstimate": "نیا تخمینہ",
+    "estimateSubtitle": "گاہک کے لیے کوٹیشن — قبول ہونے پر انوائس میں تبدیل کریں",
+    "estimateNumberOptional": "تخمینہ نمبر (اختیاری)",
+    "autoEstimate": "خودکار (EST-0001)"
   },
   "view": {
     "invoiceTitle": "انوائس {{number}}",
@@ -412,7 +428,8 @@
     "payFrom": "ادائیگی سے",
     "savePayment": "ادائیگی محفوظ کریں",
     "deleteInvoiceConfirm": "کیا یہ ڈرافٹ انوائس حذف کریں؟ یہ واپس نہیں ہو سکتا۔",
-    "deleteBillConfirm": "کیا یہ ڈرافٹ بل حذف کریں؟ یہ واپس نہیں ہو سکتا۔"
+    "deleteBillConfirm": "کیا یہ ڈرافٹ بل حذف کریں؟ یہ واپس نہیں ہو سکتا۔",
+    "estimateTitle": "تخمینہ {{number}}"
   },
   "opening": {
     "title": "ابتدائی بیلنس",
@@ -463,7 +480,9 @@
     "billFrom": "بل بطرف",
     "balanceDue": "واجب الادا بیلنس",
     "footer": "آپ کے کاروبار کا شکریہ۔ · FinBooks کی جانب سے تیار کردہ",
-    "yourCompany": "آپ کی کمپنی"
+    "yourCompany": "آپ کی کمپنی",
+    "estimateDoc": "تخمینہ",
+    "validUntil": "میعاد تک"
   },
   "company": {
     "namePlaceholder": "میرا نیا کاروبار",
@@ -500,5 +519,14 @@
     "dueToday": "آج واجب",
     "inDays": "{{n}} دن میں",
     "totalDue": "کل واجب"
+  },
+  "est": {
+    "deleteConfirm": "کیا یہ تخمینہ حذف کریں؟",
+    "markSent": "بھیجا ہوا نشان زد کریں",
+    "accept": "قبول کریں",
+    "decline": "مسترد کریں",
+    "convert": "انوائس میں تبدیل کریں",
+    "viewInvoice": "انوائس دیکھیں",
+    "expires": "میعاد {{date}}"
   }
 }

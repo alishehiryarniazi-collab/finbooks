@@ -57,7 +57,8 @@
     "costCenters": "مراكز التكلفة",
     "projects": "المشاريع",
     "costCenterReport": "الربح حسب مركز التكلفة",
-    "projectReport": "أرباح وخسائر المشروع"
+    "projectReport": "أرباح وخسائر المشروع",
+    "estimates": "عروض الأسعار"
   },
   "auth": {
     "welcomeBack": "مرحبًا بعودتك",
@@ -146,7 +147,9 @@
     "billDate": "تاريخ الفاتورة",
     "document": "المستند",
     "incomeAccount": "حساب الإيراد",
-    "expenseAccount": "حساب المصروف"
+    "expenseAccount": "حساب المصروف",
+    "expiry": "الانتهاء",
+    "expiryDate": "تاريخ الانتهاء"
   },
   "actions": {
     "new": "جديد",
@@ -174,7 +177,11 @@
     "ACTIVE": "نشط",
     "COMPLETED": "مكتمل",
     "ON_HOLD": "معلّق",
-    "inactive": "غير نشط"
+    "inactive": "غير نشط",
+    "ACCEPTED": "مقبول",
+    "DECLINED": "مرفوض",
+    "EXPIRED": "منتهي",
+    "CONVERTED": "محوّل"
   },
   "reports": {
     "trialBalanceSubtitle": "رصيد كل حساب — يجب أن يتساوى المدين والدائن",
@@ -287,7 +294,11 @@
     "paymentsSubtitle": "الأموال المستلمة والمدفوعة",
     "noPayments": "لا توجد مدفوعات بعد.",
     "received": "مستلم",
-    "made": "مدفوع"
+    "made": "مدفوع",
+    "estimatesSubtitle": "عروض ترسلها للعميل قبل البيع",
+    "newEstimate": "+ عرض سعر جديد",
+    "searchEstimateCustomer": "ابحث بالرقم أو العميل…",
+    "noEstimates": "لا توجد عروض بعد."
   },
   "crud": {
     "codeOptional": "الرمز (اختياري)",
@@ -398,7 +409,12 @@
     "autoInvoice": "تلقائي (INV-0001)",
     "autoBill": "تلقائي (BILL-0001)",
     "noTax": "بدون ضريبة",
-    "custom": "{{pct}}% (مخصص)"
+    "custom": "{{pct}}% (مخصص)",
+    "editEstimate": "تعديل العرض",
+    "newEstimate": "عرض سعر جديد",
+    "estimateSubtitle": "عرض سعر لعميلك — حوّله إلى فاتورة عند قبوله",
+    "estimateNumberOptional": "رقم العرض (اختياري)",
+    "autoEstimate": "تلقائي (EST-0001)"
   },
   "view": {
     "invoiceTitle": "فاتورة {{number}}",
@@ -412,7 +428,8 @@
     "payFrom": "الدفع من",
     "savePayment": "حفظ الدفعة",
     "deleteInvoiceConfirm": "هل تريد حذف مسودة الفاتورة هذه؟ لا يمكن التراجع عن هذا.",
-    "deleteBillConfirm": "هل تريد حذف مسودة فاتورة المورد هذه؟ لا يمكن التراجع عن هذا."
+    "deleteBillConfirm": "هل تريد حذف مسودة فاتورة المورد هذه؟ لا يمكن التراجع عن هذا.",
+    "estimateTitle": "عرض سعر {{number}}"
   },
   "opening": {
     "title": "الأرصدة الافتتاحية",
@@ -463,7 +480,9 @@
     "billFrom": "الفاتورة من",
     "balanceDue": "الرصيد المستحق",
     "footer": "شكرًا لتعاملكم معنا. · أُنشئت بواسطة FinBooks",
-    "yourCompany": "شركتك"
+    "yourCompany": "شركتك",
+    "estimateDoc": "عرض سعر",
+    "validUntil": "صالح حتى"
   },
   "company": {
     "namePlaceholder": "عملي الجديد",
@@ -500,5 +519,14 @@
     "dueToday": "مستحقة اليوم",
     "inDays": "خلال {{n}} يوم",
     "totalDue": "إجمالي المستحق"
+  },
+  "est": {
+    "deleteConfirm": "هل تريد حذف هذا العرض؟",
+    "markSent": "وضع علامة كمُرسَل",
+    "accept": "قبول",
+    "decline": "رفض",
+    "convert": "تحويل إلى فاتورة",
+    "viewInvoice": "عرض الفاتورة",
+    "expires": "ينتهي {{date}}"
   }
 }

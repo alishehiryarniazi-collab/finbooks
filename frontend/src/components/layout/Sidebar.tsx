@@ -27,6 +27,7 @@ const NAV = [
     sectionKey: "salesAr",
     items: [
       { to: "/customers", labelKey: "customers", icon: "🧑‍💼" },
+      { to: "/estimates", labelKey: "estimates", icon: "📄" },
       { to: "/invoices", labelKey: "invoices", icon: "🧾" },
     ],
   },
@@ -84,7 +85,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
       {NAV.map((group) => (
         <div key={group.sectionKey}>
-          <p className="mb-1 px-2 text-xs uppercase tracking-wider text-slate-500">{t(`nav.${group.sectionKey}`)}</p>
+          <p className="mb-1 px-2 text-xs uppercase tracking-wider text-slate-500">
+            {t(`nav.${group.sectionKey}`)}
+          </p>
           <div className="flex flex-col gap-0.5">
             {group.items.map((item) => (
               <NavLink

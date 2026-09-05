@@ -17,6 +17,10 @@ import { Vendors } from "./pages/vendors/Vendors";
 import { InvoiceList } from "./pages/invoices/InvoiceList";
 import { InvoiceForm } from "./pages/invoices/InvoiceForm";
 import { InvoiceView } from "./pages/invoices/InvoiceView";
+import { EstimateList } from "./pages/estimates/EstimateList";
+import { EstimateForm } from "./pages/estimates/EstimateForm";
+import { EstimateView } from "./pages/estimates/EstimateView";
+import { EstimatePrint } from "./pages/estimates/EstimatePrint";
 import { InvoicePrint } from "./pages/invoices/InvoicePrint";
 import { BillList } from "./pages/bills/BillList";
 import { BillForm } from "./pages/bills/BillForm";
@@ -67,6 +71,10 @@ export default function App() {
         <Route path="invoices/new" element={<InvoiceForm />} />
         <Route path="invoices/:id/edit" element={<InvoiceForm />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
+        <Route path="estimates" element={<EstimateList />} />
+        <Route path="estimates/new" element={<EstimateForm />} />
+        <Route path="estimates/:id/edit" element={<EstimateForm />} />
+        <Route path="estimates/:id" element={<EstimateView />} />
         <Route path="vendors" element={<Vendors />} />
         <Route path="bills" element={<BillList />} />
         <Route path="bills/new" element={<BillForm />} />
@@ -104,6 +112,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <BillPrint />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/estimates/:id/print"
+        element={
+          <ProtectedRoute>
+            <EstimatePrint />
           </ProtectedRoute>
         }
       />

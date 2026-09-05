@@ -10,7 +10,7 @@ export interface PrintLine {
 }
 
 export interface PrintDocProps {
-  kind: "INVOICE" | "BILL";
+  kind: "INVOICE" | "BILL" | "ESTIMATE";
   orgName: string;
   orgAddress?: string | null;
   orgPhone?: string | null;
@@ -19,26 +19,28 @@ export interface PrintDocProps {
   number: string;
   status: string;
   issueDate: string;
-  dueDate: string;
+  dueDate: string; // for an estimate this is the expiry / "valid until" date
   party: { name: string; email?: string | null; phone?: string | null; address?: string | null };
   lines: PrintLine[];
   subtotal: string;
   taxTotal: string;
   total: string;
-  amountPaid: string;
+  amountPaid?: string; // not used for estimates (they aren't paid)
   notes?: string | null;
   onBack: () => void;
 }
 
-// A clean, printer-friendly invoice/bill on white "paper". The action bar is marked
+// A clean, printer-friendly invoice / bill / estimate on white "paper". The action bar is marked
 // .no-print so only the document prints (browser's Print dialog → Save as PDF).
 export function PrintableDocument(props: PrintDocProps) {
   const { t } = useTranslation();
-  const isInvoice = props.kind === "INVOICE";
-  const kindLabel = isInvoice ? t("print.invoiceDoc") : t("print.billDoc");
-  const issueLabel = isInvoice ? t("fields.issueDate") : t("fields.billDate");
-  const partyHeading = isInvoice ? t("print.billTo") : t("print.billFrom");
-  const balance = (Number(props.total) - Number(props.amountPaid)).toFixed(2);
+  const isBill = props.kind === "BILL";
+  const isEstimate = props.kind === "ESTIMATE";
+  const kindLabel = isEstimate ? t("print.estimateDoc") : isBill ? t("print.billDoc") : t("print.invoiceDoc");
+  const issueLabel = isBill ? t("fields.billDate") : t("fields.issueDate");
+  const dueLabel = isEstimate ? t("print.validUntil") : t("fields.dueDate");
+  const partyHeading = isBill ? t("print.billFrom") : t("print.billTo");
+  const balance = (Number(props.total) - Number(props.amountPaid ?? 0)).toFixed(2);
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 text-slate-900">
@@ -90,9 +92,7 @@ export function PrintableDocument(props: PrintDocProps) {
         {/* Party + dates */}
         <div className="mt-6 flex justify-between gap-6">
           <div className="max-w-xs">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              {partyHeading}
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{partyHeading}</p>
             <p className="mt-1 font-semibold text-slate-900">{props.party.name}</p>
             {props.party.address && (
               <p className="whitespace-pre-line text-sm text-slate-600">{props.party.address}</p>
@@ -106,7 +106,7 @@ export function PrintableDocument(props: PrintDocProps) {
               <span className="font-medium text-slate-700">{shortDate(props.issueDate)}</span>
             </div>
             <div className="mt-1 flex justify-between gap-8">
-              <span className="text-slate-400">{t("fields.dueDate")}</span>
+              <span className="text-slate-400">{dueLabel}</span>
               <span className="font-medium text-slate-700">{shortDate(props.dueDate)}</span>
             </div>
           </div>
@@ -144,24 +144,27 @@ export function PrintableDocument(props: PrintDocProps) {
             <div className="border-t border-slate-200 pt-1.5">
               <Row label={t("fields.total")} value={money(props.total)} strong />
             </div>
-            <Row label={t("fields.paid")} value={money(props.amountPaid)} />
-            <div className="rounded-lg bg-slate-900 px-3 py-2 text-white">
-              <Row label={t("print.balanceDue")} value={money(balance)} strong invert />
-            </div>
+            {/* Estimates aren't paid, so no Paid / Balance-due rows for them. */}
+            {!isEstimate && <Row label={t("fields.paid")} value={money(props.amountPaid ?? 0)} />}
+            {!isEstimate && (
+              <div className="rounded-lg bg-slate-900 px-3 py-2 text-white">
+                <Row label={t("print.balanceDue")} value={money(balance)} strong invert />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Notes */}
         {props.notes && (
           <div className="mt-8 border-t border-slate-200 pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{t("fields.notes")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              {t("fields.notes")}
+            </p>
             <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{props.notes}</p>
           </div>
         )}
 
-        <p className="mt-10 text-center text-xs text-slate-400">
-          {t("print.footer")}
-        </p>
+        <p className="mt-10 text-center text-xs text-slate-400">{t("print.footer")}</p>
       </div>
     </div>
   );
