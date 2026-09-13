@@ -97,6 +97,7 @@ enum PartyType {
 model Organization {
   id                   String   @id @default(cuid())
   name                 String
+  isActive             Boolean  @default(true) // platform suspend switch (blocks all members)
   baseCurrency         String   @default("USD") // ISO code, drives money formatting
   fiscalYearStartMonth Int      @default(1) // 1 = January
   // Company profile (shown on invoices/bills and the app header).
@@ -131,6 +132,7 @@ model User {
   email        String   @unique
   passwordHash String
   isActive     Boolean  @default(true) // global disable (blocks all companies)
+  isSuperAdmin Boolean  @default(false) // platform owner — cross-tenant admin panel access
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

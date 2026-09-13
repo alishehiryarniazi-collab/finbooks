@@ -20,7 +20,7 @@ export const authRouter = Router();
 async function buildAuthUser(userId: string, activeOrgId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, isSuperAdmin: true },
   });
   if (!user) throw new HttpError(401, "Invalid or expired token");
 
@@ -37,6 +37,7 @@ async function buildAuthUser(userId: string, activeOrgId: string) {
     id: user.id,
     name: user.name,
     email: user.email,
+    isSuperAdmin: user.isSuperAdmin,
     role: active.role,
     orgId: active.orgId,
     organization: {

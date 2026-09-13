@@ -21,6 +21,7 @@ import { organizationRouter } from "./routes/organization.routes";
 import { taxRatesRouter } from "./routes/taxRates.routes";
 import { costCentersRouter, projectsRouter } from "./routes/costAccounting.routes";
 import { notificationsRouter } from "./routes/notifications.routes";
+import { adminRouter } from "./routes/admin.routes";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 
 export function createApp() {
@@ -62,6 +63,7 @@ export function createApp() {
   app.use("/api/cost-centers", costCentersRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/notifications", notificationsRouter);
+  app.use("/api/admin", adminRouter);
 
   app.use(notFoundHandler);
 

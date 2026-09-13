@@ -40,13 +40,44 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   // their current role there (so a role change or removal takes effect immediately).
   const membership = await prisma.membership.findUnique({
     where: { userId_orgId: { userId: payload.userId, orgId: payload.orgId } },
-    select: { isActive: true, role: true },
+    select: { isActive: true, role: true, organization: { select: { isActive: true } } },
   });
   if (!membership || !membership.isActive) {
     throw new HttpError(403, "You don't have access to this company.");
   }
+  // A platform-suspended company blocks all of its members.
+  if (!membership.organization.isActive) {
+    throw new HttpError(403, "This company has been suspended. Please contact support.");
+  }
 
   req.auth = { ...payload, role: membership.role };
+  next();
+}
+
+// Restricts a route to platform super-admins (the FinBooks owner). Unlike requireAuth this
+// does NOT require org membership, because super-admin operates ACROSS all tenants. It's the
+// only path that can bypass tenant isolation, so it's deliberately strict and self-contained.
+export async function requireSuperAdmin(req: Request, _res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    throw new HttpError(401, "Missing or invalid Authorization header");
+  }
+
+  let payload: AuthTokenPayload;
+  try {
+    payload = verifyToken(header.slice("Bearer ".length));
+  } catch {
+    throw new HttpError(401, "Invalid or expired token");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId },
+    select: { isActive: true, isSuperAdmin: true },
+  });
+  if (!user || !user.isActive) throw new HttpError(401, "Invalid or expired token");
+  if (!user.isSuperAdmin) throw new HttpError(403, "Super-admin access required.");
+
+  req.auth = payload;
   next();
 }
 

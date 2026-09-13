@@ -25,6 +25,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  isSuperAdmin?: boolean; // platform owner — can access the Admin panel
   role: Role; // role in the ACTIVE company
   orgId: string; // active company
   organization: Organization | null; // active company profile

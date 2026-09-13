@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../../context/AuthContext";
 
 // Navigation grouped into sections. Labels are i18n keys under "nav.*".
 const NAV = [
@@ -97,6 +98,7 @@ function activeSectionKey(pathname: string): string | null {
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { pathname } = useLocation();
   const activeKey = useMemo(() => activeSectionKey(pathname), [pathname]);
 
@@ -179,6 +181,22 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         );
       })}
+
+      {/* Platform owner only — a standalone link, visually distinct from the tenant nav. */}
+      {user?.isSuperAdmin && (
+        <NavLink
+          to="/admin"
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            `mt-2 flex items-center gap-3 rounded-xl border border-violet-500/30 px-3 py-2 text-sm transition ${
+              isActive ? "bg-violet-500/20 text-white" : "text-violet-300 hover:bg-violet-500/10 hover:text-white"
+            }`
+          }
+        >
+          <span className="text-base">🛡️</span>
+          Admin
+        </NavLink>
+      )}
     </nav>
   );
 }
