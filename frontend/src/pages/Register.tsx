@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { TextField } from "../components/ui/Field";
+import { PasswordField } from "../components/ui/PasswordField";
 import { Button } from "../components/ui/Button";
 import { AuthShell } from "./Login";
 
@@ -42,9 +43,8 @@ export function Register() {
         />
         <TextField label={t("auth.yourName")} value={form.name} onChange={set("name")} required />
         <TextField label={t("auth.email")} type="email" value={form.email} onChange={set("email")} required />
-        <TextField
+        <PasswordField
           label={t("auth.password")}
-          type="password"
           value={form.password}
           onChange={set("password")}
           required

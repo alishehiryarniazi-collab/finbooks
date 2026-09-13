@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { TextField } from "../components/ui/Field";
+import { PasswordField } from "../components/ui/PasswordField";
 import { Button } from "../components/ui/Button";
 import { LanguageSwitcher } from "../components/layout/LanguageSwitcher";
 
@@ -39,9 +40,8 @@ export function Login() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <TextField
+        <PasswordField
           label={t("auth.password")}
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 // Navigation grouped into sections. Labels are i18n keys under "nav.*".
@@ -77,40 +78,107 @@ const NAV = [
   },
 ];
 
+// Which section owns the current URL, so we can auto-open it. We pick the item whose
+// `to` best matches the path (longest prefix; "/" only matches exactly).
+function activeSectionKey(pathname: string): string | null {
+  let bestKey: string | null = null;
+  let bestLen = -1;
+  for (const group of NAV) {
+    for (const item of group.items) {
+      const matches = item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(item.to + "/");
+      if (matches && item.to.length > bestLen) {
+        bestLen = item.to.length;
+        bestKey = group.sectionKey;
+      }
+    }
+  }
+  return bestKey;
+}
+
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const activeKey = useMemo(() => activeSectionKey(pathname), [pathname]);
+
+  // Sections the user has pinned open by clicking. Start with the active section open.
+  const [open, setOpen] = useState<Set<string>>(() => new Set(activeKey ? [activeKey] : []));
+  // The section currently hovered — expands temporarily without pinning.
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  // Whenever the route changes to a new section, make sure that section is open.
+  useEffect(() => {
+    if (activeKey) setOpen((prev) => (prev.has(activeKey) ? prev : new Set(prev).add(activeKey)));
+  }, [activeKey]);
+
+  const toggle = (key: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
   return (
-    <nav className="flex h-full flex-col gap-5 overflow-y-auto p-4">
-      <div className="px-2 py-2">
+    <nav className="flex h-full flex-col gap-1 overflow-y-auto p-4">
+      <div className="mb-2 px-2 py-2">
         <span className="text-xl font-bold gradient-text">{t("app.name")}</span>
       </div>
-      {NAV.map((group) => (
-        <div key={group.sectionKey}>
-          <p className="mb-1 px-2 text-xs uppercase tracking-wider text-slate-500">
-            {t(`nav.${group.sectionKey}`)}
-          </p>
-          <div className="flex flex-col gap-0.5">
-            {group.items.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={"end" in item ? (item.end as boolean) : false}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
-                    isActive
-                      ? "bg-aurora-mint/15 text-white shadow-glow"
-                      : "text-slate-300 hover:bg-white/5 hover:text-white"
-                  }`
-                }
+
+      {NAV.map((group) => {
+        const expanded = open.has(group.sectionKey) || hovered === group.sectionKey;
+        const hasActive = group.sectionKey === activeKey;
+        return (
+          <div
+            key={group.sectionKey}
+            onMouseEnter={() => setHovered(group.sectionKey)}
+            onMouseLeave={() => setHovered((h) => (h === group.sectionKey ? null : h))}
+          >
+            {/* Section header — click to pin open/closed; hover expands it too. */}
+            <button
+              type="button"
+              onClick={() => toggle(group.sectionKey)}
+              aria-expanded={expanded}
+              className={`flex w-full items-center justify-between rounded-lg px-2 py-2 text-xs font-semibold uppercase tracking-wider transition hover:bg-white/5 ${
+                hasActive ? "text-aurora-mint" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <span>{t(`nav.${group.sectionKey}`)}</span>
+              <svg
+                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
               >
-                <span className="text-base">{item.icon}</span>
-                {t(`nav.${item.labelKey}`)}
-              </NavLink>
-            ))}
+                {/* Chevron pointing right; rotates to point down when expanded. */}
+                <path d="M8 6l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {/* Section items — shown when expanded (clicked open or hovered). */}
+            {expanded && (
+              <div className="mb-1 mt-0.5 flex flex-col gap-0.5 ps-1">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={"end" in item ? (item.end as boolean) : false}
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
+                        isActive
+                          ? "bg-aurora-mint/15 text-white shadow-glow"
+                          : "text-slate-300 hover:bg-white/5 hover:text-white"
+                      }`
+                    }
+                  >
+                    <span className="text-base">{item.icon}</span>
+                    {t(`nav.${item.labelKey}`)}
+                  </NavLink>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
 }

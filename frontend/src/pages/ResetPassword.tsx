@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api, apiError } from "../lib/api";
-import { TextField } from "../components/ui/Field";
+import { PasswordField } from "../components/ui/PasswordField";
 import { Button } from "../components/ui/Button";
 import { AuthShell } from "./Login";
 
@@ -63,16 +63,14 @@ export function ResetPassword() {
         </div>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <TextField
+          <PasswordField
             label={t("auth.newPassword")}
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <TextField
+          <PasswordField
             label={t("auth.confirmPassword")}
-            type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
