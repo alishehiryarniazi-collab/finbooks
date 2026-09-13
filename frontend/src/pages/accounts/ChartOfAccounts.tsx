@@ -55,9 +55,33 @@ export function ChartOfAccounts() {
   const { data, loading, error, refetch } = useFetch<{ accounts: Account[] }>("/accounts");
   const { hasRole } = useAuth();
   const [open, setOpen] = useState(false);
+  // Which groups are expanded. Empty = everything collapsed, so only the 5 top
+  // categories (Assets, Liabilities, Equity, Income, Expense) show by default.
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   const accounts = useMemo(() => data?.accounts ?? [], [data]);
   const rows = useMemo(() => buildRows(accounts), [accounts]);
+  const byId = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
+
+  // A row is visible only when every one of its ancestor groups is expanded.
+  const isVisible = (account: Account) => {
+    let p = account.parentId;
+    while (p) {
+      if (!openGroups.has(p)) return false;
+      p = byId.get(p)?.parentId ?? null;
+    }
+    return true;
+  };
+
+  const toggleGroup = (id: string) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const allGroupIds = useMemo(() => accounts.filter((a) => !a.isPostable).map((a) => a.id), [accounts]);
+  const allExpanded = allGroupIds.length > 0 && allGroupIds.every((id) => openGroups.has(id));
 
   if (loading) return <Spinner label={t("coa.loading")} />;
   if (error) return <ErrorNote message={error} />;
@@ -68,14 +92,22 @@ export function ChartOfAccounts() {
         title={t("nav.chartOfAccounts")}
         subtitle={t("coa.subtitle")}
         action={
-          hasRole("ADMIN", "ACCOUNTANT") && (
-            <div className="flex flex-wrap gap-2">
-              <Link to="/accounts/opening-balances">
-                <Button variant="ghost">{t("coa.openingBalances")}</Button>
-              </Link>
-              <Button onClick={() => setOpen(true)}>{t("coa.newAccount")}</Button>
-            </div>
-          )
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => setOpenGroups(allExpanded ? new Set() : new Set(allGroupIds))}
+            >
+              {allExpanded ? t("coa.collapseAll", "Collapse all") : t("coa.expandAll", "Expand all")}
+            </Button>
+            {hasRole("ADMIN", "ACCOUNTANT") && (
+              <>
+                <Link to="/accounts/opening-balances">
+                  <Button variant="ghost">{t("coa.openingBalances")}</Button>
+                </Link>
+                <Button onClick={() => setOpen(true)}>{t("coa.newAccount")}</Button>
+              </>
+            )}
+          </div>
         }
       />
 
@@ -88,11 +120,26 @@ export function ChartOfAccounts() {
 
         <div className="flex flex-col divide-y divide-white/5">
           {rows.map(({ account, level, rolled }) => {
+            if (!isVisible(account)) return null; // hidden inside a collapsed group
             const isGroup = !account.isPostable;
+            const expanded = openGroups.has(account.id);
             const rowClass = "flex items-center justify-between gap-3 px-4 py-2";
             const inner = (
               <>
                 <div className="flex items-center gap-2 min-w-0">
+                  {/* Chevron for groups (rotates when open); spacer keeps detail rows aligned. */}
+                  {isGroup ? (
+                    <svg
+                      className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${expanded ? "rotate-90" : ""}`}
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 6l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <span className="w-3.5 shrink-0" />
+                  )}
                   <span className={`text-xs tabular-nums ${isGroup ? "text-slate-500" : "text-slate-600"}`}>
                     {account.code}
                   </span>
@@ -119,11 +166,18 @@ export function ChartOfAccounts() {
             );
 
             const style = { paddingLeft: 16 + level * 22 };
-            // Detail (postable) accounts link into their ledger; groups are static.
+            // Groups toggle open/closed; detail (postable) accounts link into their ledger.
             return isGroup ? (
-              <div key={account.id} className={rowClass} style={style}>
+              <button
+                key={account.id}
+                type="button"
+                onClick={() => toggleGroup(account.id)}
+                aria-expanded={expanded}
+                className={`${rowClass} w-full text-left transition hover:bg-white/5`}
+                style={style}
+              >
                 {inner}
-              </div>
+              </button>
             ) : (
               <Link
                 key={account.id}
