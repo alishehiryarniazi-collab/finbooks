@@ -11,8 +11,8 @@ export function Login() {
   const { login } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("demo@finbooks.app");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -62,7 +62,6 @@ export function Login() {
           {t("auth.createOrganization")}
         </Link>
       </p>
-      <p className="mt-2 text-center text-xs text-slate-500">Demo: demo@finbooks.app / demo1234</p>
     </AuthShell>
   );
 }
