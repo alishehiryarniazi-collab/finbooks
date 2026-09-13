@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "../prisma";
 import { HttpError } from "../middleware/error";
 import { requireAuth } from "../middleware/auth";
+import { authLimiter } from "../middleware/rateLimit";
 import { signToken } from "../utils/jwt";
 import { seedDefaultAccounts } from "../services/chartOfAccounts";
 import { sendPasswordResetEmail } from "../utils/mailer";
@@ -61,7 +62,7 @@ const registerSchema = z.object({
 
 // Register creates a new company, a global user, an ADMIN membership linking them, and a
 // default chart of accounts — all atomically.
-authRouter.post("/register", async (req, res) => {
+authRouter.post("/register", authLimiter, async (req, res) => {
   const data = registerSchema.parse(req.body);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
@@ -86,7 +87,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", authLimiter, async (req, res) => {
   const data = loginSchema.parse(req.body);
 
   const user = await prisma.user.findUnique({ where: { email: data.email } });
@@ -120,7 +121,7 @@ const forgotSchema = z.object({ email: z.string().email() });
 // Step 1: user enters their email. If it belongs to an active account, we create a one-time
 // token and email a reset link. We ALWAYS return the same response so this can't be used to
 // discover which emails are registered.
-authRouter.post("/forgot-password", async (req, res) => {
+authRouter.post("/forgot-password", authLimiter, async (req, res) => {
   const { email } = forgotSchema.parse(req.body);
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -147,7 +148,7 @@ const resetSchema = z.object({
 
 // Step 2: user opens the emailed link and sets a new password. The raw token from the URL is
 // hashed and matched against a stored, unexpired, unused token.
-authRouter.post("/reset-password", async (req, res) => {
+authRouter.post("/reset-password", authLimiter, async (req, res) => {
   const { token, password } = resetSchema.parse(req.body);
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 

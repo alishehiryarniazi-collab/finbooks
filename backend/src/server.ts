@@ -9,8 +9,8 @@ async function main() {
   console.log("✓ Connected to MySQL");
 
   const app = createApp();
-  app.listen(env.port, () => {
-    console.log(`✓ FinBooks API running on http://localhost:${env.port}`);
+  app.listen(env.port, env.host, () => {
+    console.log(`✓ FinBooks API running on http://${env.host}:${env.port}`);
     // Generate any due recurring invoices now, then every day.
     startRecurringScheduler();
   });

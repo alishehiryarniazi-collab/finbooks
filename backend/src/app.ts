@@ -1,8 +1,10 @@
 import "express-async-errors";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { z } from "zod";
 import { env } from "./env";
+import { apiLimiter } from "./middleware/rateLimit";
 import { authRouter } from "./routes/auth.routes";
 import { usersRouter } from "./routes/users.routes";
 import { accountsRouter } from "./routes/accounts.routes";
@@ -24,7 +26,19 @@ import { errorHandler, notFoundHandler } from "./middleware/error";
 export function createApp() {
   const app = express();
 
+  // We run behind Nginx, so trust the first proxy hop. This makes req.ip the real
+  // client IP (from X-Forwarded-For) — required for correct rate limiting.
+  app.set("trust proxy", 1);
+
+  // Security response headers (HSTS, no-sniff, frameguard, etc.). This is a JSON API,
+  // so the default content-security-policy (aimed at HTML) isn't needed.
+  app.use(helmet({ contentSecurityPolicy: false }));
+
   app.use(cors({ origin: env.corsOrigin, credentials: true }));
+
+  // Basic flood protection across the whole API (auth endpoints get a stricter limit).
+  app.use(apiLimiter);
+
   // 2mb so an inline company logo (base64 data URL) fits; default is only 100kb.
   app.use(express.json({ limit: "2mb" }));
 

@@ -8,6 +8,9 @@ const schema = z.object({
   JWT_SECRET: z.string().min(10, "JWT_SECRET must be at least 10 characters"),
   JWT_EXPIRES_IN: z.string().default("7d"),
   PORT: z.coerce.number().default(4000),
+  // Interface to bind to. In production set HOST=127.0.0.1 so the API is reachable
+  // only via the local Nginx reverse proxy, never directly from the internet.
+  HOST: z.string().default("0.0.0.0"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
 });
 
@@ -24,5 +27,6 @@ export const env = {
   jwtSecret: parsed.data.JWT_SECRET,
   jwtExpiresIn: parsed.data.JWT_EXPIRES_IN,
   port: parsed.data.PORT,
+  host: parsed.data.HOST,
   corsOrigin: parsed.data.CORS_ORIGIN,
 };
