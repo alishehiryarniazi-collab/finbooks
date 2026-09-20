@@ -24,6 +24,27 @@ faked.
 - **Languages** — the whole UI is available in English, Urdu and Arabic (with right-to-left layout), chosen per user so nothing mixes.
 - **Print / PDF** — clean printable invoices and bills.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><b>Dashboard</b><br/><sub>Cash, receivables, payables and a 6-month income vs expense chart.</sub><br/><img src="docs/screenshots/01-dashboard.png" alt="FinBooks dashboard" /></td>
+    <td width="50%" valign="top"><b>Financial Analysis</b><br/><sub>Liquidity &amp; profitability ratios, a health score and plain-English insights.</sub><br/><img src="docs/screenshots/07-analysis.png" alt="Financial analysis with ratios and insights" /></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><b>Profit &amp; Loss</b><br/><sub>Income statement calculated straight from the ledger.</sub><br/><img src="docs/screenshots/05-profit-loss.png" alt="Profit and loss statement" /></td>
+    <td width="50%" valign="top"><b>Balance Sheet</b><br/><sub>Assets, liabilities and equity — always in balance.</sub><br/><img src="docs/screenshots/06-balance-sheet.png" alt="Balance sheet" /></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><b>Chart of Accounts</b><br/><sub>A 3-level account tree with normal balances.</sub><br/><img src="docs/screenshots/02-chart-of-accounts.png" alt="Chart of accounts" /></td>
+    <td width="50%" valign="top"><b>General Ledger</b><br/><sub>Every posting, traceable back to its journal entry.</sub><br/><img src="docs/screenshots/04-general-ledger.png" alt="General ledger" /></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><b>Invoices (AR)</b><br/><sub>Create, post and track customer invoices.</sub><br/><img src="docs/screenshots/03-invoices.png" alt="Invoices list" /></td>
+    <td width="50%" valign="top"><b>Journal</b><br/><sub>Double-entry vouchers where debits must equal credits.</sub><br/><img src="docs/screenshots/08-journal.png" alt="Journal entries" /></td>
+  </tr>
+</table>
+
 ## Tech
 
 - **Backend:** Node.js, Express, TypeScript, Prisma, MySQL, JWT.
