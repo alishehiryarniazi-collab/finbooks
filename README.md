@@ -9,6 +9,9 @@ a chart of accounts, journal entries where debits equal credits, invoices and bi
 into the ledger, and financial statements that are calculated from the ledger instead of being
 faked.
 
+> **🌐 Live demo:** https://finbooks-two.vercel.app — sign in with `demo@finbooks.app` / `demo1234`
+> *(the demo frontend is hosted on Vercel and talks to the live backend running on AWS EC2)*
+
 ## What it does
 
 - **Chart of accounts** — a 3-level tree (assets, liabilities, equity, income, expenses), each account with a normal balance; only the leaf accounts are postable.
